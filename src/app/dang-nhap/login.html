@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEB_NAME - Đăng nhập</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="logo">
+            <img src="https://via.placeholder.com/30" alt="logo">
+            <span>WEB_NAME</span>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="#">Trang Chủ</a>
+            <a href="#">Giới Thiệu</a>
+            <div class="dropdown">
+                <a href="#">Tours <i class="fa-solid fa-chevron-down"></i></a>
+            </div>
+            <a href="#">Điểm Đến</a>
+            <a href="#">Liên Hệ</a>
+        </nav>
+
+        <div class="header-actions">
+            <button class="btn-book">Book Now <i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+            <div class="user-icon">
+                <i class="fa-solid fa-circle-user"></i>
+                <i class="fa-solid fa-caret-down"></i>
+            </div>
+        </div>
+    </header>
+
+    <main class="content-wrapper">
+        <div class="auth-card shadow-lg">
+            
+            <div class="image-container">
+                <img src="../image/login_1.png" alt="">
+                <a href="../dang-ky/register.html" class="footer-link">Tạo tài khoản</a>
+            </div>
+
+            <div class="form-container">
+                <h1 class="auth-title">Đăng nhập</h1>
+                
+                <form id="loginForm">
+                    <div class="input-field-group">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" placeholder="Tên đăng nhập" class="autofill-bg">
+                    </div>
+
+                    <div class="input-field-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" placeholder="Mật khẩu" class="autofill-bg">
+                    </div>
+
+                    <button type="submit" class="btn-primary-green">Đăng nhập</button>
+                </form>
+
+                
+            </div>
+
+        </div>
+    </main>
+
+</body>
+</html>

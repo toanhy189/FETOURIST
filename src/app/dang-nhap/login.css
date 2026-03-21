@@ -1,0 +1,220 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 40px;
+    background: white;
+    margin: 20px auto;
+    width: 92%;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.logo img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 25px;
+    background: #f2f2f2;
+    padding: 10px 35px;
+    border-radius: 30px;
+}
+
+.nav-menu a {
+    text-decoration: none;
+    color: #444;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-menu a:hover {
+    color: #ff8c22;
+}
+
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.btn-book {
+    background-color: #ff8c22;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.btn-book:hover {
+    background-color: #e67e1d;
+    transform: translateY(-2px);
+}
+
+.user-icon {
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    color: #333;
+}
+
+.user-icon i.fa-caret-down {
+    font-size: 14px;
+}
+
+
+.content-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    padding: 40px 20px;
+}
+
+.register-card, .auth-card {
+    background: white;
+    width: 100%;
+    max-width: 1000px;
+    padding: 60px 80px;
+    border-radius: 35px;
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+}
+
+
+.form-container {
+    flex: 1;
+}
+
+.title, .auth-title {
+    font-family: 'Georgia', serif;
+    font-size: 36px;
+    margin-bottom: 35px;
+    color: #222;
+}
+
+
+.input-field, .input-field-group {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #333;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+}
+
+.input-field i, .input-field-group i {
+    width: 30px;
+    color: #555;
+    font-size: 18px;
+}
+
+.input-field input, .input-field-group input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 16px;
+    background: transparent;
+    padding: 5px;
+}
+
+
+.btn-register, .btn-primary-green {
+    background-color: #69a044;
+    color: white;
+    border: none;
+    padding: 12px 0;
+    width: 100%;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    margin-top: 10px;
+}
+
+.btn-register:hover, .btn-primary-green:hover {
+    background-color: #5a8a3a;
+}
+
+
+.image-container {
+    flex: 1;
+    text-align: center;
+}
+
+.image-container img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.footer-link {
+    color: #000;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: block;
+}
+
+.footer-link:hover {
+    text-decoration: underline;
+    color: #69a044;
+}
+
+
+@media (max-width: 900px) {
+    .register-card, .auth-card {
+        flex-direction: column;
+        padding: 40px;
+        gap: 30px;
+    }
+    
+    .nav-menu {
+        display: none;
+    }
+
+    .main-header {
+        padding: 10px 20px;
+    }
+}
