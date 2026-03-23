@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import HeaderActions from "@/components/HeaderActions";
 
 const navItems = [
@@ -8,6 +11,13 @@ const navItems = [
 ];
 
 export default function SiteShell({ children }) {
+  const pathname = usePathname();
+  const isAdminRoute = pathname?.startsWith("/quan-tri");
+
+  if (isAdminRoute) {
+    return <div className="min-h-screen bg-slate-100 text-slate-900">{children}</div>;
+  }
+
   return (
     <div className="min-h-screen text-slate-900">
       <header className="sticky top-0 z-40 border-b border-sky-100/70 bg-white/85 backdrop-blur-xl">
