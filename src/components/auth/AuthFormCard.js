@@ -67,26 +67,26 @@ export default function AuthFormCard({ mode }) {
   return (
     <div className="mx-auto max-w-xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg md:p-8">
       <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-700">
-        {isRegister ? "Dang ky tai khoan" : "Dang nhap he thong"}
+        {isRegister ? "Đăng ký tài khoản" : "Đăng nhập hệ thống"}
       </p>
       <h1 className="mt-3 font-display text-4xl text-slate-900">
-        {isRegister ? "Bat dau voi BETOURIST" : "Chao mung quay tro lai"}
+        {isRegister ? "Bắt đầu với chúng tôi" : "Chào mừng quay trở lại"}
       </h1>
       <p className="mt-3 text-sm leading-6 text-slate-600">
         {isRegister
-          ? "Sau khi dang ky, ban co the dat tour, theo doi booking, thanh toan va nhan thong bao."
-          : "Dang nhap de su dung booking preview, yeu thich, review, comment va khu vuc quan ly tai khoan."}
+          ? ""
+          : ""}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         {isRegister ? (
           <label className="block text-sm font-medium text-slate-700">
-            Ho va ten
+            Họ và tên
             <input
               value={form.fullName}
               onChange={(event) => updateField("fullName", event.target.value)}
               className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-              placeholder="Nguyen Van A"
+              placeholder=""
               required
             />
           </label>
@@ -99,7 +99,7 @@ export default function AuthFormCard({ mode }) {
             value={form.email}
             onChange={(event) => updateField("email", event.target.value)}
             className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-            placeholder="you@example.com"
+            placeholder=""
             required
           />
         </label>
@@ -107,16 +107,16 @@ export default function AuthFormCard({ mode }) {
         {isRegister ? (
           <>
             <label className="block text-sm font-medium text-slate-700">
-              So dien thoai
+              Số điện thoại
               <input
                 value={form.phoneNumber}
                 onChange={(event) => updateField("phoneNumber", event.target.value)}
                 className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-                placeholder="09xx xxx xxx"
+                placeholder=""
               />
             </label>
 
-            <label className="block text-sm font-medium text-slate-700">
+            {/* <label className="block text-sm font-medium text-slate-700">
               Avatar URL
               <input
                 value={form.avatarUrl}
@@ -124,18 +124,18 @@ export default function AuthFormCard({ mode }) {
                 className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
                 placeholder="https://..."
               />
-            </label>
+            </label> */}
           </>
         ) : null}
 
         <label className="block text-sm font-medium text-slate-700">
-          Mat khau
+          Mật khẩu
           <input
             type="password"
             value={form.password}
             onChange={(event) => updateField("password", event.target.value)}
             className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-            placeholder="Nhap mat khau"
+            placeholder=""
             required
           />
         </label>
@@ -163,20 +163,20 @@ export default function AuthFormCard({ mode }) {
           className="w-full rounded-2xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-300"
         >
           {isSubmitting
-            ? "Dang xu ly..."
+            ? "Đang xử lýccccccccccccccccccccccccccc"
             : isRegister
-              ? "Tao tai khoan"
-              : "Dang nhap"}
+              ? "Tạo tài khoản"
+              : "Đăng nhập"}
         </button>
       </form>
 
       <p className="mt-6 text-sm text-slate-600">
-        {isRegister ? "Da co tai khoan?" : "Chua co tai khoan?"}{" "}
+        {isRegister ? "Đã có tài khoản ?" : "Chưa có tài khoản ?"}{" "}
         <Link
           href={isRegister ? "/dang-nhap" : "/dang-ky"}
           className="font-semibold text-sky-800"
         >
-          {isRegister ? "Dang nhap ngay" : "Dang ky ngay"}
+          {isRegister ? "Đăng nhập ngay" : "Đăng ký ngay"}
         </Link>
       </p>
     </div>

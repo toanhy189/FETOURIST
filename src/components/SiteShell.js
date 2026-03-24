@@ -2,47 +2,57 @@ import Link from "next/link";
 import HeaderActions from "@/components/HeaderActions";
 
 const navItems = [
-  { href: "/", label: "Trang Chu" },
-  { href: "/danh-muc", label: "Kham Pha Tour" },
-  { href: "/tai-khoan", label: "Tai Khoan" },
+  { href: "/", label: "Trang chủ" },
+  { href: "/danh-muc", label: "Khám phá Tour" },
+  { href: "/tai-khoan", label: "Tài Khoản" },
 ];
 
 export default function SiteShell({ children }) {
   return (
     <div className="min-h-screen text-slate-900">
+      {/* 1. Header bao ngoài: flex, justify-between để đẩy Logo & Cụm phải ra 2 đầu */}
       <header className="sticky top-0 z-40 border-b border-sky-100/70 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-4 md:grid-cols-[auto,1fr,auto] md:items-center md:px-8">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-700">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-3 md:px-10">
+          
+          {/* KHỐI 1 (Bên trái): Logo & Title */}
+          <div className="flex flex-col shrink-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-sky-700">
               Travel Website
             </p>
-            <Link href="/" className="font-display text-2xl text-sky-900">
+            <Link href="/" className="font-display text-2xl font-bold text-sky-950">
               BETOURIST
             </Link>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600">
+          {/* KHỐI 2 (Ở giữa): Menu "Viên thuốc" (Chìa khóa nằm ở đây) */}
+          {/* hidden md:flex: Ẩn trên mobi, hiện trên máy tính */}
+          <nav className="hidden md:flex items-center gap-1 rounded-full bg-slate-100/70 p-1.5 border border-slate-200/50 shadow-inner">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-full border border-slate-200/80 px-3 py-2 transition hover:border-sky-300 hover:text-sky-800"
+                // Class cho từng item menu: rounded-full để bo tròn khi hover
+                className="rounded-full px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-sky-800 hover:shadow-sm"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
 
-          <HeaderActions />
+          {/* KHỐI 3 (Bên phải): Cụm nút bấm Login/Register (HeaderActions) */}
+          <div className="flex shrink-0">
+             <HeaderActions />
+          </div>
+
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 pb-16 pt-8 md:px-8">
+      <main className="mx-auto w-full max-w-7xl px-4 pb-16 pt-8 md:px-10">
         {children}
       </main>
 
       <footer className="border-t border-sky-100 bg-white/90">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-slate-500 md:px-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-6 py-8 text-sm text-slate-500 md:px-10">
           <p className="font-display text-lg text-slate-700">BETOURIST Frontend Demo</p>
           <p>Giao dien Next.js co ket noi du lieu that tu backend BETOURIST qua folder apiService.</p>
         </div>
