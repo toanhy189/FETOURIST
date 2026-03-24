@@ -20,35 +20,35 @@ const navItems = [
   },
   {
     key: "admins",
-    label: "Quan ly Admin",
+    label: "Quản lý Admin",
     hint: "Kiem soat danh sach tai khoan quan tri va nguoi van hanh.",
     description:
       "Tong hop cac tai khoan role admin de doi chieu quyen truy cap va phan cong van hanh.",
   },
   {
     key: "users",
-    label: "Quan ly nguoi dung",
+    label: "Quản lý người dùng",
     hint: "Nhin nhanh toan bo tai khoan user dang ky trong he thong.",
     description:
       "Theo doi thong tin user, thoi diem tao tai khoan va du lieu lien lac phuc vu booking.",
   },
   {
     key: "tours",
-    label: "Quan ly Tour",
+    label: "Quản lý tour",
     hint: "Gom tour, departure va danh muc trong cung mot khu vuc.",
     description:
       "Giu nguyen cac field CRUD tour, departure va category nhung sap xep lai theo workspace moi.",
   },
   {
     key: "bookings",
-    label: "Quan ly Booking",
+    label: "Quản lý Booking",
     hint: "Cap nhat don dat, giao dich va tinh trang thanh toan.",
     description:
       "Dieu hanh booking, cap nhat transaction va doi soat thong tin lien he cua khach hang.",
   },
   {
     key: "contacts",
-    label: "Lien he",
+    label: "Liên hệ",
     hint: "Tong hop thong tin lien lac tu booking cho doi sales va CSKH.",
     description:
       "Tiep can nhanh danh sach lien he va cac ghi chu booking trong khi chua co module inbox rieng.",
@@ -63,9 +63,9 @@ export default function AdminConsole() {
   if (!isAuthenticated || !isAdmin) {
     return (
       <section className="mx-auto mt-12 max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="font-display text-4xl text-slate-900">Khu vuc quan tri</h1>
+        <h1 className="font-display text-4xl text-slate-900">Khu vực quản trị</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Trang nay chi danh cho tai khoan admin da dang nhap.
+          Trang này chỉ dành cho tài khoản Admin đã đăng nhập
         </p>
       </section>
     );
