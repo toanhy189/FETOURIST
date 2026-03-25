@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  frontend:
+    build: . # Cũng chỉ là dấu chấm (.)
+    container_name: my_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:4000 
+      # Lưu ý: Browser chạy ở ngoài máy thật nên vẫn gọi localhost:5000 nhé
+
+# Bắt buộc: Cho FE vào chung mạng để nếu cần gọi API từ Server Component thì chúng thấy nhau
+networks:
+  default:
+    external: true
+    name: my_app_network
