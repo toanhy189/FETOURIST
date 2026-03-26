@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AdminContactsPanel from "@/components/admin/AdminContactsPanel";
 import AdminDashboard from "@/components/admin/AdminDashboard";
+import AdminManagersPanel from "@/components/admin/AdminManagersPanel";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import AdminTourWorkspace from "@/components/admin/AdminTourWorkspace";
@@ -58,6 +59,7 @@ const navItems = [
 export default function AdminConsole() {
   const { currentUser, isAuthenticated, isAdmin } = useAppContext();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const activeItem = navItems.find((item) => item.key === activeTab) || navItems[0];
 
   if (!isAuthenticated || !isAdmin) {
@@ -77,13 +79,7 @@ export default function AdminConsole() {
     }
 
     if (activeTab === "admins") {
-      return (
-        <UsersPanel
-          roleFilter="admin"
-          title="Quan ly Admin"
-          description="Danh sach cac tai khoan admin hien co, dung de doi chieu quyen truy cap va phan cong van hanh."
-        />
-      );
+      return <AdminManagersPanel currentUser={currentUser} />;
     }
 
     if (activeTab === "users") {
@@ -115,13 +111,17 @@ export default function AdminConsole() {
           activeKey={activeTab}
           onSelect={setActiveTab}
           currentUser={currentUser}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
-        <div className="flex min-w-0 flex-1 flex-col lg:pl-72">
+        <div className={`flex min-w-0 flex-1 flex-col ${isSidebarOpen ? "lg:pl-72" : "lg:pl-0"}`}>
           <AdminTopbar
             title={activeItem.label}
             description={activeItem.description}
             currentUser={currentUser}
+            isSidebarOpen={isSidebarOpen}
+            onToggleSidebar={() => setIsSidebarOpen((currentValue) => !currentValue)}
           />
 
           <main className="flex-1 p-4 md:p-6">{renderActivePanel()}</main>
