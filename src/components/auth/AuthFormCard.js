@@ -12,21 +12,17 @@ export default function AuthFormCard({ mode }) {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
-    fullName: "",
+    fullName: "", // Thêm lại Họ và tên
     email: "",
-    phoneNumber: "",
-    avatarUrl: "",
     password: "",
+    confirmPassword: "", // Nhập lại mật khẩu
   });
 
   const isRegister = mode === "register";
   const passwordCheck = checkPasswordStrength(form.password);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
-
+    if (!isAuthenticated) return;
     router.replace(currentUser?.role === "admin" ? "/quan-tri" : "/tai-khoan");
   }, [currentUser?.role, isAuthenticated, router]);
 
@@ -40,15 +36,19 @@ export default function AuthFormCard({ mode }) {
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
-    setIsSubmitting(true);
 
+    // Kiểm tra khớp mật khẩu khi đăng ký
+    if (isRegister && form.password !== form.confirmPassword) {
+      setError("Mật khẩu nhập lại không khớp.");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       if (isRegister) {
         await register({
           fullName: form.fullName,
           email: form.email,
-          phoneNumber: form.phoneNumber,
-          avatarUrl: form.avatarUrl,
           password: form.password,
         });
       } else {
@@ -58,7 +58,7 @@ export default function AuthFormCard({ mode }) {
         });
       }
     } catch (submitError) {
-      setError(submitError.message || "Khong xu ly duoc yeu cau dang nhap.");
+      setError(submitError.message || "Không xử lý được yêu cầu.");
     } finally {
       setIsSubmitting(false);
     }
@@ -66,32 +66,30 @@ export default function AuthFormCard({ mode }) {
 
   return (
     <div className="mx-auto max-w-xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg md:p-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-700">
-        {isRegister ? "Đăng ký tài khoản" : "Đăng nhập hệ thống"}
-      </p>
-      <h1 className="mt-3 font-display text-4xl text-slate-900">
-        {isRegister ? "Bắt đầu với chúng tôi" : "Chào mừng quay trở lại"}
+      <h1 className="mt-3 text-center font-display text-4xl text-slate-900">
+        {isRegister ? "Đăng ký" : "Đăng nhập"}
       </h1>
-      <p className="mt-3 text-sm leading-6 text-slate-600">
-        {isRegister
-          ? ""
-          : ""}
-      </p>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        {isRegister ? (
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4" >
+
+        {/* Ô họ tên */}
+        {isRegister && (
           <label className="block text-sm font-medium text-slate-700">
             Họ và tên
             <input
+              type="text"
               value={form.fullName}
               onChange={(event) => updateField("fullName", event.target.value)}
               className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-              placeholder=""
+              placeholder="Nhập họ tên của bạn"
               required
+              onInvalid={(e) => e.target.setCustomValidity("Vui lòng nhập trường này.")}
+              onInput={(e) => e.target.setCustomValidity("")}
             />
           </label>
-        ) : null}
+        )}
 
+        {/* Ô email */}
         <label className="block text-sm font-medium text-slate-700">
           Email
           <input
@@ -99,83 +97,69 @@ export default function AuthFormCard({ mode }) {
             value={form.email}
             onChange={(event) => updateField("email", event.target.value)}
             className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-            placeholder=""
+            placeholder="example@gmail.com"
             required
+
+            /* Chèn 2 dòng này vào giữa thẻ input */
+            onInvalid={(e) => e.target.setCustomValidity("Vui lòng nhập đúng định dạng email (ví dụ: abc@gmail.com).")}
+            onInput={(e) => e.target.setCustomValidity("")}
           />
         </label>
 
-        {isRegister ? (
-          <>
-            <label className="block text-sm font-medium text-slate-700">
-              Số điện thoại
-              <input
-                value={form.phoneNumber}
-                onChange={(event) => updateField("phoneNumber", event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-                placeholder=""
-              />
-            </label>
+        {/* Ô mk */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700">
+            Mật khẩu
+            <input
+              type="password"
+              value={form.password}
+              onChange={(event) => updateField("password", event.target.value)}
+              className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
+              required
+            />
+          </label>
+          {!isRegister && (
+            <div className="mt-2 flex justify-end">
+              <Link href="/quen-mat-khau" className="text-sm font-semibold text-sky-700 hover:underline">
+                Quên mật khẩu?
+              </Link>
+            </div>
+          )}
+        </div>
 
-            {/* <label className="block text-sm font-medium text-slate-700">
-              Avatar URL
-              <input
-                value={form.avatarUrl}
-                onChange={(event) => updateField("avatarUrl", event.target.value)}
-                className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-                placeholder="https://..."
-              />
-            </label> */}
-          </>
-        ) : null}
+        {/* Nhập lại mk */}
+        {isRegister && (
+          <label className="block text-sm font-medium text-slate-700">
+            Nhập lại mật khẩu
+            <input
+              type="password"
+              value={form.confirmPassword}
+              onChange={(event) => updateField("confirmPassword", event.target.value)}
+              className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
+              required
+            />
+          </label>
+        )}
 
-        <label className="block text-sm font-medium text-slate-700">
-          Mật khẩu
-          <input
-            type="password"
-            value={form.password}
-            onChange={(event) => updateField("password", event.target.value)}
-            className="mt-1 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-sky-300 focus:bg-white"
-            placeholder=""
-            required
-          />
-        </label>
-
-        {isRegister ? (
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            <p className="font-semibold text-slate-900">Kiem tra mat khau</p>
-            <p className="mt-1">
-              {passwordCheck.valid
-                ? "Mat khau dat dieu kien co ban."
-                : passwordCheck.issues.join(" - ")}
-            </p>
-          </div>
-        ) : null}
-
-        {error ? (
+        {/* tbao lỗi */}
+        {error && (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
             {error}
           </div>
-        ) : null}
+        )}
 
         <button
           type="submit"
           disabled={isSubmitting || (isRegister && !passwordCheck.valid)}
-          className="w-full rounded-2xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+          className="w-full rounded-2xl bg-sky-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-sky-800 disabled:bg-slate-300"
         >
-          {isSubmitting
-            ? "Đang xử lýccccccccccccccccccccccccccc"
-            : isRegister
-              ? "Tạo tài khoản"
-              : "Đăng nhập"}
+          {isSubmitting ? "Đang xử lý" : isRegister ? "Tạo tài khoản" : "Đăng nhập"}
         </button>
       </form>
 
-      <p className="mt-6 text-sm text-slate-600">
+      <p className="mt-6 text-center text-sm text-slate-600">
         {isRegister ? "Đã có tài khoản ?" : "Chưa có tài khoản ?"}{" "}
-        <Link
-          href={isRegister ? "/dang-nhap" : "/dang-ky"}
-          className="font-semibold text-sky-800"
-        >
+        <Link href={isRegister ? "/dang-nhap" : "/dang-ky"} className="font-semibold text-sky-800">
           {isRegister ? "Đăng nhập ngay" : "Đăng ký ngay"}
         </Link>
       </p>

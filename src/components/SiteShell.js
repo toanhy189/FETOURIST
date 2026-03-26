@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import HeaderActions from "@/components/HeaderActions";
@@ -14,9 +15,31 @@ export default function SiteShell({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/quan-tri");
 
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
   if (isAdminRoute) {
     return <div className="min-h-screen bg-slate-100 text-slate-900">{children}</div>;
   }
+
+  // Hàm phụ trợ để kiểm tra xem một nút có đang active hay không
+  const isActiveRoute = (route) => pathname === route;
 
   return (
     <div className="min-h-screen text-slate-900">
