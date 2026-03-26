@@ -4,7 +4,35 @@ import { useEffect, useState } from "react";
 import { getUsers } from "@/apiService/auth";
 import { formatDateTimeVi } from "@/utils/format";
 
-export default function UsersPanel() {
+function getDefaultTitle(roleFilter) {
+  if (roleFilter === "admin") {
+    return "Danh sach admin";
+  }
+
+  if (roleFilter === "user") {
+    return "Nguoi dung he thong";
+  }
+
+  return "Tai khoan he thong";
+}
+
+function getDefaultDescription(roleFilter) {
+  if (roleFilter === "admin") {
+    return "Tong hop cac tai khoan role admin dang duoc cap quyen trong BETOURIST.";
+  }
+
+  if (roleFilter === "user") {
+    return "Danh sach nguoi dung cuoi va thong tin lien lac co the phuc vu booking.";
+  }
+
+  return "Panel nay dang goi `/api/auth/users` de liet ke toan bo user.";
+}
+
+export default function UsersPanel({
+  roleFilter = null,
+  title = null,
+  description = null,
+}) {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,13 +54,17 @@ export default function UsersPanel() {
     loadUsers();
   }, []);
 
+  const visibleUsers = roleFilter ? users.filter((user) => user.role === roleFilter) : users;
+  const resolvedTitle = title || getDefaultTitle(roleFilter);
+  const resolvedDescription = description || getDefaultDescription(roleFilter);
+
   return (
     <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-3xl text-slate-900">Nguoi dung he thong</h2>
+          <h2 className="font-display text-3xl text-slate-900">{resolvedTitle}</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">
-            Panel nay dang goi `/api/auth/users` de liet ke toan bo user.
+            {resolvedDescription}
           </p>
         </div>
         <button
@@ -53,8 +85,12 @@ export default function UsersPanel() {
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {loading ? (
           <p className="text-sm text-slate-500">Dang tai users...</p>
+        ) : visibleUsers.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-500">
+            Chua co tai khoan nao phu hop voi bo loc hien tai.
+          </div>
         ) : (
-          users.map((user) => (
+          visibleUsers.map((user) => (
             <article
               key={user.id}
               className="rounded-3xl border border-slate-200 bg-slate-50 p-5"
