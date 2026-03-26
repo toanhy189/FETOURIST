@@ -101,7 +101,7 @@ export default function AuthFormCard({ mode }) {
             required
 
             /* Chèn 2 dòng này vào giữa thẻ input */
-            onInvalid={(e) => e.target.setCustomValidity("Vui lòng nhập đúng định dạng email (ví dụ: abc@gmail.com).")}
+            onInvalid={(e) => e.target.setCustomValidity("Vui lòng nhập đúng định dạng email (ví dụ: example@gmail.com).")}
             onInput={(e) => e.target.setCustomValidity("")}
           />
         </label>
