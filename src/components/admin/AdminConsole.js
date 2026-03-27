@@ -86,8 +86,7 @@ export default function AdminConsole() {
       return (
         <UsersPanel
           roleFilter="user"
-          title="Quan ly nguoi dung"
-          description="Tong hop toan bo tai khoan user dang ky, ho tro doi sales va CSKH tra cuu nhanh thong tin khach."
+          title="Quản lý người dùng"
         />
       );
     }
