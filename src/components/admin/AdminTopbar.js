@@ -21,16 +21,57 @@ function getInitials(fullName) {
 
 function NotificationIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current">
-      <path d="M12 3a4 4 0 0 0-4 4v1.1c0 .7-.2 1.4-.6 2L6 12.6c-.5.8 0 1.9 1 1.9h10c1 0 1.5-1.1 1-1.9l-1.4-2.5c-.4-.6-.6-1.3-.6-2V7a4 4 0 0 0-4-4Zm0 18a2.7 2.7 0 0 0 2.5-1.7h-5A2.7 2.7 0 0 0 12 21Z" />
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M15 17H5.8a1 1 0 0 1-.8-1.6l1.4-1.9a4.5 4.5 0 0 0 .9-2.7V9.9a4.7 4.7 0 1 1 9.4 0v.9a4.5 4.5 0 0 0 .9 2.7" />
+      <path d="M9.5 20a2.4 2.4 0 0 0 4.3 0" />
+      <path d="M18 8.5a2.7 2.7 0 0 1 0 5.3" />
+    </svg>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 7h16" />
+      <path d="M4 12h16" />
+      <path d="M4 17h16" />
     </svg>
   );
 }
 
 function LogoutIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-current">
-      <path d="M10 4a1 1 0 0 1 0 2H6v12h4a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5Zm6.3 3.3a1 1 0 0 1 1.4 0l4 4a1 1 0 0 1 0 1.4l-4 4a1 1 0 1 1-1.4-1.4l2.3-2.3H9a1 1 0 1 1 0-2h9.6l-2.3-2.3a1 1 0 0 1 0-1.4Z" />
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.9"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M14 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 16l4-4-4-4" />
+      <path d="M14 12H4" />
     </svg>
   );
 }
@@ -42,9 +83,8 @@ function NotificationItem({
 }) {
   return (
     <article
-      className={`border-b border-slate-200 px-5 py-4 transition ${
-        notification.isRead ? "bg-white" : "bg-sky-50/60"
-      }`}
+      className={`border-b border-slate-200 px-5 py-4 transition ${notification.isRead ? "bg-white" : "bg-sky-50/60"
+        }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -73,7 +113,13 @@ function NotificationItem({
   );
 }
 
-export default function AdminTopbar({ title, description, currentUser }) {
+export default function AdminTopbar({
+  title,
+  description,
+  currentUser,
+  isSidebarOpen,
+  onToggleSidebar,
+}) {
   const router = useRouter();
   const dropdownRef = useRef(null);
   const currentName = currentUser?.fullName || "Admin BETOURIST";
@@ -123,7 +169,7 @@ export default function AdminTopbar({ title, description, currentUser }) {
       setNotifications(result.notifications || []);
       return result.notifications || [];
     } catch (error) {
-      setNotificationError(error.message || "Khong tai duoc thong bao.");
+      setNotificationError(error.message || "Không tải được thông báo");
       return [];
     } finally {
       setIsNotificationLoading(false);
@@ -154,7 +200,7 @@ export default function AdminTopbar({ title, description, currentUser }) {
       );
       await refreshNotifications();
     } catch (error) {
-      setNotificationError(error.message || "Khong cap nhat duoc thong bao.");
+      setNotificationError(error.message || "Không cập nhật được thông báo");
     } finally {
       setLoadingKey("");
     }
@@ -174,7 +220,7 @@ export default function AdminTopbar({ title, description, currentUser }) {
       );
       await refreshNotifications();
     } catch (error) {
-      setNotificationError(error.message || "Khong cap nhat duoc tat ca thong bao.");
+      setNotificationError(error.message || "Không cập nhật được tất cả thông báo");
     } finally {
       setLoadingKey("");
     }
@@ -187,23 +233,23 @@ export default function AdminTopbar({ title, description, currentUser }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/95 backdrop-blur">
-      <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4 md:px-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600">
-            <div className="space-y-1.5">
-              <span className="block h-0.5 w-5 rounded-full bg-current" />
-              <span className="block h-0.5 w-5 rounded-full bg-current" />
-              <span className="block h-0.5 w-5 rounded-full bg-current" />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-700">
-              Admin Workspace
-            </p>
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900">{title}</h2>
-            <p className="max-w-3xl text-sm leading-6 text-slate-500">{description}</p>
-          </div>
+    <header className="sticky top-0 z-20 border-b border-[#cfdbed] bg-[#dfe9f8]/95 backdrop-blur">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border text-slate-700 shadow-sm transition ${isSidebarOpen
+                ? "border-[#c1d1e8] bg-white text-slate-900"
+                : "border-transparent bg-white/75 hover:border-[#c1d1e8] hover:bg-white"
+              }`}
+            aria-label={isSidebarOpen ? "Đóng sidebar" : "Mở sidebar"}
+            aria-pressed={isSidebarOpen}
+          >
+            <MenuIcon />
+          </button>
+
+
         </div>
 
         <div className="flex items-center gap-3">
@@ -211,27 +257,31 @@ export default function AdminTopbar({ title, description, currentUser }) {
             <button
               type="button"
               onClick={handleToggleNotifications}
-              className="relative flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:border-sky-300 hover:text-sky-800"
+              className={`relative flex h-11 w-11 items-center justify-center rounded-xl border bg-white/90 text-slate-600 shadow-sm transition ${isNotificationOpen
+                  ? "border-sky-300 text-sky-800"
+                  : "border-[#c9d8eb] hover:border-sky-300 hover:text-sky-800"
+                }`}
               aria-expanded={isNotificationOpen}
               aria-haspopup="dialog"
+              aria-label="Thông báo"
             >
               <NotificationIcon />
               {notificationCount > 0 ? (
-                <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-sky-600 px-1.5 text-[11px] font-semibold text-white">
+                <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-slate-900 px-1.5 text-[10px] font-semibold text-white shadow-sm">
                   {notificationCount > 9 ? "9+" : notificationCount}
                 </span>
               ) : null}
             </button>
 
             {isNotificationOpen ? (
-              <div className="absolute right-0 top-[calc(100%+12px)] z-30 w-[min(92vw,420px)] overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+              <div className="absolute right-0 top-[calc(100%+14px)] z-30 w-[min(92vw,420px)] overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
                 <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
                   <div>
-                    <h3 className="text-xl font-semibold text-slate-900">Thong bao</h3>
+                    <h3 className="text-xl font-semibold text-slate-900">Thông báo</h3>
                     <p className="mt-1 text-sm text-slate-500">
                       {notificationCount > 0
-                        ? `${notificationCount} thong bao chua doc`
-                        : "Ban da doc het thong bao"}
+                        ? `${notificationCount} thông báo chưa đọc`
+                        : "Bạn đã đọc hết thông báo"}
                     </p>
                   </div>
                   <button
@@ -240,7 +290,7 @@ export default function AdminTopbar({ title, description, currentUser }) {
                     disabled={loadingKey === "notification-all" || notifications.length === 0}
                     className="text-sm font-semibold text-sky-700 transition hover:text-sky-900 disabled:cursor-not-allowed disabled:text-slate-300"
                   >
-                    {loadingKey === "notification-all" ? "Dang luu..." : "Danh dau tat ca la da doc"}
+                    {loadingKey === "notification-all" ? "Đang lưu..." : "Đánh dấu tất cả là đã đọc"}
                   </button>
                 </div>
 
@@ -253,7 +303,7 @@ export default function AdminTopbar({ title, description, currentUser }) {
                 <div className="max-h-[420px] overflow-y-auto">
                   {isNotificationLoading ? (
                     <div className="px-5 py-8 text-center text-sm text-slate-500">
-                      Dang tai thong bao...
+                      Đang tải thông báo...
                     </div>
                   ) : notifications.length > 0 ? (
                     notifications.map((notification) => (
@@ -266,7 +316,7 @@ export default function AdminTopbar({ title, description, currentUser }) {
                     ))
                   ) : (
                     <div className="px-5 py-10 text-center text-sm text-slate-500">
-                      Chua co thong bao nao trong he thong.
+                      Chưa có thông báo nào trong hệ thống
                     </div>
                   )}
                 </div>
@@ -274,23 +324,17 @@ export default function AdminTopbar({ title, description, currentUser }) {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <div className="text-right">
-              <p className="text-sm font-semibold text-slate-900">{currentName}</p>
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Admin</p>
-            </div>
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-sky-100 text-sm font-semibold text-sky-800">
-              {getInitials(currentName)}
-              <span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
-            </div>
+          <div className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-gradient-to-br from-[#f3c18d] via-[#f6d6af] to-[#d7e5f8] text-sm font-semibold text-slate-800 shadow-sm">
+            {getInitials(currentName)}
+            <span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#dfe9f8] bg-emerald-500" />
           </div>
 
           <button
             type="button"
             onClick={handleLogout}
-            className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:border-rose-300 hover:text-rose-700"
-            title="Dang xuat"
-            aria-label="Dang xuat"
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#c9d8eb] bg-white/90 text-slate-600 shadow-sm transition hover:border-rose-300 hover:text-rose-700"
+            title="Đăng xuất"
+            aria-label="Đăng xuất"
           >
             <LogoutIcon />
           </button>
