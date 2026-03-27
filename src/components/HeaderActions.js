@@ -31,13 +31,13 @@ export default function HeaderActions() {
           href="/dang-nhap"
           className="rounded-full border border-slate-200/80 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-sky-300 hover:text-sky-800"
         >
-          Dang nhap
+          Đăng nhập
         </Link>
         <Link
           href="/dang-ky"
           className="rounded-full bg-sky-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-800"
         >
-          Dang ky
+          Đăng ký
         </Link>
       </div>
     );
