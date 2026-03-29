@@ -4,12 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import HeaderActions from "@/components/HeaderActions";
-
-const navItems = [
-  { href: "/", label: "Trang chủ" },
-  { href: "/danh-muc", label: "Khám phá Tour" },
-  { href: "/tai-khoan", label: "Tài Khoản" },
-];
+import TourMegaMenu from "./header/TourMegaMenu"; 
+import Footer from "./footer/Footer";
 
 export default function SiteShell({ children }) {
   const pathname = usePathname();
@@ -42,54 +38,94 @@ export default function SiteShell({ children }) {
   const isActiveRoute = (route) => pathname === route;
 
   return (
-    <div className="min-h-screen text-slate-900">
-      {/* 1. Header bao ngoài: flex, justify-between để đẩy Logo & Cụm phải ra 2 đầu */}
-      <header className="sticky top-0 z-40 border-b border-sky-100/70 bg-white/85 backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-6 py-3 md:px-10">
+    <div className="min-h-screen text-slate-900 flex flex-col">
+      <header
+        className={`fixed left-0 right-0 top-0 z-50 w-full border-b border-sky-100/70 bg-white/85 backdrop-blur-xl transition-transform duration-300 ease-in-out ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 md:px-8">
           
-          {/* KHỐI 1 (Bên trái): Logo & Title */}
-          <div className="flex flex-col shrink-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-sky-700">
+          {/* LOGO */}
+          <div className="flex flex-col space-y-0.5">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-sky-700">
               Travel Website
             </p>
-            <Link href="/" className="font-display text-2xl font-bold text-sky-950">
+            <Link href="/" className="font-display text-2xl font-bold text-sky-900">
               BETOURIST
             </Link>
           </div>
 
-          {/* KHỐI 2 (Ở giữa): Menu "Viên thuốc" (Chìa khóa nằm ở đây) */}
-          {/* hidden md:flex: Ẩn trên mobi, hiện trên máy tính */}
-          <nav className="hidden md:flex items-center gap-1 rounded-full bg-slate-100/70 p-1.5 border border-slate-200/50 shadow-inner">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                // Class cho từng item menu: rounded-full để bo tròn khi hover
-                className="rounded-full px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-white hover:text-sky-800 hover:shadow-sm"
-              >
-                {item.label}
-              </Link>
-            ))}
+          {/* THANH MENU (PILL SHAPE) */}
+          <nav className="hidden md:flex items-center rounded-full border border-slate-200/80 bg-slate-50/50 p-1 shadow-sm">
+            
+            {/* Nút: Trang Chủ */}
+            <Link
+              href="/"
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                isActiveRoute("/")
+                  ? "bg-sky-600 text-white shadow-md" 
+                  : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
+              }`}
+            >
+              Trang Chủ
+            </Link>
+
+            {/* Nút: Giới thiệu */}
+            <Link
+              href="/gioi-thieu"
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                isActiveRoute("/gioi-thieu")
+                  ? "bg-sky-600 text-white shadow-md" 
+                  : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
+              }`}
+            >
+              Giới thiệu
+            </Link>
+
+            {/* Nút: Mega Menu của phần Tour */}
+            {/* TourMegaMenu tự định dạng style bên trong nó để đồng bộ với thanh menu này */}
+            <TourMegaMenu />
+
+            {/* Nút: Điểm đến */}
+            <Link
+              href="/diem-den"
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                isActiveRoute("/diem-den")
+                  ? "bg-sky-600 text-white shadow-md" 
+                  : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
+              }`}
+            >
+              Điểm đến
+            </Link>
+
+            {/* Nút: Liên hệ */}
+            <Link
+              href="/lien-he"
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                isActiveRoute("/lien-he")
+                  ? "bg-sky-600 text-white shadow-md" 
+                  : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
+              }`}
+            >
+              Liên hệ
+            </Link>
+
           </nav>
 
-          {/* KHỐI 3 (Bên phải): Cụm nút bấm Login/Register (HeaderActions) */}
-          <div className="flex shrink-0">
-             <HeaderActions />
+          {/* NÚT ACTIONS BÊN PHẢI */}
+          <div className="flex items-center gap-3">
+            <HeaderActions />
           </div>
-
+          
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 pb-16 pt-8 md:px-10">
+      <main className="mx-auto flex-grow w-full max-w-6xl px-4 pb-16 pt-24 md:px-8">
         {children}
       </main>
 
-      <footer className="border-t border-sky-100 bg-white/90">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-6 py-8 text-sm text-slate-500 md:px-10">
-          <p className="font-display text-lg text-slate-700">BETOURIST Frontend Demo</p>
-          <p>Giao dien Next.js co ket noi du lieu that tu backend BETOURIST qua folder apiService.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

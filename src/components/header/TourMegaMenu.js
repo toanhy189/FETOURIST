@@ -2,37 +2,24 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-// Nhớ thay đổi đường dẫn import này cho đúng với cấu trúc thư mục của bạn
 import { getCategories } from "../../apiService/categories.js"; 
-import { getTours } from "../../apiService/tours.js"; 
 
 export default function TourMegaMenu() {
   const [categories, setCategories] = useState([]);
-  const [tours, setTours] = useState([]);
   const [activeParent, setActiveParent] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Gọi song song 2 hàm từ file API service của bạn
-        const [catRes, tourRes] = await Promise.all([
-          getCategories({ limit: 500 }),
-          getTours({ limit: 500 })
-        ]);
-
-        // Dữ liệu đã được map sẵn qua mapCategory và mapTour trong service
+        const catRes = await getCategories({ limit: 500 });
         const fetchedCategories = catRes.categories || [];
-        const fetchedTours = tourRes.tours || [];
 
         if (fetchedCategories.length > 0) {
           setCategories(fetchedCategories);
-          setTours(fetchedTours);
-          
-          // Lọc ra các danh mục cha (parentCategory là null)
           const parents = fetchedCategories.filter((cat) => !cat.parentCategory);
           if (parents.length > 0) {
-            setActiveParent(parents[0]); // Mặc định hover vào cha đầu tiên
+            setActiveParent(parents[0]);
           }
         }
       } catch (error) {
@@ -45,25 +32,11 @@ export default function TourMegaMenu() {
     fetchData();
   }, []);
 
-  // Tách riêng danh sách danh mục cha cho cột trái
   const parentCategories = categories.filter((cat) => !cat.parentCategory);
 
-  // Lọc danh sách Tour hiển thị bên cột phải
-  const displayTours = tours.filter((tour) => {
-    if (!activeParent || !tour.category) return false;
-    
-    // Sử dụng .id thay vì ._id vì dữ liệu đã đi qua hàm mapTour/mapCategory
-    const tourCategoryId = tour.category.id;
-    const activeParentId = activeParent.id;
-
-    // Lấy danh sách ID của các category con thuộc category cha này
-    const childCategoryIds = categories
-      .filter(cat => cat.parentCategory && cat.parentCategory.id === activeParentId)
-      .map(cat => cat.id);
-
-    // Trả về tour nếu nó thuộc category cha HOẶC thuộc một trong các category con
-    return tourCategoryId === activeParentId || childCategoryIds.includes(tourCategoryId);
-  });
+  const childCategories = categories.filter(
+    (cat) => cat.parentCategory && cat.parentCategory.id === activeParent?.id
+  );
 
   return (
     <div className="group relative">
@@ -106,43 +79,42 @@ export default function TourMegaMenu() {
             )}
           </div>
 
-          {/* Cột phải: Danh sách Tours thuộc danh mục đang hover */}
+          {/* Cột phải: Danh sách Category con */}
           <div className="w-2/3 flex flex-col p-6">
             <h3 className="mb-4 border-b border-slate-100 pb-3 font-display text-lg font-bold text-sky-900">
-              Các Tour {activeParent?.name || "Đang tải..."}
+              {activeParent?.name || "Đang tải..."}
             </h3>
-            
-            {/* Vùng hiển thị Tours: chia làm 2 cột */}
+
             <div className="flex-1">
-              {displayTours.length > 0 ? (
-                <ul className="columns-2 gap-x-8 space-y-3">
-                  {displayTours.slice(0, 10).map((tour) => ( 
-                    <li key={tour.id} className="break-inside-avoid">
+              {childCategories.length > 0 ? (
+                <ul className="columns-2 gap-x-8 space-y-1">
+                  {childCategories.map((child) => (
+                    <li key={child.id} className="break-inside-avoid">
                       <Link
-                        href={`/tours/${tour.slug || tour.id}`} 
-                        className="block text-sm text-slate-600 transition-colors hover:text-sky-600 hover:underline line-clamp-2"
-                        title={tour.title}
+                        href={`/danh-muc?category=${child.slug || child.id}`}
+                        className="flex items-center gap-2 py-2 text-sm text-slate-600 transition-colors hover:text-sky-600 hover:underline"
                       >
-                        {tour.title}
+                        <span className="text-sky-400">›</span>
+                        {child.name}
                       </Link>
                     </li>
                   ))}
                 </ul>
               ) : (
                 <p className="text-sm italic text-slate-400">
-                  {isLoading ? "" : "Chưa có tour nào trong danh mục này."}
+                  {isLoading ? "" : "Chưa có danh mục con nào."}
                 </p>
               )}
             </div>
-            
+
             {/* Nút xem tất cả */}
             {activeParent && (
               <div className="mt-6 pt-4 border-t border-slate-100">
-                <Link 
-                  href={`/danh-muc/${activeParent.slug || activeParent.id}`}
+                <Link
+                  href={`/danh-muc?category=${activeParent.slug || activeParent.id}`}
                   className="inline-flex items-center text-sm font-semibold text-sky-600 transition-colors hover:text-sky-800"
                 >
-                  Xem tất cả tour {activeParent.name.toLowerCase()} 
+                  Xem tất cả {activeParent.name.toLowerCase()}
                   <span className="ml-1">→</span>
                 </Link>
               </div>

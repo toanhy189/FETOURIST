@@ -12,12 +12,13 @@ import { useAppContext } from "@/components/providers/AppProvider";
 import { getAnonymousId } from "@/utils/anonymousUtils";
 import { cn } from "@/utils/cn";
 import { formatDateVi, formatVnd } from "@/utils/format";
-
+import { createPaymentSession } from "@/apiService/payments";
 const paymentMethods = [
   { value: "cash", label: "Tien mat" },
   { value: "bank_transfer", label: "Chuyen khoan" },
   { value: "credit_card", label: "The tin dung" },
   { value: "e_wallet", label: "Vi dien tu" },
+  { value: "vnpay", label: "VNPay" },
 ];
 
 const initialGuestForm = {
@@ -228,8 +229,23 @@ export default function TourBookingSidebar({ tour }) {
 
       setLatestBooking(booking);
       setBookingPreview(null);
-      pushFeedback(`Da tao booking ${booking.orderCode}. Ban co the theo doi trong trang tai khoan.`);
       await Promise.allSettled([loadDepartures(), refreshNotifications()]);
+      if (bookingForm.paymentMethod === "vnpay") {
+        pushFeedback("Đang chuyển hướng sang cổng thanh toán VNPay...");
+
+        const paymentSession = await createPaymentSession({
+          bookingIdOrCode: booking.orderCode,
+          method: "vnpay",
+          transactionType: bookingForm.depositAmount ? "deposit" : "full_payment"
+        });
+
+        // Chuyển hướng trình duyệt sang URL thanh toán của VNPay
+        if (paymentSession.paymentUrl) {
+          window.location.href = paymentSession.paymentUrl;
+          return; // Dừng luồng tại đây để trình duyệt chuyển hướng
+        }
+      }
+      pushFeedback(`Da tao booking ${booking.orderCode}. Ban co the theo doi trong trang tai khoan.`);
     } catch (actionError) {
       pushFeedback("", actionError.message || "Khong tao duoc booking.");
     } finally {

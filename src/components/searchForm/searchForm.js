@@ -1,17 +1,15 @@
-"use client"; // Thêm dòng này nếu bạn đang dùng Next.js App Router
+"use client";
 import React, { useState, useEffect } from 'react';
-import { getTours } from "@/apiService/tours"; // Đổi lại đường dẫn import file API của bạn cho đúng nhé
+import { getTours } from "@/apiService/tours"; 
 
 export default function SearchForm() {
   const [departureLocations, setDepartureLocations] = useState([]);
 
   useEffect(() => {
-    // Hàm fetch dữ liệu tours và lọc ra các điểm khởi hành
     const fetchLocations = async () => {
       try {
         const response = await getTours();
         if (response && response.tours) {
-          // Lấy ra danh sách các điểm khởi hành và loại bỏ các giá trị trùng lặp hoặc null
           const locations = response.tours
             .map(tour => tour.departureLocation)
             .filter((value, index, self) => value && self.indexOf(value) === index);
@@ -27,86 +25,84 @@ export default function SearchForm() {
   }, []);
 
   return (
-    
-    <section className="container mx-auto px-4 relative z-10 -mt-12 md:-mt-16">
-      <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-2 md:p-0 overflow-hidden max-w-[1200px] mx-auto">
-        {/* Tabs */}
-        <div className="flex overflow-x-auto hide-scrollbar border-b border-slate-100">
-          {['Visa', 'Tour trọn gói', 'Khách sạn', 'Vé máy bay', 'Combo', 'Dịch vụ cộng thêm'].map((tab, idx) => (
-            <button 
-              key={tab} 
-              className={`flex-shrink-0 px-6 py-4 text-sm font-semibold transition-colors flex items-center gap-2
-                ${idx === 1 ? 'text-sky-600 border-b-2 border-sky-600' : 'text-slate-600 hover:text-sky-600 hover:bg-slate-50'}`}
-            >
-              {idx === 0 && <span>🛂</span>}
-              {idx === 1 && <span>🧳</span>}
-              {idx === 2 && <span>🏨</span>}
-              {idx === 3 && <span>✈️</span>}
-              {idx === 4 && <span>🚗+🏨</span>}
-              {idx === 5 && <span>🍱</span>}
-              {tab}
-            </button>
-          ))}
+    <section className="container mx-auto px-4 relative z-10 -mt-[100px] md:-mt-[130px] lg:-mt-[150px]">
+      <div className="max-w-2xl">
+        
+        {/* --- Tiêu đề nằm trên form --- */}
+        <div className="mb-4 text-black drop-shadow-md px-1">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-1 tracking-wide leading-tight">
+            Hơn 1000+ Tour, Khám Phá Ngay
+          </h1>
+          <p className="text-sm md:text-base font-light opacity-90">
+            - Giá tốt – hỗ trợ 24/7 – khắp nơi .
+          </p>
         </div>
 
-        {/* Form Inputs */}
-        <form action="/danh-muc" className="flex flex-col md:flex-row items-center justify-between p-4 md:p-6 gap-4">
+        {/* --- Khung Form --- */}
+        <form action="/danh-muc" className="flex flex-col gap-2.5">
           
-          {/* CỘT MỚI: Khởi hành từ */}
-          <div className="flex-1 w-full border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 pr-0 md:pr-4">
-            <label className="block text-sm font-bold text-slate-800 mb-1">Khởi hành từ</label>
-            <select 
-              name="departure"
-              className="w-full text-slate-600 outline-none text-sm bg-transparent cursor-pointer"
-            >
-              <option value="">Chọn điểm khởi hành</option>
-              {departureLocations.map((location, index) => (
-                <option key={index} value={location}>
-                  {location}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* CỘT 2: Bạn muốn đi đâu */}
-          <div className="flex-1 w-full border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 px-0 md:px-4">
-            <label className="block text-sm font-bold text-slate-800 mb-1">Bạn muốn đi đâu? <span className="text-red-500">*</span></label>
+          {/* Hàng 1: Bạn muốn đi đâu */}
+          <div className="flex items-center bg-white rounded-lg px-4 py-3 shadow-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 text-slate-400 mr-3 shrink-0">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
             <input 
               type="text" 
               name="search"
-              placeholder="Khám phá cuộc phiêu lưu..." 
-              className="w-full text-slate-600 outline-none text-sm placeholder:text-slate-400 bg-transparent"
-              required
+              placeholder="Bạn muốn đi đâu?" 
+              className="w-full outline-none text-slate-700 bg-transparent placeholder:text-slate-400 text-sm"
             />
           </div>
 
-          {/* CỘT 3: Ngày đi */}
-          <div className="flex-1 w-full border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 px-0 md:px-4">
-            <label className="block text-sm font-bold text-slate-800 mb-1">Ngày đi</label>
-            <input 
-              type="date" 
-              name="date"
-              className="w-full text-slate-600 outline-none text-sm bg-transparent"
-            />
-          </div>
+          {/* Hàng 2: Ngày đi - Điểm khởi hành - Nút Tìm */}
+          <div className="flex gap-2.5">
+            
+            {/* Cột: Ngày khởi hành */}
+            <div className="flex-1 flex items-center bg-white rounded-lg px-4 py-2.5 shadow-xl min-w-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-slate-400 mr-2 shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+              </svg>
+              <div className="flex flex-col w-full min-w-0">
+                <span className="text-[10px] text-slate-400 leading-none mb-0.5">Ngày khởi hành</span>
+                <input 
+                  type="date" 
+                  name="date"
+                  placeholder="Linh hoạt"
+                  className="w-full text-slate-700 outline-none text-xs font-semibold bg-transparent cursor-pointer"
+                />
+              </div>
+            </div>
 
-          {/* CỘT 4: Ngân sách */}
-          <div className="flex-1 w-full pb-4 md:pb-0 px-0 md:px-4">
-            <label className="block text-sm font-bold text-slate-800 mb-1">Ngân sách</label>
-            <select name="budget" className="w-full text-slate-600 outline-none text-sm bg-transparent cursor-pointer">
-              <option value="">Chọn mức giá</option>
-              <option value="duoi-5-trieu">Dưới 5 triệu</option>
-              <option value="5-10-trieu">5 - 10 triệu</option>
-              <option value="tren-10-trieu">Trên 10 triệu</option>
-            </select>
-          </div>
+            {/* Cột: Khởi hành từ */}
+            <div className="flex-1 flex items-center bg-white rounded-lg px-4 py-2.5 shadow-xl min-w-0">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-slate-400 mr-2 shrink-0">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+              </svg>
+              <div className="flex flex-col w-full min-w-0">
+                <span className="text-[10px] text-slate-400 leading-none mb-0.5">Khởi hành từ</span>
+                <select 
+                  name="departure"
+                  className="w-full text-slate-700 outline-none text-xs font-semibold bg-transparent cursor-pointer"
+                >
+                  <option value="">Tất cả</option>
+                  {departureLocations.map((location, index) => (
+                    <option key={index} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-          {/* NÚT TÌM KIẾM */}
-          <button type="submit" className="w-full md:w-auto bg-slate-100 hover:bg-slate-200 text-slate-500 p-4 rounded-xl transition flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-          </button>
+            {/* Nút Tìm kiếm */}
+            <button 
+              type="submit" 
+              className="bg-[#ff8900] hover:bg-[#e67b00] active:bg-[#cc6e00] text-white font-bold px-8 py-2.5 rounded-lg transition-colors shadow-xl text-sm shrink-0"
+            >
+              Tìm
+            </button>
+
+          </div>
         </form>
       </div>
     </section>

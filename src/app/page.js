@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 async function loadHomePageData() {
   const [categoryResult, tourResult] = await Promise.allSettled([
-    getCategories({ limit: 50 }), 
+    getCategories({ limit: 50 }),
     getTours({ limit: 6, sortBy: "createdAt", sortOrder: "desc" }),
   ]);
 
@@ -32,29 +32,28 @@ const formatDate = (dateString) => {
 
 export default async function Home() {
   const { categories, featuredTours, errors } = await loadHomePageData();
-  
+
   const parentCategories = categories.filter((cat) => !cat.parentCategory);
 
   return (
     <div className="pb-10 bg-slate-50 min-h-screen">
-      
-      {/* --- BANNER KHU VỰC TRÊN CÙNG --- */}
-      <div className="w-[100vw] h-[200px] md:h-[280px] lg:h-[320px] relative left-1/2 -translate-x-1/2">
-        <Image 
+
+      {/* --- BANNER --- */}
+      <div className="w-screen relative left-1/2 -translate-x-1/2 h-[240px] md:h-[300px] lg:h-[340px] overflow-hidden">
+        <img
           src="/sl_260302_top-banner1.webp"
-          alt="Banner Khuyến Mãi" 
-          fill
-          className="object-cover object-center"
-          priority
+          alt="Banner"
+          className="w-full h-full object-cover object-center"
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
       </div>
 
-      {/* --- 1. KHUNG TÌM KIẾM --- */}
-      {/* Dùng relative, z-10 và -mt-16 (hoặc -mt-24) để kéo form đè lên banner */}
-      <SearchForm/>
 
-      {/* --- WRAPPER CHỨA CÁC NỘI DUNG BÊN DƯỚI --- */}
-      <div className="space-y-12 mt-12">
+      {/* --- SEARCH FORM đè lên banner --- */}
+      <SearchForm />
+
+      {/* --- NỘI DUNG BÊN DƯỚI --- */}
+      <div className="space-y-12 mt-14">
         {errors.length > 0 && (
           <section className="container mx-auto px-4">
             <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900">
@@ -63,7 +62,7 @@ export default async function Home() {
           </section>
         )}
 
-        {/* --- 2. DANH MỤC CHA --- */}
+        {/* --- DANH MỤC CHA --- */}
         <section className="container mx-auto px-4 space-y-6 mt-8">
           <h2 className="font-display text-2xl font-bold text-slate-800 uppercase text-center md:text-left">
             Khám Phá Danh Mục Nổi Bật
@@ -75,8 +74,8 @@ export default async function Home() {
                 href={`/danh-muc?category=${category.slug}`}
                 className="group relative h-64 md:h-80 w-full overflow-hidden rounded-2xl bg-slate-200 block shadow-md"
               >
-                <img 
-                  src={category.imageUrl || "https://placehold.co/600x400?text=No+Image"} 
+                <img
+                  src={category.imageUrl || "https://placehold.co/600x400?text=No+Image"}
                   alt={category.name}
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -91,30 +90,24 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* --- BANNER GIỮA TRANG --- */}
         <section className="container mx-auto px-4 my-16">
           <div className="relative w-full rounded-[2.5rem] overflow-hidden shadow-xl py-20 px-6 flex flex-col items-center justify-center text-center bg-white border border-slate-100">
-            
-            {/* Lớp nền sáng với gradient nhẹ nhàng */}
+
             <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-emerald-50/50 to-teal-100/30"></div>
-            
-            {/* Hiệu ứng ánh sáng trang trí (Glow nhạt) */}
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-teal-200/40 rounded-full blur-[100px] pointer-events-none"></div>
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-200/40 rounded-full blur-[100px] pointer-events-none"></div>
 
-            {/* Nội dung chính */}
             <div className="relative z-10 flex flex-col items-center gap-6">
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight drop-shadow-sm">
                 Khám phá muôn nơi cùng <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 drop-shadow-none">TRAVELPTIT</span>
               </h2>
-              
+
               <div className="flex flex-wrap items-center justify-center gap-3 text-slate-600 text-sm md:text-base font-medium">
                 <span>Website có</span>
-                
-                {/* Badge con số nổi bật (nền xanh nhạt, chữ xanh đậm) */}
                 <span className="bg-emerald-100 text-emerald-800 border border-emerald-200 px-5 py-2 rounded-full font-bold shadow-sm">
                   24,080+
                 </span>
-                
                 <span>điểm đến phổ biến nhất mà bạn sẽ nhớ mãi</span>
               </div>
             </div>
@@ -122,26 +115,26 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* --- 3. DANH SÁCH TOUR --- */}
+        {/* --- DANH SÁCH TOUR NỔI BẬT --- */}
         <section className="container mx-auto px-4 space-y-6">
           <h2 className="font-display text-2xl font-bold text-slate-800 uppercase text-center md:text-left">
             Tour nổi bật
           </h2>
-          
+
           {featuredTours.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredTours.map((tour) => (
                 <div key={tour.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl transition-shadow overflow-hidden flex flex-col relative group">
-                  
+
                   <div className="relative h-56 w-full">
                     <Link href={`/tours/${tour.slug}`}>
-                      <img 
-                        src={tour.imageUrl || "https://placehold.co/600x400?text=No+Image"} 
+                      <img
+                        src={tour.imageUrl || "https://placehold.co/600x400?text=No+Image"}
                         alt={tour.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </Link>
-                    
+
                     <button className="absolute top-3 left-3 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40 transition">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
@@ -165,10 +158,10 @@ export default async function Home() {
                         {tour.title}
                       </h3>
                     </Link>
-                    
+
                     <div className="text-xs text-slate-500 flex items-center gap-1.5">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z" /></svg>
-                       <span className="truncate">{tour.slug?.toUpperCase() || tour.id}</span>
+                      <span className="truncate">{tour.slug?.toUpperCase() || tour.id}</span>
                     </div>
 
                     <div className="text-sm text-slate-600 flex items-center gap-1.5">
@@ -202,8 +195,8 @@ export default async function Home() {
                         {formatPrice(tour.displayPrice)}
                       </div>
                     </div>
-                    
-                    <Link 
+
+                    <Link
                       href={`/tours/${tour.slug}`}
                       className="border border-red-500 text-red-600 px-5 py-2 rounded-md font-semibold text-sm hover:bg-red-50 transition-colors"
                     >
