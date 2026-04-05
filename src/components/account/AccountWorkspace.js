@@ -291,7 +291,7 @@ export default function AccountWorkspace() {
         <Card
           title="Tong quan tai khoan"
           description="So lieu nay dang duoc tong hop tu booking, payment, favorite va notification."
-          action={isAdmin ? <Link href="/quan-tri" className="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-800">Mo quan tri</Link> : null}
+          action={isAdmin ? <Link href="/admin" className="rounded-full border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-800">Mo quan tri</Link> : null}
         >
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-2xl bg-slate-50 p-4"><p className="text-xs text-slate-400">Tong booking</p><p className="mt-2 text-3xl font-bold text-slate-900">{history.summary?.totalBookings || 0}</p></div>

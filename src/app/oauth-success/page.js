@@ -25,7 +25,7 @@ export default function OAuthSuccessPage() {
         try {
           // 2. Gọi fetchMe() để đồng bộ thông tin user từ backend về frontend
           await fetchMe();
-          
+
           // 3. Xong xuôi thì nhảy về trang chủ, trigger useEffect của AuthForm/AppProvider
           // Cập nhật URL cứng hoặc dùng router (khuyến nghị dùng window.location.href để force re-mount AppProvider lấy state mới)
           window.location.href = "/";

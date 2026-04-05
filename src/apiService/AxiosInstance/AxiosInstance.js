@@ -23,6 +23,63 @@ function parsePayloadSafely(value) {
   }
 }
 
+function extractApiErrorDetail(details) {
+  if (!details) {
+    return "";
+  }
+
+  if (typeof details === "string") {
+    return details.trim();
+  }
+
+  if (Array.isArray(details)) {
+    return details.map(extractApiErrorDetail).find(Boolean) || "";
+  }
+
+  if (typeof details === "object") {
+    if (typeof details.message === "string" && details.message.trim()) {
+      return details.message.trim();
+    }
+
+    if (typeof details.msg === "string" && details.msg.trim()) {
+      return details.msg.trim();
+    }
+
+    return (
+      Object.values(details)
+        .map((item) => {
+          if (!item || typeof item !== "object") {
+            return extractApiErrorDetail(item);
+          }
+
+          if (typeof item.properties?.message === "string" && item.properties.message.trim()) {
+            return item.properties.message.trim();
+          }
+
+          return extractApiErrorDetail(item.message || item.reason || item);
+        })
+        .find(Boolean) || ""
+    );
+  }
+
+  return "";
+}
+
+function buildApiErrorMessage(payload) {
+  const baseMessage = payload?.message || "Khong the xu ly yeu cau.";
+  const detailMessage = extractApiErrorDetail(payload?.errorDetails);
+
+  if (!detailMessage || detailMessage === baseMessage) {
+    return baseMessage;
+  }
+
+  if (baseMessage === "Du lieu tour khong hop le.") {
+    return detailMessage;
+  }
+
+  return `${baseMessage} ${detailMessage}`;
+}
+
 export function readStoredSession() {
   if (!isBrowser()) {
     return {
@@ -77,7 +134,7 @@ async function parseApiResponse(response) {
   const payload = await response.json().catch(() => null);
 
   if (!response.ok || !payload?.success) {
-    const error = new Error(payload?.message || "Khong the xu ly yeu cau.");
+    const error = new Error(buildApiErrorMessage(payload));
     error.status = response.status;
     error.payload = payload;
     throw error;

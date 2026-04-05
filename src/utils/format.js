@@ -3,6 +3,25 @@ const vndFormatter = new Intl.NumberFormat("vi-VN", {
   currency: "VND",
   maximumFractionDigits: 0,
 });
+const shortDateFormatter = new Intl.DateTimeFormat("vi-VN", {
+  day: "2-digit",
+  month: "2-digit",
+});
+const shortDateWithYearFormatter = new Intl.DateTimeFormat("vi-VN", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
+const WEEKDAY_LABELS = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+function toDateSafely(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
 
 export function formatVnd(value) {
   if (typeof value !== "number" || Number.isNaN(value)) {
@@ -13,12 +32,8 @@ export function formatVnd(value) {
 }
 
 export function formatDateVi(value) {
-  if (!value) {
-    return "Dang cap nhat";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  const date = toDateSafely(value);
+  if (!date) {
     return "Dang cap nhat";
   }
 
@@ -30,12 +45,8 @@ export function formatDateVi(value) {
 }
 
 export function formatDateTimeVi(value) {
-  if (!value) {
-    return "Dang cap nhat";
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  const date = toDateSafely(value);
+  if (!date) {
     return "Dang cap nhat";
   }
 
@@ -54,4 +65,42 @@ export function formatDuration(days, nights) {
   }
 
   return `${days} ngay ${nights} dem`;
+}
+
+export function formatShortDateVi(value, { includeYear = false } = {}) {
+  const date = toDateSafely(value);
+  if (!date) {
+    return "Dang cap nhat";
+  }
+
+  return includeYear ? shortDateWithYearFormatter.format(date) : shortDateFormatter.format(date);
+}
+
+export function formatWeekdayDateVi(value, { includeYear = false } = {}) {
+  const date = toDateSafely(value);
+  if (!date) {
+    return "Dang cap nhat";
+  }
+
+  const weekdayLabel = WEEKDAY_LABELS[date.getDay()] || "CN";
+  return `${weekdayLabel}, ${formatShortDateVi(date, { includeYear })}`;
+}
+
+export function formatDateRangeVi(startValue, endValue, { includeYear = true } = {}) {
+  const startDate = toDateSafely(startValue);
+  const endDate = toDateSafely(endValue);
+
+  if (!startDate && !endDate) {
+    return "Dang cap nhat";
+  }
+
+  if (!startDate) {
+    return formatShortDateVi(endDate, { includeYear });
+  }
+
+  if (!endDate) {
+    return formatShortDateVi(startDate, { includeYear });
+  }
+
+  return `${formatShortDateVi(startDate, { includeYear })} - ${formatShortDateVi(endDate, { includeYear })}`;
 }

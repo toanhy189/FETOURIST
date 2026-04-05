@@ -1,25 +1,29 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { getUsers } from "@/apiService/auth";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  createUserByAdmin,
+  getUsers,
+  updateUserByAdmin,
+} from "@/apiService/auth";
 import { formatDateTimeVi } from "@/utils/format";
 
 const PAGE_SIZE_OPTIONS = [7, 10, 20];
 const ROLE_OPTIONS = [
-  { value: "user", label: "Nguoi dung" },
-  { value: "admin", label: "Quan tri vien" },
+  { value: "user", label: "Người dùng" },
+  { value: "admin", label: "Quản trị viên" },
 ];
 
 function getDefaultTitle(roleFilter) {
   if (roleFilter === "admin") {
-    return "Danh sach admin";
+    return "Danh sách admin";
   }
 
   if (roleFilter === "user") {
-    return "Nguoi dung he thong";
+    return "Người dùng hệ thống";
   }
 
-  return "Tai khoan he thong";
+  return "Tài khoản hệ thống";
 }
 
 function normalizeKeyword(value) {
@@ -33,21 +37,35 @@ function normalizeKeyword(value) {
 function getRolePresentation(role) {
   if (role === "admin") {
     return {
-      label: "Quan tri vien",
+      label: "Quản trị viên",
       className: "border border-sky-200 bg-sky-50 text-sky-700",
     };
   }
 
   if (role === "user") {
     return {
-      label: "Nguoi dung",
+      label: "Người dùng",
       className: "border border-emerald-200 bg-emerald-50 text-emerald-700",
     };
   }
 
   return {
-    label: role || "Chua phan vai tro",
+    label: role || "Chưa phân vai trò",
     className: "border border-slate-200 bg-slate-100 text-slate-600",
+  };
+}
+
+function getStatusPresentation(isActive) {
+  if (isActive) {
+    return {
+      label: "Đang hoạt động",
+      className: "border border-emerald-200 bg-emerald-50 text-emerald-700",
+    };
+  }
+
+  return {
+    label: "Đã khóa",
+    className: "border border-rose-200 bg-rose-50 text-rose-700",
   };
 }
 
@@ -85,12 +103,21 @@ function EditIcon(props) {
   );
 }
 
-function TrashIcon(props) {
+function LockIcon(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" {...props}>
-      <path d="M4 7h16M9 7V5.8c0-.66.54-1.2 1.2-1.2h3.6c.66 0 1.2.54 1.2 1.2V7" strokeLinecap="round" />
-      <path d="M7.5 7.5v10.2c0 .94.76 1.7 1.7 1.7h5.6c.94 0 1.7-.76 1.7-1.7V7.5" strokeLinecap="round" />
-      <path d="M10 11v5M14 11v5" strokeLinecap="round" />
+      <path d="M7 10V8a5 5 0 1 1 10 0v2" strokeLinecap="round" />
+      <rect x="5" y="10" width="14" height="10" rx="2" />
+      <path d="M12 14v2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function RestoreIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true" {...props}>
+      <path d="M3 12a9 9 0 1 0 2.64-6.36" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 4v6h6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -111,13 +138,21 @@ function ChevronDownIcon(props) {
   );
 }
 
-function getRoleLabel(role) {
-  return ROLE_OPTIONS.find((option) => option.value === role)?.label || "Chua phan vai tro";
+function buildCreateUserDraft(roleFilter) {
+  return {
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
+    password: "",
+    role: roleFilter === "admin" ? "admin" : roleFilter === "user" ? "user" : "user",
+  };
 }
 
 export default function UsersPanel({
   roleFilter = null,
   title = null,
+  currentUser = null,
 }) {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
@@ -129,19 +164,30 @@ export default function UsersPanel({
   const [editingUser, setEditingUser] = useState(null);
   const [roleDraft, setRoleDraft] = useState("");
   const [isSubmittingRole, setIsSubmittingRole] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [createDraft, setCreateDraft] = useState(buildCreateUserDraft(roleFilter));
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
+  const [updatingStatusUserId, setUpdatingStatusUserId] = useState("");
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      setUsers(await getUsers());
+      const nextUsers = await getUsers({
+        limit: 100,
+        role: roleFilter || undefined,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      });
+
+      setUsers(nextUsers);
     } catch (loadError) {
-      setError(loadError.message || "Khong tai duoc danh sach users.");
+      setError(loadError.message || "Không tải được danh sách người dùng.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [roleFilter]);
 
   useEffect(() => {
     void loadUsers();
@@ -149,25 +195,32 @@ export default function UsersPanel({
 
   useEffect(() => {
     setSelectedRole(roleFilter || "all");
+    setCreateDraft(buildCreateUserDraft(roleFilter));
   }, [roleFilter]);
 
   const normalizedKeyword = normalizeKeyword(searchKeyword);
-  const visibleUsers = users.filter((user) => {
-    const matchesRole = selectedRole === "all" ? true : user.role === selectedRole;
-    const searchableContent = normalizeKeyword(
-      `${user.fullName} ${user.email} ${user.phoneNumber} ${user.role}`
-    );
+  const effectiveRoleFilter = roleFilter || selectedRole;
+  const visibleUsers = useMemo(
+    () =>
+      users.filter((user) => {
+        const matchesRole =
+          effectiveRoleFilter === "all" ? true : user.role === effectiveRoleFilter;
+        const searchableContent = normalizeKeyword(
+          `${user.fullName} ${user.email} ${user.phoneNumber} ${user.role} ${user.address}`
+        );
 
-    if (!matchesRole) {
-      return false;
-    }
+        if (!matchesRole) {
+          return false;
+        }
 
-    if (!normalizedKeyword) {
-      return true;
-    }
+        if (!normalizedKeyword) {
+          return true;
+        }
 
-    return searchableContent.includes(normalizedKeyword);
-  });
+        return searchableContent.includes(normalizedKeyword);
+      }),
+    [effectiveRoleFilter, normalizedKeyword, users]
+  );
   const paginatedUsers = visibleUsers.slice(0, pageSize);
   const resolvedTitle = title || getDefaultTitle(roleFilter);
 
@@ -184,37 +237,100 @@ export default function UsersPanel({
     setIsSubmittingRole(false);
   }
 
+  function openCreateDialog() {
+    setCreateDraft(buildCreateUserDraft(roleFilter));
+    setIsCreateDialogOpen(true);
+    setError("");
+    setMessage("");
+  }
+
+  function closeCreateDialog() {
+    setIsCreateDialogOpen(false);
+    setCreateDraft(buildCreateUserDraft(roleFilter));
+    setIsCreatingUser(false);
+  }
+
   async function handleSaveRole() {
     if (!editingUser?.id || !roleDraft) {
       return;
     }
 
     setIsSubmittingRole(true);
-
-    setUsers((currentUsers) =>
-      currentUsers.map((user) =>
-        user.id === editingUser.id
-          ? {
-            ...user,
-            role: roleDraft,
-            updatedAt: new Date().toISOString(),
-          }
-          : user
-      )
-    );
-
-    setMessage(
-      `Da cap nhat quyen cho ${editingUser.fullName || editingUser.email} tren giao dien frontend.`
-    );
     setError("");
-    closeRoleDialog();
+
+    try {
+      const updatedUser = await updateUserByAdmin(editingUser.id, {
+        role: roleDraft,
+      });
+
+      await loadUsers();
+      setMessage(
+        `Đã cập nhật quyền cho ${updatedUser?.fullName || editingUser.fullName || editingUser.email}.`
+      );
+      closeRoleDialog();
+    } catch (saveError) {
+      setError(saveError.message || "Không cập nhật được quyền tài khoản.");
+      setIsSubmittingRole(false);
+    }
   }
 
-  function handleDeletePlaceholder(user) {
-    setMessage(
-      `Nut xoa cua ${user.fullName || user.email} hien moi dung o giao dien vi backend chua co API xoa nguoi dung.`
-    );
+  async function handleCreateUser() {
+    setIsCreatingUser(true);
     setError("");
+
+    try {
+      const createdUser = await createUserByAdmin({
+        fullName: createDraft.fullName.trim(),
+        email: createDraft.email.trim(),
+        password: createDraft.password.trim(),
+        phoneNumber: createDraft.phoneNumber.trim() || undefined,
+        address: createDraft.address.trim() || undefined,
+        role: createDraft.role,
+      });
+
+      await loadUsers();
+      setMessage(`Đã tạo tài khoản ${createdUser?.email || createDraft.email.trim()} thành công.`);
+      closeCreateDialog();
+    } catch (createError) {
+      setError(createError.message || "Không tạo được tài khoản mới.");
+      setIsCreatingUser(false);
+    }
+  }
+
+  async function handleToggleUserStatus(user) {
+    if (!user?.id) {
+      return;
+    }
+
+    const nextIsActive = !user.isActive;
+    const confirmMessage = nextIsActive
+      ? `Bạn có chắc muốn khôi phục tài khoản ${user.fullName || user.email}?`
+      : `Bạn có chắc muốn khóa tài khoản ${user.fullName || user.email}?`;
+
+    const shouldUpdateStatus = window.confirm(confirmMessage);
+    if (!shouldUpdateStatus) {
+      return;
+    }
+
+    setUpdatingStatusUserId(user.id);
+    setError("");
+
+    try {
+      await updateUserByAdmin(user.id, {
+        isActive: nextIsActive,
+      });
+
+      await loadUsers();
+      setMessage(
+        nextIsActive
+          ? `Đã khôi phục tài khoản ${user.fullName || user.email}.`
+          : `Đã khóa tài khoản ${user.fullName || user.email}.`
+      );
+    } catch (statusError) {
+      setError(statusError.message || "Không cập nhật được trạng thái tài khoản.");
+    } finally {
+      setUpdatingStatusUserId("");
+    }
   }
 
   return (
@@ -239,18 +355,20 @@ export default function UsersPanel({
             </label>
 
             <div className="flex flex-wrap items-center gap-3">
-              <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-                <FilterIcon className="h-5 w-5 text-slate-400" />
-                <select
-                  value={selectedRole}
-                  onChange={(event) => setSelectedRole(event.target.value)}
-                  className="bg-transparent pr-8 text-sm font-medium text-slate-700 outline-none"
-                >
-                  <option value="all">Tất cả vai trò</option>
-                  <option value="user">Nguoi dung</option>
-                  <option value="admin">Quan tri vien</option>
-                </select>
-              </label>
+              {!roleFilter ? (
+                <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                  <FilterIcon className="h-5 w-5 text-slate-400" />
+                  <select
+                    value={selectedRole}
+                    onChange={(event) => setSelectedRole(event.target.value)}
+                    className="bg-transparent pr-8 text-sm font-medium text-slate-700 outline-none"
+                  >
+                    <option value="all">Tất cả vai trò</option>
+                    <option value="user">Người dùng</option>
+                    <option value="admin">Quản trị viên</option>
+                  </select>
+                </label>
+              ) : null}
 
               <label className="rounded-2xl border border-slate-300 bg-white px-3 py-3 text-sm font-semibold text-slate-700">
                 <select
@@ -268,16 +386,12 @@ export default function UsersPanel({
 
               <button
                 type="button"
-                onClick={() => {
-                  setMessage("Nut them tai khoan da duoc dat san giao dien. Neu can, minh se noi tiep form tao user cho admin.");
-                  setError("");
-                }}
+                onClick={openCreateDialog}
                 className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
               >
                 <PlusIcon className="h-4 w-4" />
                 Thêm tài khoản
               </button>
-
             </div>
           </div>
         </div>
@@ -307,7 +421,7 @@ export default function UsersPanel({
 
           <div className="overflow-hidden rounded-[1.75rem] border border-slate-200">
             <div className="overflow-x-auto">
-              <table className="min-w-[980px] w-full border-collapse">
+              <table className="min-w-[1080px] w-full border-collapse">
                 <thead className="bg-slate-50 text-left text-sm uppercase tracking-[0.18em] text-slate-500">
                   <tr>
                     <th className="px-6 py-5 font-medium">STT</th>
@@ -315,6 +429,7 @@ export default function UsersPanel({
                     <th className="px-6 py-5 font-medium">Email</th>
                     <th className="px-6 py-5 font-medium">Số điện thoại</th>
                     <th className="px-6 py-5 font-medium">Vai trò</th>
+                    <th className="px-6 py-5 font-medium">Trạng thái</th>
                     <th className="px-6 py-5 font-medium">Ngày tạo và sửa đổi</th>
                     <th className="px-6 py-5 text-center font-medium">Hành động</th>
                   </tr>
@@ -322,19 +437,22 @@ export default function UsersPanel({
                 <tbody className="divide-y divide-slate-200 bg-white text-sm text-slate-700">
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500">
-                        Dang tai danh sach nguoi dung...
+                      <td colSpan={8} className="px-6 py-12 text-center text-sm text-slate-500">
+                        Đang tải danh sách người dùng...
                       </td>
                     </tr>
                   ) : paginatedUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500">
-                        Chua co tai khoan nao phu hop voi bo loc hien tai.
+                      <td colSpan={8} className="px-6 py-12 text-center text-sm text-slate-500">
+                        Chưa có tài khoản nào phù hợp với bộ lọc hiện tại.
                       </td>
                     </tr>
                   ) : (
                     paginatedUsers.map((user, index) => {
                       const rolePresentation = getRolePresentation(user.role);
+                      const statusPresentation = getStatusPresentation(user.isActive);
+                      const isCurrentAccount = user.id === currentUser?.id;
+                      const isUpdatingStatus = updatingStatusUserId === user.id;
 
                       return (
                         <tr key={user.id} className="align-middle transition hover:bg-slate-50/80">
@@ -343,16 +461,21 @@ export default function UsersPanel({
                           </td>
                           <td className="px-6 py-6">
                             <p className="font-medium text-slate-900">
-                              {user.fullName || "Chua cap nhat"}
+                              {user.fullName || "Chưa cập nhật"}
                             </p>
                           </td>
-                          <td className="px-6 py-6 text-slate-700">{user.email || "Dang cap nhat"}</td>
+                          <td className="px-6 py-6 text-slate-700">{user.email || "Đang cập nhật"}</td>
                           <td className="px-6 py-6">
-                            {user.phoneNumber || "Chua cap nhat"}
+                            {user.phoneNumber || "Chưa cập nhật"}
                           </td>
                           <td className="px-6 py-6">
                             <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${rolePresentation.className}`}>
                               {rolePresentation.label}
+                            </span>
+                          </td>
+                          <td className="px-6 py-6">
+                            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusPresentation.className}`}>
+                              {statusPresentation.label}
                             </span>
                           </td>
                           <td className="px-6 py-6 text-sm text-slate-500">
@@ -369,22 +492,38 @@ export default function UsersPanel({
                             <div className="flex items-center justify-center gap-3">
                               <button
                                 type="button"
-                                title="Cap nhat quyen tai khoan"
-                                aria-label="Cap nhat quyen tai khoan"
+                                title={isCurrentAccount ? "Không sửa role của chính mình ở đây" : "Cập nhật quyền tài khoản"}
+                                aria-label="Cập nhật quyền tài khoản"
                                 onClick={() => openRoleDialog(user)}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600 transition hover:bg-blue-100"
+                                disabled={isCurrentAccount}
+                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300"
                               >
                                 <EditIcon className="h-5 w-5" />
                               </button>
 
                               <button
                                 type="button"
-                                title="Xoa nguoi dung"
-                                aria-label="Xoa nguoi dung"
-                                onClick={() => handleDeletePlaceholder(user)}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition hover:bg-rose-100"
+                                title={
+                                  isCurrentAccount
+                                    ? "Không đổi trạng thái tài khoản của chính mình"
+                                    : user.isActive
+                                      ? "Khóa tài khoản"
+                                      : "Khôi phục tài khoản"
+                                }
+                                aria-label={user.isActive ? "Khóa tài khoản" : "Khôi phục tài khoản"}
+                                onClick={() => void handleToggleUserStatus(user)}
+                                disabled={isCurrentAccount || isUpdatingStatus}
+                                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border transition disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-300 ${
+                                  user.isActive
+                                    ? "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"
+                                    : "border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                }`}
                               >
-                                <TrashIcon className="h-5 w-5" />
+                                {user.isActive ? (
+                                  <LockIcon className="h-5 w-5" />
+                                ) : (
+                                  <RestoreIcon className="h-5 w-5" />
+                                )}
                               </button>
                             </div>
                           </td>
@@ -417,7 +556,7 @@ export default function UsersPanel({
                 type="button"
                 onClick={closeRoleDialog}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Dong hop thoai"
+                aria-label="Đóng hộp thoại"
               >
                 <CloseIcon className="h-5 w-5" />
               </button>
@@ -443,19 +582,7 @@ export default function UsersPanel({
                   <div className="h-5 w-px bg-slate-200" />
                   <ChevronDownIcon className="h-4 w-4" />
                 </div>
-
-                {roleDraft ? (
-                  <button
-                    type="button"
-                    onClick={() => setRoleDraft("")}
-                    className="absolute right-11 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                    aria-label="Xoa lua chon vai tro"
-                  >
-                    <CloseIcon className="h-3.5 w-3.5" />
-                  </button>
-                ) : null}
               </div>
-
             </div>
 
             <div className="mt-8 flex justify-end gap-3">
@@ -472,7 +599,139 @@ export default function UsersPanel({
                 disabled={!roleDraft || isSubmittingRole}
                 className="rounded-2xl bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
               >
-                Cập nhật
+                {isSubmittingRole ? "Đang cập nhật..." : "Cập nhật"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isCreateDialogOpen ? (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/45 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-user-title"
+            className="w-full max-w-[640px] rounded-[1.75rem] bg-white p-6 shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 id="create-user-title" className="text-[2rem] font-semibold text-slate-900">
+                  Thêm tài khoản mới
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={closeCreateDialog}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Đóng hộp thoại"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              <input
+                value={createDraft.fullName}
+                onChange={(event) =>
+                  setCreateDraft((currentDraft) => ({
+                    ...currentDraft,
+                    fullName: event.target.value,
+                  }))
+                }
+                placeholder="Họ và tên"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+              />
+
+              <input
+                type="email"
+                value={createDraft.email}
+                onChange={(event) =>
+                  setCreateDraft((currentDraft) => ({
+                    ...currentDraft,
+                    email: event.target.value,
+                  }))
+                }
+                placeholder="Email"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+              />
+
+              <input
+                type="password"
+                value={createDraft.password}
+                onChange={(event) =>
+                  setCreateDraft((currentDraft) => ({
+                    ...currentDraft,
+                    password: event.target.value,
+                  }))
+                }
+                placeholder="Mật khẩu"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+              />
+
+              <input
+                value={createDraft.phoneNumber}
+                onChange={(event) =>
+                  setCreateDraft((currentDraft) => ({
+                    ...currentDraft,
+                    phoneNumber: event.target.value,
+                  }))
+                }
+                placeholder="Số điện thoại"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+              />
+
+              <input
+                value={createDraft.address}
+                onChange={(event) =>
+                  setCreateDraft((currentDraft) => ({
+                    ...currentDraft,
+                    address: event.target.value,
+                  }))
+                }
+                placeholder="Địa chỉ"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-sky-300 md:col-span-2"
+              />
+
+              <div className="relative md:col-span-2">
+                <select
+                  value={createDraft.role}
+                  onChange={(event) =>
+                    setCreateDraft((currentDraft) => ({
+                      ...currentDraft,
+                      role: event.target.value,
+                    }))
+                  }
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+                >
+                  {ROLE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-400">
+                  <ChevronDownIcon className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeCreateDialog}
+                className="rounded-2xl border border-slate-300 px-6 py-3 text-lg font-medium text-slate-800 transition hover:bg-slate-50"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleCreateUser()}
+                disabled={isCreatingUser}
+                className="rounded-2xl bg-blue-600 px-6 py-3 text-lg font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+              >
+                {isCreatingUser ? "Đang tạo..." : "Tạo tài khoản"}
               </button>
             </div>
           </div>

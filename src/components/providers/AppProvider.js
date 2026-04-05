@@ -1,10 +1,12 @@
 "use client";
 
 import {
+  useCallback,
   createContext,
   startTransition,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { readStoredSession } from "@/apiService/AxiosInstance/AxiosInstance";
@@ -24,7 +26,7 @@ export function AppProvider({ children }) {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
 
-  async function refreshProfile() {
+  const refreshProfile = useCallback(async () => {
     const nextUser = await fetchMe();
 
     startTransition(() => {
@@ -35,9 +37,9 @@ export function AppProvider({ children }) {
     });
 
     return nextUser;
-  }
+  }, []);
 
-  async function refreshNotifications(accessTokenOverride) {
+  const refreshNotifications = useCallback(async (accessTokenOverride) => {
     const activeAccessToken =
       accessTokenOverride || readStoredSession().accessToken || session.accessToken;
 
@@ -54,27 +56,27 @@ export function AppProvider({ children }) {
       setNotificationCount(0);
       return 0;
     }
-  }
+  }, [session.accessToken]);
 
-  async function loginWithCredentials(payload) {
+  const loginWithCredentials = useCallback(async (payload) => {
     const nextSession = await login(payload);
     setSession(nextSession);
     await refreshNotifications(nextSession.accessToken);
     return nextSession.user;
-  }
+  }, [refreshNotifications]);
 
-  async function registerWithCredentials(payload) {
+  const registerWithCredentials = useCallback(async (payload) => {
     const nextSession = await register(payload);
     setSession(nextSession);
     await refreshNotifications(nextSession.accessToken);
     return nextSession.user;
-  }
+  }, [refreshNotifications]);
 
-  async function logoutCurrentUser() {
+  const logoutCurrentUser = useCallback(async () => {
     await logout();
     setSession(emptySession);
     setNotificationCount(0);
-  }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -129,21 +131,35 @@ export function AppProvider({ children }) {
     };
   }, []);
 
+  const contextValue = useMemo(
+    () => ({
+      session,
+      currentUser: session.user,
+      isAuthenticated: Boolean(session.accessToken && session.user),
+      isAdmin: session.user?.role === "admin",
+      isBootstrapping,
+      notificationCount,
+      login: loginWithCredentials,
+      register: registerWithCredentials,
+      logout: logoutCurrentUser,
+      refreshProfile,
+      refreshNotifications,
+    }),
+    [
+      isBootstrapping,
+      loginWithCredentials,
+      logoutCurrentUser,
+      notificationCount,
+      refreshNotifications,
+      refreshProfile,
+      registerWithCredentials,
+      session,
+    ]
+  );
+
   return (
     <AppContext.Provider
-      value={{
-        session,
-        currentUser: session.user,
-        isAuthenticated: Boolean(session.accessToken && session.user),
-        isAdmin: session.user?.role === "admin",
-        isBootstrapping,
-        notificationCount,
-        login: loginWithCredentials,
-        register: registerWithCredentials,
-        logout: logoutCurrentUser,
-        refreshProfile,
-        refreshNotifications,
-      }}
+      value={contextValue}
     >
       {children}
     </AppContext.Provider>
