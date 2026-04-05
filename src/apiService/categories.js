@@ -16,6 +16,7 @@ function mapCategory(category) {
           id: category.parentCategory._id,
           name: category.parentCategory.name,
           slug: category.parentCategory.slug,
+          isActive: category.parentCategory.isActive ?? true,
         }
       : null,
     createdBy: category.createdBy
@@ -26,6 +27,8 @@ function mapCategory(category) {
           role: category.createdBy.role,
         }
       : null,
+    createdAt: category.createdAt || null,
+    updatedAt: category.updatedAt || null,
   };
 }
 
@@ -80,6 +83,21 @@ export async function updateCategory(categoryId, payload) {
   });
 
   return mapCategory(response.data);
+}
+
+export async function uploadCategoryImage(file) {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await privateRequest("/api/categories/upload-image", {
+    method: "POST",
+    data: formData,
+  });
+
+  return {
+    ...response.data,
+    url: toAssetUrl(response.data?.url) || "",
+  };
 }
 
 export async function deleteCategory(categoryId) {

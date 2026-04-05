@@ -1,7 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getUsers } from "@/apiService/auth";
+import {
+  updateMyProfile,
+  uploadMyAvatar,
+} from "@/apiService/auth";
+import { useAppContext } from "@/components/providers/AppProvider";
+
+const PASSWORD_MASK = "........";
 
 function getInitials(fullName) {
   return String(fullName || "Admin")
@@ -13,13 +19,14 @@ function getInitials(fullName) {
 }
 
 function createDraft(admin) {
+  // Draft tách riêng khỏi currentUser để form có thể chỉnh sửa nhiều field trước khi bấm lưu.
   return {
     fullName: admin?.fullName || "",
     email: admin?.email || "",
     address: admin?.address || "",
     avatarUrl: admin?.avatarUrl || "",
-    previewUrl: admin?.avatarUrl || "",
-    passwordMask: "betourist-admin",
+    password: PASSWORD_MASK,
+    passwordDirty: false,
   };
 }
 
@@ -43,6 +50,19 @@ function buildFallbackAvatar(fullName) {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
 
+function handleAvatarLoad(event) {
+  delete event.currentTarget.dataset.fallbackApplied;
+}
+
+function handleAvatarError(event, fullName) {
+  if (event.currentTarget.dataset.fallbackApplied === "true") {
+    return;
+  }
+
+  event.currentTarget.dataset.fallbackApplied = "true";
+  event.currentTarget.src = buildFallbackAvatar(fullName);
+}
+
 function FormRow({ label, children }) {
   return (
     <div className="grid gap-2 md:grid-cols-[140px_minmax(0,1fr)] md:items-center">
@@ -53,200 +73,267 @@ function FormRow({ label, children }) {
 }
 
 export default function AdminManagersPanel({ currentUser }) {
-  const [users, setUsers] = useState([]);
-  const [drafts, setDrafts] = useState({});
+  const { refreshProfile } = useAppContext();
+  const [admin, setAdmin] = useState(currentUser || null);
+  const [draft, setDraft] = useState(createDraft(currentUser));
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  const loadAdmins = useCallback(async () => {
+  useEffect(() => {
+    setAdmin(currentUser || null);
+    setDraft(createDraft(currentUser));
+  }, [currentUser]);
+
+  const loadCurrentAdmin = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      const allUsers = await getUsers();
-      const adminUsers = allUsers.filter((user) => user.role === "admin");
-
-      setUsers(adminUsers);
-      setDrafts(
-        Object.fromEntries(adminUsers.map((admin) => [admin.id, createDraft(admin)]))
-      );
+      const nextUser = await refreshProfile();
+      setAdmin(nextUser);
+      setDraft(createDraft(nextUser));
     } catch (loadError) {
-      setError(loadError.message || "Không tải được danh sách admin.");
+      setError(loadError.message || "Khong tai duoc thong tin admin.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshProfile]);
 
   useEffect(() => {
-    void loadAdmins();
-  }, [loadAdmins]);
-
-  const selectedAdmin =
-    users.find((admin) => admin.id === currentUser?.id) ||
-    users[0] ||
-    null;
-  const activeDraft = selectedAdmin ? drafts[selectedAdmin.id] || createDraft(selectedAdmin) : null;
-  const avatarPreview =
-    activeDraft?.previewUrl || activeDraft?.avatarUrl || buildFallbackAvatar(selectedAdmin?.fullName);
+    void loadCurrentAdmin();
+  }, [loadCurrentAdmin]);
 
   function patchDraft(field, value) {
-    if (!selectedAdmin) {
-      return;
-    }
-
-    setDrafts((currentDrafts) => ({
-      ...currentDrafts,
-      [selectedAdmin.id]: {
-        ...(currentDrafts[selectedAdmin.id] || createDraft(selectedAdmin)),
-        [field]: value,
-      },
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      [field]: value,
     }));
   }
 
-  function handleAvatarUpload(event) {
+  function handlePasswordFocus() {
+    // Chỉ bỏ lớp mask khi người dùng thực sự bắt đầu sửa mật khẩu.
+    setDraft((currentDraft) => {
+      if (currentDraft.passwordDirty) {
+        return currentDraft;
+      }
+
+      return {
+        ...currentDraft,
+        password: "",
+        passwordDirty: true,
+      };
+    });
+  }
+
+  function handlePasswordChange(event) {
+    patchDraft("password", event.target.value);
+  }
+
+  function handlePasswordBlur() {
+    setDraft((currentDraft) => {
+      if (currentDraft.password.trim()) {
+        return currentDraft;
+      }
+
+      return {
+        ...currentDraft,
+        password: PASSWORD_MASK,
+        passwordDirty: false,
+      };
+    });
+  }
+
+  async function handleAvatarUpload(event) {
     const file = event.target.files?.[0];
-    if (!file || !selectedAdmin) {
+    event.target.value = "";
+
+    if (!file) {
       return;
     }
 
-    const objectUrl = URL.createObjectURL(file);
-    patchDraft("previewUrl", objectUrl);
-    setMessage("Ảnh đại diện đã được cập nhật ở chế độ xem trước.");
-  }
-
-  function handleSave() {
-    if (!selectedAdmin || !activeDraft) {
-      return;
-    }
-
-    setUsers((currentUsers) =>
-      currentUsers.map((admin) =>
-        admin.id === selectedAdmin.id
-          ? {
-            ...admin,
-            fullName: activeDraft.fullName,
-            email: activeDraft.email,
-            address: activeDraft.address,
-            avatarUrl: activeDraft.previewUrl || activeDraft.avatarUrl,
-          }
-          : admin
-      )
-    );
-
-    setMessage(
-      "Giao diện admin đã cập nhật trên frontend. Nếu cần lưu thật vào hệ thống, mình sẽ nối thêm API cập nhật admin."
-    );
+    setIsUploadingAvatar(true);
     setError("");
+    setMessage("");
+
+    try {
+      // Upload xong thì gọi lại profile để đồng bộ ảnh mới nhất từ backend/session lưu cục bộ.
+      const uploadedUser = await uploadMyAvatar(file);
+      const nextUser = await refreshProfile().catch(() => uploadedUser);
+      setAdmin(nextUser);
+      setDraft(createDraft(nextUser));
+      setMessage("Ảnh đại diện đã cập nhật thành công");
+    } catch (uploadError) {
+      setError(uploadError.message || "Không tải lên được ảnh đại diện");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   }
+
+  async function handleSave() {
+    if (!admin) {
+      return;
+    }
+
+    setIsSaving(true);
+    setError("");
+    setMessage("");
+
+    try {
+      // Chỉ gửi những field admin đang được phép tự cập nhật từ màn hình hồ sơ.
+      const payload = {
+        fullName: draft.fullName.trim(),
+        email: draft.email.trim(),
+        address: draft.address.trim(),
+        avatarUrl: draft.avatarUrl || undefined,
+      };
+
+      if (draft.passwordDirty && draft.password.trim()) {
+        payload.password = draft.password.trim();
+      }
+
+      const updatedUser = await updateMyProfile(payload);
+      const nextUser = await refreshProfile().catch(() => updatedUser);
+      setAdmin(nextUser);
+      setDraft(createDraft(nextUser));
+      setMessage(
+        draft.passwordDirty && draft.password.trim()
+          ? "Cập nhật thông tin thành công. Bạn vừa đổi mật khẩu, hãy đăng nhập lại khi phiên hiện tại hết hạn"
+          : "Cập nhật thông tin admin thành công"
+      );
+    } catch (saveError) {
+      setError(saveError.message || "Không lưu được thông tin admin");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  const avatarPreview =
+    draft.avatarUrl ||
+    buildFallbackAvatar(admin?.fullName || currentUser?.fullName);
 
   return (
-    <section className="border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-6 py-4">
-        <h2 className="text-3xl font-semibold text-slate-900">Thông tin admin</h2>
-      </div>
-
-      {message ? (
-        <div className="mx-6 mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          {message}
+    <div className="space-y-6">
+      <section className="border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-6 py-4">
+          <h2 className="text-3xl font-semibold text-slate-900">Thông tin admin</h2>
         </div>
-      ) : null}
 
-      {error ? (
-        <div className="mx-6 mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          {error}
-        </div>
-      ) : null}
-
-      <div className="px-6 py-6">
-        {loading ? (
-          <div className="border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
-            Đang tải thông tin admin...
+        {message ? (
+          <div className="mx-6 mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {message}
           </div>
-        ) : !selectedAdmin || !activeDraft ? (
-          <div className="border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
-            Chưa có admin nào phù hợp để hiển thị.
+        ) : null}
+
+        {error ? (
+          <div className="mx-6 mt-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {error}
           </div>
-        ) : (
-          <div className="border-t border-slate-200 pt-6">
-            <div className="grid items-start gap-10 md:grid-cols-[280px_minmax(0,1fr)]">
-              <aside className="space-y-4">
-                <div className="overflow-hidden border border-slate-200 bg-slate-50">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={avatarPreview}
-                    alt={selectedAdmin.fullName}
-                    className="h-[270px] w-full object-cover"
-                  />
-                </div>
+        ) : null}
 
-                <label className="block cursor-pointer">
-                  <input type="file" accept="image/*" onChange={handleAvatarUpload} className="sr-only" />
-                  <span className="flex items-center justify-center bg-teal-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-teal-600">
-                    Tải ảnh lên
-                  </span>
-                </label>
-
-                <div className="space-y-2 pt-2">
-                  <h3 className="text-4xl font-semibold text-slate-700">{activeDraft.fullName || "Admin"}</h3>
-                  <p className="text-sm text-slate-500">{activeDraft.email || "Chưa có email"}</p>
-                  <p className="text-sm text-slate-500">
-                    {activeDraft.address || "Chưa cập nhật địa chỉ"}
-                  </p>
-                </div>
-              </aside>
-
-              <div className="border-t border-slate-200 pt-3 md:border-t-0 md:pt-0">
-                <div className="space-y-4">
-                  <FormRow label="Tên admin *">
-                    <input
-                      value={activeDraft.fullName}
-                      onChange={(event) => patchDraft("fullName", event.target.value)}
-                      className="w-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+        <div className="px-6 py-6">
+          {loading && !admin ? (
+            <div className="border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
+              Đang tải thông tin admin...
+            </div>
+          ) : !admin ? (
+            <div className="border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
+              Chưa tìm thấy thông tin admin đăng nhập
+            </div>
+          ) : (
+            <div className="border-t border-slate-200 pt-6">
+              <div className="grid items-start gap-10 md:grid-cols-[280px_minmax(0,1fr)]">
+                <aside className="space-y-4">
+                  <div className="overflow-hidden border border-slate-200 bg-slate-50">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={avatarPreview}
+                      alt={admin.fullName}
+                      onLoad={handleAvatarLoad}
+                      onError={(event) => handleAvatarError(event, admin.fullName)}
+                      className="h-[270px] w-full object-cover"
                     />
-                  </FormRow>
+                  </div>
 
-                  <FormRow label="Mật khẩu *">
+                  <label className="block cursor-pointer">
                     <input
-                      type="password"
-                      value={activeDraft.passwordMask}
-                      onChange={(event) => patchDraft("passwordMask", event.target.value)}
-                      className="w-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarUpload}
+                      className="sr-only"
+                      disabled={isUploadingAvatar}
                     />
-                  </FormRow>
+                    <span className="flex items-center justify-center bg-teal-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-teal-600">
+                      {isUploadingAvatar ? "Đang tải ảnh..." : "Tải ảnh lên"}
+                    </span>
+                  </label>
 
-                  <FormRow label="Email">
-                    <input
-                      type="email"
-                      value={activeDraft.email}
-                      onChange={(event) => patchDraft("email", event.target.value)}
-                      className="w-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-300"
-                    />
-                  </FormRow>
+                  <div className="space-y-2 pt-2">
+                    <h3 className="text-4xl font-semibold text-slate-700">{draft.fullName || "Admin"}</h3>
+                    <p className="text-sm text-slate-500">{draft.email || "Chua co email"}</p>
+                    <p className="text-sm text-slate-500">
+                      {draft.address || "Chưa cập nhật địa chỉ"}
+                    </p>
+                  </div>
+                </aside>
 
-                  <FormRow label="Địa chỉ">
-                    <input
-                      value={activeDraft.address}
-                      onChange={(event) => patchDraft("address", event.target.value)}
-                      className="w-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-300"
-                    />
-                  </FormRow>
-                </div>
+                <div className="border-t border-slate-200 pt-3 md:border-t-0 md:pt-0">
+                  <div className="space-y-4">
+                    <FormRow label="Tên Admin *">
+                      <input
+                        value={draft.fullName}
+                        onChange={(event) => patchDraft("fullName", event.target.value)}
+                        className="w-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+                      />
+                    </FormRow>
 
-                <div className="mt-8 border-t border-slate-200 pt-5">
-                  <button
-                    type="button"
-                    onClick={handleSave}
-                    className="bg-teal-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-600"
-                  >
-                    Cập nhật
-                  </button>
+                    <FormRow label="Mật khẩu mới">
+                      <input
+                        type="password"
+                        value={draft.password}
+                        onFocus={handlePasswordFocus}
+                        onChange={handlePasswordChange}
+                        onBlur={handlePasswordBlur}
+                        className="w-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+                      />
+                    </FormRow>
+
+                    <FormRow label="Email">
+                      <input
+                        type="email"
+                        value={draft.email}
+                        onChange={(event) => patchDraft("email", event.target.value)}
+                        className="w-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+                      />
+                    </FormRow>
+
+                    <FormRow label="Địa chỉ">
+                      <input
+                        value={draft.address}
+                        onChange={(event) => patchDraft("address", event.target.value)}
+                        className="w-full border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-sky-300"
+                      />
+                    </FormRow>
+                  </div>
+
+                  <div className="mt-8 border-t border-slate-200 pt-5">
+                    <button
+                      type="button"
+                      onClick={() => void handleSave()}
+                      disabled={isSaving || isUploadingAvatar}
+                      className="bg-teal-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-teal-600 disabled:cursor-not-allowed disabled:bg-teal-300"
+                    >
+                      {isSaving ? "Đang cập nhật..." : "Cập nhật"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
-    </section>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }

@@ -19,7 +19,7 @@ export default function HeaderActions() {
   if (isBootstrapping) {
     return (
       <div className="text-sm font-medium text-slate-400">
-        Dang khoi tao phien...
+        Đang khởi tạo phiên...
       </div>
     );
   }
@@ -58,14 +58,14 @@ export default function HeaderActions() {
         href="/tai-khoan"
         className="rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900 transition hover:bg-amber-100"
       >
-        Thong bao {notificationCount > 0 ? `(${notificationCount})` : ""}
+        Thông báo {notificationCount > 0 ? `(${notificationCount})` : ""}
       </Link>
       {isAdmin ? (
         <Link
-          href="/quan-tri"
+          href="/admin"
           className="rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800 transition hover:bg-sky-100"
         >
-          Quan tri
+          Quản trị
         </Link>
       ) : null}
       <button
@@ -73,7 +73,7 @@ export default function HeaderActions() {
         onClick={handleLogout}
         className="rounded-full border border-slate-200/80 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-rose-300 hover:text-rose-700"
       >
-        Dang xuat
+        Đăng xuất
       </button>
     </div>
   );

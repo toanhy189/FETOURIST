@@ -5,8 +5,10 @@ import {
   patchStoredUser,
   privateRequest,
   publicRequest,
+  readStoredSession,
   saveStoredSession,
 } from "@/apiService/AxiosInstance/AxiosInstance";
+import { toAssetUrl } from "@/apiService/base";
 
 function mapUser(user) {
   // Chuan hoa user object de FE dung chung 1 shape o moi man hinh.
@@ -19,7 +21,8 @@ function mapUser(user) {
     fullName: user.fullName,
     email: user.email,
     phoneNumber: user.phoneNumber || "",
-    avatarUrl: user.avatarUrl || "",
+    avatarUrl: toAssetUrl(user.avatarUrl) || "",
+    address: user.address || "",
     role: user.role,
     isActive: user.isActive ?? true,
     createdAt: user.createdAt,
@@ -80,8 +83,74 @@ export async function logout() {
   }
 }
 
-export async function getUsers() {
-  // Admin dashboard dung route nay de liet ke user he thong.
-  const response = await privateRequest("/api/auth/users");
-  return Array.isArray(response.data) ? response.data.map(mapUser) : [];
+export async function getUsers(searchParams = {}) {
+  // Admin dashboard va cac man hinh quan tri dung route nay de liet ke user he thong.
+  const response = await privateRequest("/api/auth/admin/users", {
+    searchParams,
+  });
+  const rawUsers = Array.isArray(response.data)
+    ? response.data
+    : Array.isArray(response.data?.users)
+      ? response.data.users
+      : [];
+
+  return rawUsers.map(mapUser);
+}
+
+export async function updateMyProfile(payload) {
+  const response = await privateRequest("/api/auth/me", {
+    method: "PATCH",
+    data: payload,
+  });
+
+  const user = mapUser(response.data?.user);
+  patchStoredUser(user);
+  return user;
+}
+
+export async function uploadMyAvatar(file) {
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const response = await privateRequest("/api/auth/me/avatar", {
+    method: "POST",
+    data: formData,
+  });
+
+  const user = mapUser(response.data?.user);
+  patchStoredUser(user);
+  return user;
+}
+
+export async function createUserByAdmin(payload) {
+  const response = await privateRequest("/api/auth/admin/users", {
+    method: "POST",
+    data: payload,
+  });
+
+  return mapUser(response.data?.user);
+}
+
+export async function updateUserByAdmin(userId, payload) {
+  const response = await privateRequest(`/api/auth/admin/users/${userId}`, {
+    method: "PATCH",
+    data: payload,
+  });
+
+  const user = mapUser(response.data?.user);
+  const currentUserId = readStoredSession().user?.id;
+
+  if (user?.id && currentUserId && user.id === currentUserId) {
+    patchStoredUser(user);
+  }
+
+  return user;
+}
+
+export async function deleteUserByAdmin(userId) {
+  const response = await privateRequest(`/api/auth/admin/users/${userId}`, {
+    method: "DELETE",
+  });
+
+  return response.data;
 }

@@ -1,5 +1,6 @@
 import { privateRequest, publicRequest } from "@/apiService/AxiosInstance/AxiosInstance";
 import { fetchApi, toAssetUrl } from "@/apiService/base";
+import { normalizeItinerarySteps } from "@/utils/tourItinerary";
 
 const transportLabels = {
   bus: "Xe du lich",
@@ -15,8 +16,14 @@ function mapDeparture(departure) {
     return null;
   }
 
+  const normalizedDiscountPrice =
+    typeof departure.discountPrice === "number" && departure.discountPrice > 0
+      ? departure.discountPrice
+      : null;
   const sellingPrice =
-    typeof departure.discountPrice === "number" ? departure.discountPrice : departure.price;
+    normalizedDiscountPrice !== null
+      ? normalizedDiscountPrice
+      : departure.price;
 
   return {
     id: departure._id,
@@ -25,7 +32,7 @@ function mapDeparture(departure) {
     meetingPoint: departure.meetingPoint || "",
     status: departure.status,
     price: departure.price,
-    discountPrice: departure.discountPrice ?? null,
+    discountPrice: normalizedDiscountPrice,
     displayPrice: sellingPrice,
     remainingSeats: departure.remainingSeats ?? 0,
     seatCapacity: departure.seatCapacity ?? 0,
@@ -42,9 +49,32 @@ function buildTourSummary(tour) {
   return `Khoi hanh tu ${tour.departureLocation} den ${tour.destination}.`;
 }
 
+function mapItinerary(step) {
+  return {
+    ...step,
+    blocks: Array.isArray(step?.blocks)
+      ? step.blocks.map((block) =>
+          block?.type === "image"
+            ? {
+                ...block,
+                url: toAssetUrl(block.url),
+              }
+            : block
+        )
+      : [],
+  };
+}
+
 export function mapTour(tour) {
+  const normalizedDiscountPrice =
+    typeof tour.discountPrice === "number" && tour.discountPrice > 0
+      ? tour.discountPrice
+      : null;
   const displayPrice =
-    typeof tour.discountPrice === "number" ? tour.discountPrice : tour.price;
+    normalizedDiscountPrice !== null
+      ? normalizedDiscountPrice
+      : tour.price;
+  const itinerary = normalizeItinerarySteps(tour.itinerary).map(mapItinerary);
 
   return {
     id: tour._id,
@@ -73,7 +103,8 @@ export function mapTour(tour) {
     transport: tour.transport,
     transportLabel: transportLabels[tour.transport] || "Tour tron goi",
     price: tour.price,
-    discountPrice: tour.discountPrice ?? null,
+    discountPrice: normalizedDiscountPrice,
+    singleRoomSupplement: tour.singleRoomSupplement ?? 0,
     displayPrice,
     maxGroupSize: tour.maxGroupSize,
     availableSeats: tour.availableSeats,
@@ -83,7 +114,7 @@ export function mapTour(tour) {
     startDates: Array.isArray(tour.startDates) ? tour.startDates : [],
     firstStartDate: Array.isArray(tour.startDates) ? tour.startDates[0] : null,
     highlights: Array.isArray(tour.highlights) ? tour.highlights : [],
-    itinerary: Array.isArray(tour.itinerary) ? tour.itinerary : [],
+    itinerary,
     includedServices: Array.isArray(tour.includedServices) ? tour.includedServices : [],
     excludedServices: Array.isArray(tour.excludedServices) ? tour.excludedServices : [],
     imageUrl: toAssetUrl(tour.images?.[0]),
@@ -117,6 +148,18 @@ export async function getTourDetail(idOrSlug) {
   });
 
   return mapTour(response.data);
+}
+
+export async function getRelatedTours(idOrSlug, searchParams = {}) {
+  const response = await fetchApi(`/api/tours/${idOrSlug}/related`, {
+    searchParams,
+    next: { revalidate: 60 },
+  });
+
+  return {
+    tours: Array.isArray(response.data) ? response.data.map(mapTour) : [],
+    message: response.message,
+  };
 }
 
 export async function getTourDepartures(idOrSlug, searchParams = {}) {
