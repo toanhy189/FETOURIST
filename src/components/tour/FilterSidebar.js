@@ -3,129 +3,119 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 
-// Thêm prop categories được truyền từ server component (page.js)
 export default function FilterSidebar({ categories = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // State lưu trữ giá trị
-  const [startDate, setStartDate] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(""); // Thêm state cho Category
-  const [selectedDuration, setSelectedDuration] = useState("");
-  const [selectedPrice, setSelectedPrice] = useState("");
+  // --- 1. KHỞI TẠO STATE TỔNG HỢP ---
+  const [filters, setFilters] = useState({
+    search: searchParams.get("search") || "",
+    startDate: searchParams.get("startDate") || "",
+    category: searchParams.get("category") || "",
+    duration: searchParams.get("duration") || "",
+    priceRange: searchParams.get("priceRange") || "",
+  });
 
-  // Đồng bộ state với URL khi load trang
+  // --- 2. ĐỒNG BỘ VỚI URL (KHI CHUYỂN TRANG HOẶC BẤM NÚT TÌM TỪ TRANG CHỦ) ---
   useEffect(() => {
-    setStartDate(searchParams.get("startDate") || "");
-    setSelectedCategory(searchParams.get("category") || ""); // Lấy category từ URL
-    setSelectedDuration(searchParams.get("duration") || "");
-    setSelectedPrice(searchParams.get("priceRange") || "");
+    setFilters({
+      search: searchParams.get("search") || "",
+      startDate: searchParams.get("startDate") || "",
+      category: searchParams.get("category") || "",
+      duration: searchParams.get("duration") || "",
+      priceRange: searchParams.get("priceRange") || "",
+    });
   }, [searchParams]);
 
-  const handleApplyFilter = () => {
-    const params = new URLSearchParams(searchParams.toString());
+  const handleChange = (name, value) => {
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
 
-    // 1. Xử lý Ngày khởi hành
-    if (startDate) params.set("startDate", startDate);
-    else params.delete("startDate");
+  // --- 3. HÀM ÁP DỤNG BỘ LỌC ---
+  const handleApplyFilter = (e) => {
+    if (e) e.preventDefault();
+    const params = new URLSearchParams();
 
-    // 2. Xử lý Danh mục (Category)
-    if (selectedCategory) params.set("category", selectedCategory);
-    else params.delete("category");
+    // Chỉ đưa vào URL những giá trị có chọn
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.set(key, value);
+    });
 
-    // 3. Xử lý Số ngày
-    if (selectedDuration) params.set("duration", selectedDuration);
-    else params.delete("duration");
-
-    // 4. Xử lý Giá
-    if (selectedPrice) params.set("priceRange", selectedPrice);
-    else params.delete("priceRange");
-
-    params.delete("page"); // Reset về trang 1
+    params.delete("page"); // Reset về trang 1 khi lọc mới
     router.push(`/danh-muc?${params.toString()}`);
   };
 
   const handleReset = () => {
-    setStartDate("");
-    setSelectedCategory("");
-    setSelectedDuration("");
-    setSelectedPrice("");
     router.push("/danh-muc");
   };
 
   return (
-    <div className="space-y-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      
-      {/* 1. Bộ lọc Ngày khởi hành */}
-      <div>
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800 border-b pb-2">
-          Ngày khởi hành
-        </h3>
-        <div className="relative">
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-100"
-          />
-        </div>
+    <div className="space-y-7 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
+        <div className="h-5 w-1 rounded-full bg-orange-500"></div>
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+          Tìm Kiếm Nhanh
+        </h2>
       </div>
 
-      {/* 2. MỚI: Bộ lọc Danh mục (Categories) */}
-      <div>
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800 border-b pb-2">
-          Vùng miền / Danh mục
-        </h3>
-        <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-          <label className="flex items-center gap-3 cursor-pointer group">
-            <input
-              type="radio"
-              name="category"
-              checked={selectedCategory === ""}
-              onChange={() => setSelectedCategory("")}
-              className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500"
-            />
-            <span className={`text-sm transition-colors ${selectedCategory === "" ? "text-sky-600 font-bold" : "text-slate-600 group-hover:text-sky-600"}`}>
-              Tất cả danh mục
-            </span>
-          </label>
+      {/* SECTION 1: TÌM KIẾM TỪ KHÓA (Thay thế SearchForm cũ) */}
+      <div className="space-y-2">
+        <label className="text-[11px] font-bold uppercase text-slate-400">Bạn muốn đi đâu?</label>
+        <input
+          type="text"
+          placeholder="Tên tour, điểm đến..."
+          value={filters.search}
+          onChange={(e) => handleChange("search", e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-sky-100 transition-all"
+        />
+      </div>
 
+      {/* SECTION 2: NGÀY KHỞI HÀNH */}
+      <div className="space-y-2">
+        <label className="text-[11px] font-bold uppercase text-slate-400">Ngày khởi hành</label>
+        <input
+          type="date"
+          value={filters.startDate}
+          onChange={(e) => handleChange("startDate", e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:bg-white transition-all"
+        />
+      </div>
+
+      {/* SECTION 3: VÙNG MIỀN / DANH MỤC */}
+      <div className="space-y-2">
+        <label className="text-[11px] font-bold uppercase text-slate-400">Vùng miền</label>
+        <select
+          value={filters.category}
+          onChange={(e) => handleChange("category", e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all"
+        >
+          <option value="">Tất cả</option>
           {categories.map((cat) => (
-            <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="radio"
-                name="category"
-                checked={selectedCategory === cat.slug}
-                onChange={() => setSelectedCategory(cat.slug)}
-                className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500"
-              />
-              <span className={`text-sm transition-colors ${selectedCategory === cat.slug ? "text-sky-600 font-bold" : "text-slate-600 group-hover:text-sky-600"}`}>
-                {cat.name}
-              </span>
-            </label>
+            <option key={cat.id} value={cat.slug}>{cat.name}</option>
           ))}
-        </div>
+        </select>
       </div>
 
-      {/* 3. Bộ lọc Số ngày tour */}
-      <div>
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800 border-b pb-2">Số ngày tour</h3>
-        <div className="space-y-3">
+      {/* SECTION 4: SỐ NGÀY TOUR */}
+      <div className="space-y-2">
+        <label className="text-[11px] font-bold uppercase text-slate-400">Số ngày tour</label>
+        <div className="grid grid-cols-1 gap-2">
           {[
+            { label: "Tất cả thời gian", value: "" },
             { label: "1-2 ngày", value: "1-2" },
             { label: "3-4 ngày", value: "3-4" },
             { label: "5 ngày", value: "5-5" },
             { label: "6 ngày trở lên", value: "6-20" },
           ].map((item) => (
-            <label key={item.value} className="flex items-center gap-3 cursor-pointer group">
+            <label key={item.value} className="flex items-center gap-2 cursor-pointer group">
               <input
                 type="radio"
                 name="duration"
-                checked={selectedDuration === item.value}
-                onChange={() => setSelectedDuration(item.value)}
+                checked={filters.duration === item.value}
+                onChange={() => handleChange("duration", item.value)}
                 className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500"
               />
-              <span className={`text-sm transition-colors ${selectedDuration === item.value ? "text-sky-600 font-bold" : "text-slate-600 group-hover:text-sky-600"}`}>
+              <span className={`text-xs transition-colors ${filters.duration === item.value ? "text-sky-600 font-bold" : "text-slate-600 group-hover:text-sky-600"}`}>
                 {item.label}
               </span>
             </label>
@@ -133,46 +123,35 @@ export default function FilterSidebar({ categories = [] }) {
         </div>
       </div>
 
-      {/* 4. Bộ lọc Giá tour */}
-      <div>
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800 border-b pb-2">Giá tour/Khách</h3>
-        <div className="space-y-3">
-          {[
-            { label: "< 3 triệu", value: "0-3000000" },
-            { label: "3 - 4 triệu", value: "3000000-4000000" },
-            { label: "4 - 7 triệu", value: "4000000-7000000" },
-            { label: "> 7 triệu", value: "7000000-50000000" },
-          ].map((item) => (
-            <label key={item.value} className="flex items-center gap-3 cursor-pointer group">
-              <input
-                type="radio"
-                name="price"
-                checked={selectedPrice === item.value}
-                onChange={() => setSelectedPrice(item.value)}
-                className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500"
-              />
-              <span className={`text-sm transition-colors ${selectedPrice === item.value ? "text-sky-600 font-bold" : "text-slate-600 group-hover:text-sky-600"}`}>
-                {item.label}
-              </span>
-            </label>
-          ))}
-        </div>
+      {/* SECTION 5: MỨC GIÁ */}
+      <div className="space-y-2">
+        <label className="text-[11px] font-bold uppercase text-slate-400">Mức giá ngân sách</label>
+        <select
+          value={filters.priceRange}
+          onChange={(e) => handleChange("priceRange", e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all"
+        >
+          <option value="">Tất cả mức giá</option>
+          <option value="0-3000000">Dưới 3 triệu</option>
+          <option value="3000000-5000000">3 - 5 triệu</option>
+          <option value="5000000-10000000">5 - 10 triệu</option>
+          <option value="10000000-100000000">Trên 10 triệu</option>
+        </select>
       </div>
 
-      {/* Nút hành động */}
-      <div className="space-y-3 pt-4">
+      {/* HÀNH ĐỘNG */}
+      <div className="pt-4 space-y-3">
         <button
           onClick={handleApplyFilter}
-          className="w-full rounded-xl bg-slate-900 py-3.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-sky-700 active:scale-95"
+          className="w-full rounded-xl bg-orange-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-100 transition-all hover:bg-orange-600 active:scale-95"
         >
           Áp dụng bộ lọc
         </button>
-        
         <button
           onClick={handleReset}
-          className="w-full py-2 text-xs font-medium text-slate-400 hover:text-rose-500 transition-colors"
+          className="w-full py-2 text-center text-[11px] font-medium text-slate-400 hover:text-rose-500 transition-colors"
         >
-          Xóa tất cả lựa chọn
+          Xóa tất cả bộ lọc
         </button>
       </div>
     </div>
