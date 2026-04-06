@@ -2,25 +2,52 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { getTours } from "@/apiService/tours";
 
 export default function FilterSidebar({ categories = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // --- 1. KHỞI TẠO STATE TỔNG HỢP ---
+  // 1. State cho các bộ lọc
   const [filters, setFilters] = useState({
     search: searchParams.get("search") || "",
     startDate: searchParams.get("startDate") || "",
+    departure: searchParams.get("departure") || "",
     category: searchParams.get("category") || "",
     duration: searchParams.get("duration") || "",
     priceRange: searchParams.get("priceRange") || "",
   });
 
-  // --- 2. ĐỒNG BỘ VỚI URL (KHI CHUYỂN TRANG HOẶC BẤM NÚT TÌM TỪ TRANG CHỦ) ---
+  // 2. State lưu danh sách địa điểm khởi hành động
+  const [departureLocations, setDepartureLocations] = useState([]);
+
+  // 3. Lấy danh sách địa điểm khởi hành từ API (Lọc từ tất cả các tour)
+  useEffect(() => {
+    const fetchDeparturePoints = async () => {
+      try {
+        // Gọi API lấy tour (không truyền tham số lọc để lấy được tất cả các điểm đi hiện có)
+        const response = await getTours({ limit: 100 }); 
+        if (response && response.tours) {
+          // Lấy giá trị từ trường departureLocation (đúng theo DB của bạn)
+          const uniquePoints = [
+            ...new Set(response.tours.map((tour) => tour.departureLocation)),
+          ].filter(Boolean); // Loại bỏ các giá trị null hoặc rỗng
+          
+          setDepartureLocations(uniquePoints);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách điểm khởi hành:", error);
+      }
+    };
+    fetchDeparturePoints();
+  }, []);
+
+  // 4. Cập nhật State mỗi khi URL thay đổi
   useEffect(() => {
     setFilters({
       search: searchParams.get("search") || "",
       startDate: searchParams.get("startDate") || "",
+      departure: searchParams.get("departure") || "",
       category: searchParams.get("category") || "",
       duration: searchParams.get("duration") || "",
       priceRange: searchParams.get("priceRange") || "",
@@ -31,17 +58,15 @@ export default function FilterSidebar({ categories = [] }) {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  // --- 3. HÀM ÁP DỤNG BỘ LỌC ---
   const handleApplyFilter = (e) => {
     if (e) e.preventDefault();
     const params = new URLSearchParams();
 
-    // Chỉ đưa vào URL những giá trị có chọn
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
 
-    params.delete("page"); // Reset về trang 1 khi lọc mới
+    params.delete("page"); 
     router.push(`/danh-muc?${params.toString()}`);
   };
 
@@ -50,7 +75,7 @@ export default function FilterSidebar({ categories = [] }) {
   };
 
   return (
-    <div className="space-y-7 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
         <div className="h-5 w-1 rounded-full bg-orange-500"></div>
         <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800">
@@ -58,9 +83,9 @@ export default function FilterSidebar({ categories = [] }) {
         </h2>
       </div>
 
-      {/* SECTION 1: TÌM KIẾM TỪ KHÓA (Thay thế SearchForm cũ) */}
+      {/* MỤC 1: TÌM KIẾM TỪ KHÓA */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400">Bạn muốn đi đâu?</label>
+        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Bạn muốn đi đâu?</label>
         <input
           type="text"
           placeholder="Tên tour, điểm đến..."
@@ -70,36 +95,59 @@ export default function FilterSidebar({ categories = [] }) {
         />
       </div>
 
-      {/* SECTION 2: NGÀY KHỞI HÀNH */}
+      {/* MỤC 2: NGÀY KHỞI HÀNH */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400">Ngày khởi hành</label>
+        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Ngày khởi hành</label>
         <input
           type="date"
           value={filters.startDate}
           onChange={(e) => handleChange("startDate", e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:bg-white transition-all"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:bg-white transition-all cursor-pointer"
         />
       </div>
 
-      {/* SECTION 3: VÙNG MIỀN / DANH MỤC */}
+      {/* MỤC 3: KHỞI HÀNH TỪ (SỬA LẠI ĐỂ MAP ĐÚNG departureLocation) */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400">Vùng miền</label>
+        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Khởi hành từ</label>
+        <select
+          value={filters.departure}
+          onChange={(e) => handleChange("departure", e.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all cursor-pointer"
+        >
+          <option value="">Tất cả địa điểm</option>
+          {departureLocations.length > 0 ? (
+            departureLocations.map((location, index) => (
+              <option key={index} value={location}>
+                {location}
+              </option>
+            ))
+          ) : (
+            <option disabled>Đang tải dữ liệu...</option>
+          )}
+        </select>
+      </div>
+
+      {/* VÙNG MIỀN */}
+      <div className="space-y-2">
+        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Vùng miền</label>
         <select
           value={filters.category}
           onChange={(e) => handleChange("category", e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all cursor-pointer"
         >
-          <option value="">Tất cả</option>
+          <option value="">Tất cả danh mục</option>
           {categories.map((cat) => (
-            <option key={cat.id} value={cat.slug}>{cat.name}</option>
+            <option key={cat.id} value={cat.slug}>
+              {cat.name}
+            </option>
           ))}
         </select>
       </div>
 
-      {/* SECTION 4: SỐ NGÀY TOUR */}
-      <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400">Số ngày tour</label>
-        <div className="grid grid-cols-1 gap-2">
+      {/* SỐ NGÀY TOUR */}
+      <div className="space-y-3">
+        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Số ngày tour</label>
+        <div className="grid grid-cols-1 gap-2 pl-1">
           {[
             { label: "Tất cả thời gian", value: "" },
             { label: "1-2 ngày", value: "1-2" },
@@ -113,9 +161,9 @@ export default function FilterSidebar({ categories = [] }) {
                 name="duration"
                 checked={filters.duration === item.value}
                 onChange={() => handleChange("duration", item.value)}
-                className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500"
+                className="h-4 w-4 border-slate-300 text-orange-500 focus:ring-orange-400"
               />
-              <span className={`text-xs transition-colors ${filters.duration === item.value ? "text-sky-600 font-bold" : "text-slate-600 group-hover:text-sky-600"}`}>
+              <span className={`text-xs transition-colors ${filters.duration === item.value ? "text-orange-600 font-bold" : "text-slate-600 group-hover:text-orange-500"}`}>
                 {item.label}
               </span>
             </label>
@@ -123,13 +171,13 @@ export default function FilterSidebar({ categories = [] }) {
         </div>
       </div>
 
-      {/* SECTION 5: MỨC GIÁ */}
+      {/* MỨC GIÁ TOUR */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400">Mức giá ngân sách</label>
+        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Mức giá tour</label>
         <select
           value={filters.priceRange}
           onChange={(e) => handleChange("priceRange", e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all cursor-pointer"
         >
           <option value="">Tất cả mức giá</option>
           <option value="0-3000000">Dưới 3 triệu</option>
@@ -139,11 +187,11 @@ export default function FilterSidebar({ categories = [] }) {
         </select>
       </div>
 
-      {/* HÀNH ĐỘNG */}
+      {/* ACTIONS */}
       <div className="pt-4 space-y-3">
         <button
           onClick={handleApplyFilter}
-          className="w-full rounded-xl bg-orange-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-100 transition-all hover:bg-orange-600 active:scale-95"
+          className="w-full rounded-xl bg-orange-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-100 transition-all hover:bg-orange-600 hover:shadow-orange-200 active:scale-95"
         >
           Áp dụng bộ lọc
         </button>
