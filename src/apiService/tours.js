@@ -45,7 +45,7 @@ function buildTourSummary(tour) {
   if (tour.highlights?.length) {
     return tour.highlights.slice(0, 2).join(" - ");
   }
-  return `Khởi hành từ ${tour.departureLocation} đến ${tour.destination}.`;
+  return `Khởi hành từ ${tour.departureLocation || "nhiều nơi"} đến ${tour.destination || "điểm đến"}.`;
 }
 
 function mapItinerary(step) {
@@ -80,7 +80,7 @@ export function mapTour(tour) {
     slug: tour.slug,
     title: tour.title,
     destination: tour.destination,
-    departureLocation: tour.departureLocation,
+    departureLocation: tour.departureLocation, // Đảm bảo trường này được map để hiển thị
     category: tour.category
       ? {
           id: tour.category._id,
@@ -130,10 +130,22 @@ export function mapTour(tour) {
 
 // --- CÁC HÀM GỌI API CHO PUBLIC USER ---
 
+/**
+ * Lấy danh sách tour với bộ lọc động
+ * Đã sửa: Xử lý clean searchParams để gửi đúng query string lên backend
+ */
 export async function getTours(searchParams = {}) {
+  // Loại bỏ các trường rỗng/null để tránh gửi query "rác"
+  const cleanParams = {};
+  Object.keys(searchParams).forEach((key) => {
+    if (searchParams[key] !== undefined && searchParams[key] !== null && searchParams[key] !== "") {
+      cleanParams[key] = searchParams[key];
+    }
+  });
+
   const response = await fetchApi("/api/tours", {
-    searchParams,
-    next: { revalidate: 0 }, // Đổi thành 0 để bộ lọc cập nhật tức thì
+    searchParams: cleanParams,
+    next: { revalidate: 0 }, 
   });
 
   return {
@@ -151,7 +163,6 @@ export async function getTourDetail(idOrSlug) {
   return mapTour(response.data);
 }
 
-// HÀM QUAN TRỌNG: Sửa lỗi "Export getRelatedTours doesn't exist"
 export async function getRelatedTours(idOrSlug, searchParams = {}) {
   const response = await fetchApi(`/api/tours/${idOrSlug}/related`, {
     searchParams,
