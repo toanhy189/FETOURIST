@@ -138,7 +138,7 @@ export default function FilterSidebar({ categories = [] }) {
 
       {/* VÙNG MIỀN */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Vùng miền</label>
+        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Phân Loại</label>
         <select
           value={filters.category}
           onChange={(e) => handleChange("category", e.target.value)}
