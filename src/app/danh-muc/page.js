@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 async function loadCategoryPageData(searchParams) {
   const params = await searchParams;
 
-  // 1. LẤY THÊM THAM SỐ departure TỪ URL
+  
   const category = params?.category || "";
   const search = params?.search || "";
   const startDate = params?.startDate || "";
@@ -53,7 +53,7 @@ export default async function CategoryPage({ searchParams }) {
       <div className="container mx-auto px-4 pt-10">
         <div className="flex flex-col gap-8 lg:flex-row">
           
-          {/* BÊN TRÁI: Cột Sidebar */}
+          {/* Cột Sidebar */}
           <aside className="w-full lg:w-1/4">
             <div className="sticky top-24 space-y-6">
               {/* BỘ LỌC CHI TIẾT */}
@@ -61,7 +61,7 @@ export default async function CategoryPage({ searchParams }) {
             </div>
           </aside>
 
-          {/* BÊN PHẢI: Danh sách kết quả */}
+          {/*Danh sách kết quả */}
           <main className="flex-1">
             <div className="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 md:flex-row md:items-end">
               <div>

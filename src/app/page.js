@@ -6,7 +6,7 @@ import SearchForm from "@/components/searchForm/searchForm";
 
 export const dynamic = "force-dynamic";
 
-// --- CÁC HÀM HỖ TRỢ GIAO DIỆN ---
+//CÁC HÀM HỖ TRỢ GIAO DIỆN
 const categoryFallbackCover =
   "linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(3, 105, 161, 0.82), rgba(16, 185, 129, 0.7))";
 
@@ -22,7 +22,7 @@ function getCategoryCoverStyle(imageUrl) {
   };
 }
 
-// --- HÀM LẤY DỮ LIỆU TỪ SERVER ---
+// HÀM LẤY DỮ LIỆU TỪ SERVER 
 async function loadHomePageData() {
   const [categoryResult, tourResult] = await Promise.allSettled([
     getCategories({ limit: 50 }),
@@ -38,14 +38,14 @@ async function loadHomePageData() {
   };
 }
 
-// --- COMPONENT TRANG CHỦ ---
+// COMPONENT TRANG CHỦ 
 export default async function Home() {
   const { categories, featuredTours, errors } = await loadHomePageData();
   const parentCategories = categories.filter((category) => !category.parentCategory);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* 1. Phần Banner - Giữ nguyên */}
+      {/* Phần Banner */}
       <div className="relative left-1/2 h-[240px] w-screen -translate-x-1/2 overflow-hidden md:h-[300px] lg:h-[340px]">
         <div
           aria-label="Banner du lịch BETOURIST"
@@ -70,7 +70,7 @@ export default async function Home() {
           </section>
         )}
 
-        {/* 2. Section: Danh mục nổi bật - Dạng Grid */}
+        {/* Section: Danh mục nổi bật */}
         <section className="container mx-auto space-y-8 px-4">
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <h2 className="font-display text-2xl font-bold uppercase text-slate-800 tracking-tight">
@@ -104,7 +104,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* 3. Section: Banner Quảng cáo - Giữ nguyên */}
+        {/* Banner Quảng cáo */}
         <section className="container mx-auto px-4">
           <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-[3rem] border border-slate-100 bg-white px-6 py-20 text-center shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-emerald-50/50 to-teal-100/30" />
@@ -126,7 +126,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* 4. Section: Tour nổi bật - Đã chuyển sang dạng LIST (Danh sách) */}
+        {/* 4. Tour nổi bật (dạng List) */}
         <section className="container mx-auto space-y-8 px-4">
           <div className="flex items-center justify-between border-b border-slate-200 pb-4">
             <h2 className="font-display text-2xl font-bold uppercase text-slate-800 tracking-tight">
@@ -138,7 +138,7 @@ export default async function Home() {
           </div>
 
           {featuredTours.length > 0 ? (
-            /* Dùng flex-col kết hợp max-w-5xl để danh sách tour tập trung ở giữa màn hình */
+           
             <div className="flex flex-col gap-8 max-w-5xl mx-auto w-full"> 
               {featuredTours.map((tour) => (
                 <TourCard key={tour.id} tour={tour} />

@@ -8,7 +8,7 @@ export default function FilterSidebar({ categories = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 1. Khởi tạo State bộ lọc (formData)
+  // 1. Khởi tạo State bộ lọc
   const [filters, setFilters] = useState({
     search: searchParams.get("search") || "",
     startDate: searchParams.get("startDate") || "",
@@ -18,7 +18,7 @@ export default function FilterSidebar({ categories = [] }) {
     priceRange: searchParams.get("priceRange") || "",
   });
 
-  // 2. State lưu danh sách địa điểm (giống trang chủ)
+  // 2. State lưu danh sách địa điểm
   const [departureLocations, setDepartureLocations] = useState([]);
 
   // 3. Lấy danh sách địa điểm động từ Database
@@ -75,7 +75,7 @@ export default function FilterSidebar({ categories = [] }) {
         </h2>
       </div>
 
-      {/* --- MỤC KHỞI HÀNH (CODE ĐÃ CHUYỂN ĐỔI TỪ TRANG CHỦ) --- */}
+      {/* --- MỤC KHỞI HÀNH*/}
       <div className="space-y-2">
         <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">
           Khởi hành từ

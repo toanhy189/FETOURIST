@@ -11,7 +11,7 @@ const transportLabels = {
   mixed: "Linh hoạt",
 };
 
-// --- CÁC HÀM TRỢ GIÚP (HELPER FUNCTIONS) ---
+// CÁC HÀM TRỢ GIÚP (HELPER FUNCTIONS)
 
 function mapDeparture(departure) {
   if (!departure) return null;
@@ -61,7 +61,7 @@ function mapItinerary(step) {
   };
 }
 
-// --- HÀM CHUYỂN ĐỔI DỮ LIỆU CHÍNH (MAPPER) ---
+//HÀM CHUYỂN ĐỔI DỮ LIỆU CHÍNH 
 
 export function mapTour(tour) {
   if (!tour) return null;
@@ -80,7 +80,7 @@ export function mapTour(tour) {
     slug: tour.slug,
     title: tour.title,
     destination: tour.destination,
-    departureLocation: tour.departureLocation, // Đảm bảo trường này được map để hiển thị
+    departureLocation: tour.departureLocation, 
     category: tour.category
       ? {
           id: tour.category._id,
@@ -130,10 +130,6 @@ export function mapTour(tour) {
 
 // --- CÁC HÀM GỌI API CHO PUBLIC USER ---
 
-/**
- * Lấy danh sách tour với bộ lọc động
- * Đã sửa: Xử lý clean searchParams để gửi đúng query string lên backend
- */
 export async function getTours(searchParams = {}) {
   // Loại bỏ các trường rỗng/null để tránh gửi query "rác"
   const cleanParams = {};
@@ -240,7 +236,7 @@ export async function uploadTourImages(tourId, files) {
   return response.data;
 }
 
-// --- CÁC HÀM QUẢN LÝ LỊCH TRÌNH KHỞI HÀNH (DEPARTURES) ---
+// 
 
 export async function getTourDeparturesForAdmin(tourId, searchParams = {}) {
   const response = await privateRequest(`/api/tours/${tourId}/departures/admin`, {

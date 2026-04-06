@@ -54,7 +54,7 @@ export default function SearchForm() {
     const params = new URLSearchParams();
     if (formData.search) params.set("search", formData.search);
     if (formData.startDate) params.set("startDate", formData.startDate);
-    if (formData.departure) params.set("search", formData.departure); // Backend của bạn dùng search cho địa điểm
+    if (formData.departure) params.set("search", formData.departure); 
     
     router.push(`/danh-muc?${params.toString()}`);
   };
@@ -92,7 +92,7 @@ export default function SearchForm() {
             />
           </div>
 
-          {/* Hàng 2: Linh hoạt theo Layout */}
+          {/* Linh hoạt theo Layout */}
           <div className={`flex ${isHomePage ? "flex-row" : "flex-col"} gap-2.5`}>
             
             {/* Cột: Ngày khởi hành */}
