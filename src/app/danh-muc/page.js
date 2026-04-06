@@ -1,3 +1,4 @@
+import Link from "next/link"; // Nhớ import Link
 import { getCategories } from "@/apiService/categories";
 import { getTours } from "@/apiService/tours";
 import TourCard from "@/components/TourCard";
@@ -7,25 +8,23 @@ export const dynamic = "force-dynamic";
 
 // Hàm xử lý lấy dữ liệu dựa trên các tham số từ URL
 async function loadCategoryPageData(searchParams) {
-  const params = await searchParams; // Next.js 15 yêu cầu await searchParams
+  const params = await searchParams;
 
-  // 1. Trích xuất các bộ lọc từ URL
   const category = params?.category || "";
   const search = params?.search || "";
   const startDate = params?.startDate || "";
   const duration = params?.duration || "";
   const priceRange = params?.priceRange || "";
 
-  // 2. Gọi đồng thời API lấy danh mục và danh sách Tour có kèm bộ lọc
   const [categoryResult, tourResult] = await Promise.allSettled([
     getCategories({ limit: 50 }),
     getTours({
       limit: 12,
       search: search,
       category: category,
-      startDate: startDate,    // Truyền ngày bắt đầu
-      duration: duration,      // Truyền khoảng thời gian (VD: 1-2)
-      priceRange: priceRange,  // Truyền khoảng giá (VD: 0-3000000)
+      startDate: startDate,
+      duration: duration,
+      priceRange: priceRange,
     }),
   ]);
 
@@ -44,7 +43,6 @@ export default async function CategoryPage({ searchParams }) {
   const { categories, tours, activeCategory, activeSearch, errors } =
     await loadCategoryPageData(searchParams);
 
-  // Tìm tên danh mục hiện tại để hiển thị tiêu đề
   const currentCategoryName = categories.find(c => c.slug === activeCategory)?.name || "Tất cả Tour";
 
   return (
@@ -52,34 +50,33 @@ export default async function CategoryPage({ searchParams }) {
       <div className="container mx-auto px-4 pt-10">
         <div className="flex flex-col gap-8 lg:flex-row">
           
-          {/* BÊN TRÁI: Cột bộ lọc (Sidebar) */}
           <aside className="w-full lg:w-1/4">
             <div className="sticky top-24">
-              <FilterSidebar />
+              <FilterSidebar categories={categories} />
             </div>
           </aside>
 
-          {/* BÊN PHẢI: Danh sách kết quả */}
           <main className="flex-1">
             <div className="mb-8 flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 md:flex-row md:items-end">
               <div>
                 <h1 className="text-3xl font-bold text-slate-800">
                   {activeSearch ? `Kết quả cho: "${activeSearch}"` : currentCategoryName}
                 </h1>
-                <p className="mt-2 text-sm text-slate-500">
-                  Tìm thấy <span className="font-bold text-slate-800">{tours.length}</span> tour phù hợp
-                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-sky-500"></span>
+                  <p className="text-sm text-slate-500">
+                    Tìm thấy <span className="font-bold text-slate-900">{tours.length}</span> tour phù hợp
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Hiển thị lỗi nếu có */}
             {errors.length > 0 && (
-              <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-600">
+              <div className="mb-6 rounded-xl bg-red-50 border border-red-100 p-4 text-sm text-red-600">
                 {errors.join(", ")}
               </div>
             )}
 
-            {/* Hiển thị danh sách Tour dạng List */}
             {tours.length > 0 ? (
               <div className="flex flex-col gap-6">
                 {tours.map((tour) => (
@@ -87,10 +84,20 @@ export default async function CategoryPage({ searchParams }) {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-slate-300 bg-white py-20 text-center">
-                <span className="text-5xl">🔍</span>
-                <h3 className="mt-4 text-lg font-bold text-slate-800">Không tìm thấy tour nào</h3>
-                <p className="text-slate-500 text-sm">Hãy thử thay đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
+              <div className="flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-slate-300 bg-white py-24 text-center">
+                <div className="mb-4 text-6xl">🔍</div>
+                <h3 className="text-xl font-bold text-slate-800">Không tìm thấy tour nào</h3>
+                <p className="mt-2 max-w-xs text-slate-500 text-sm">
+                  Chúng tôi không tìm thấy kết quả phù hợp với bộ lọc hiện tại. Hãy thử thay đổi tiêu chí hoặc xóa bớt bộ lọc.
+                </p>
+                
+                {/* SỬA LỖI TẠI ĐÂY: Dùng Link thay vì button với onClick */}
+                <Link 
+                  href="/danh-muc" 
+                  className="mt-6 rounded-lg bg-sky-600 px-6 py-2 text-sm font-bold text-white hover:bg-sky-700 transition-colors"
+                >
+                  Xóa tất cả bộ lọc
+                </Link>
               </div>
             )}
           </main>

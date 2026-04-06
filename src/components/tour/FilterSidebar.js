@@ -3,18 +3,21 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 
-export default function FilterSidebar() {
+// Thêm prop categories được truyền từ server component (page.js)
+export default function FilterSidebar({ categories = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // State lưu trữ giá trị
   const [startDate, setStartDate] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(""); // Thêm state cho Category
   const [selectedDuration, setSelectedDuration] = useState("");
   const [selectedPrice, setSelectedPrice] = useState("");
 
   // Đồng bộ state với URL khi load trang
   useEffect(() => {
     setStartDate(searchParams.get("startDate") || "");
+    setSelectedCategory(searchParams.get("category") || ""); // Lấy category từ URL
     setSelectedDuration(searchParams.get("duration") || "");
     setSelectedPrice(searchParams.get("priceRange") || "");
   }, [searchParams]);
@@ -26,11 +29,15 @@ export default function FilterSidebar() {
     if (startDate) params.set("startDate", startDate);
     else params.delete("startDate");
 
-    // 2. Xử lý Số ngày
+    // 2. Xử lý Danh mục (Category)
+    if (selectedCategory) params.set("category", selectedCategory);
+    else params.delete("category");
+
+    // 3. Xử lý Số ngày
     if (selectedDuration) params.set("duration", selectedDuration);
     else params.delete("duration");
 
-    // 3. Xử lý Giá
+    // 4. Xử lý Giá
     if (selectedPrice) params.set("priceRange", selectedPrice);
     else params.delete("priceRange");
 
@@ -40,6 +47,7 @@ export default function FilterSidebar() {
 
   const handleReset = () => {
     setStartDate("");
+    setSelectedCategory("");
     setSelectedDuration("");
     setSelectedPrice("");
     router.push("/danh-muc");
@@ -48,7 +56,7 @@ export default function FilterSidebar() {
   return (
     <div className="space-y-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       
-      {/* 1. MỚI: Bộ lọc Ngày khởi hành */}
+      {/* 1. Bộ lọc Ngày khởi hành */}
       <div>
         <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800 border-b pb-2">
           Ngày khởi hành
@@ -60,12 +68,46 @@ export default function FilterSidebar() {
             onChange={(e) => setStartDate(e.target.value)}
             className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-700 outline-none transition-all focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-100"
           />
-          {/* Gợi ý: Nếu muốn dùng thư viện như react-datepicker thì thay thế ở đây */}
         </div>
-        <p className="mt-2 text-[10px] text-slate-400 italic">* Tìm các tour khởi hành từ ngày này trở đi</p>
       </div>
 
-      {/* 2. Bộ lọc Số ngày tour */}
+      {/* 2. MỚI: Bộ lọc Danh mục (Categories) */}
+      <div>
+        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800 border-b pb-2">
+          Vùng miền / Danh mục
+        </h3>
+        <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="radio"
+              name="category"
+              checked={selectedCategory === ""}
+              onChange={() => setSelectedCategory("")}
+              className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500"
+            />
+            <span className={`text-sm transition-colors ${selectedCategory === "" ? "text-sky-600 font-bold" : "text-slate-600 group-hover:text-sky-600"}`}>
+              Tất cả danh mục
+            </span>
+          </label>
+
+          {categories.map((cat) => (
+            <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="radio"
+                name="category"
+                checked={selectedCategory === cat.slug}
+                onChange={() => setSelectedCategory(cat.slug)}
+                className="h-4 w-4 border-slate-300 text-sky-600 focus:ring-sky-500"
+              />
+              <span className={`text-sm transition-colors ${selectedCategory === cat.slug ? "text-sky-600 font-bold" : "text-slate-600 group-hover:text-sky-600"}`}>
+                {cat.name}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* 3. Bộ lọc Số ngày tour */}
       <div>
         <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800 border-b pb-2">Số ngày tour</h3>
         <div className="space-y-3">
@@ -91,7 +133,7 @@ export default function FilterSidebar() {
         </div>
       </div>
 
-      {/* 3. Bộ lọc Giá tour */}
+      {/* 4. Bộ lọc Giá tour */}
       <div>
         <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800 border-b pb-2">Giá tour/Khách</h3>
         <div className="space-y-3">
