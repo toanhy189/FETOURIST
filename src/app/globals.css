@@ -13,7 +13,15 @@
   --font-body: "Trebuchet MS", "Aptos", "Segoe UI", sans-serif;
   --font-display: "Palatino Linotype", "Book Antiqua", Georgia, serif;
 }
+:root {
+  /* Ép font Montserrat */
+  font-family: var(--font-montserrat), sans-serif;
+}
 
+h1, h2, h3, h4, h5, h6 {
+  /* Ép tiêu đề luôn dùng font */
+  font-family: var(--font-montserrat), sans-serif;
+}
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
