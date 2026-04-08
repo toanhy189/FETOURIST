@@ -86,7 +86,7 @@ export default function GioiThieuPage() {
 
             <Reveal delay={0.4}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {["Trải nghiệm tuyệt vời", "Đội ngũ Chuyên nghiệp", "Du lịch Chi phí Thấp", "Hỗ trợ Trực tuyến 24/7"].map((item, i) => (
+                {["Trải nghiệm tuyệt vời", "Đội ngũ Chuyên nghiệp", "Du lịch Chi phí Thấp", "Hỗ trợ Nhanh Chóng"].map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -121,7 +121,7 @@ export default function GioiThieuPage() {
             <div className="w-full lg:w-1/2 space-y-8 order-2 lg:order-1">
               <Reveal delay={0.2} x={-30} y={0}>
                 <h2 className="text-4xl md:text-5xl font-black text-slate-800 leading-[1.1]">
-                  Du Lịch Với Sự Tự Tin Lý Do Hàng Đầu Để Chọn Công Ty Của Chúng Tôi
+                  Du Lịch Với Sự Tự Tin Là Lý Do Hàng Đầu Để Chọn Công Ty Chúng Tôi
                 </h2>
                 <div className="pl-6 border-l-4 border-orange-500 mt-6">
                   <p className="text-slate-600 text-lg leading-relaxed italic">
@@ -131,11 +131,11 @@ export default function GioiThieuPage() {
 
                 <div className="flex items-center gap-16 py-8">
                   <div>
-                    <div className="text-5xl font-black text-slate-900">0k+</div>
+                    <div className="text-5xl font-black text-slate-900">100+</div>
                     <div className="text-xs font-bold uppercase text-slate-400 tracking-widest mt-2">Điểm đến phổ biến</div>
                   </div>
                   <div>
-                    <div className="text-5xl font-black text-slate-900">4m+</div>
+                    <div className="text-5xl font-black text-slate-900">1m+</div>
                     <div className="text-xs font-bold uppercase text-slate-400 tracking-widest mt-2">Khách hàng hài lòng</div>
                   </div>
                 </div>
