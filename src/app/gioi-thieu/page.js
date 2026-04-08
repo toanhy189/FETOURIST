@@ -22,7 +22,7 @@ export default function GioiThieuPage() {
     <div className="min-h-screen bg-white overflow-x-hidden">
       
       {/* --- SECTION 1: HERO BANNER --- */}
-      <section className="relative h-[400px] w-full overflow-hidden flex items-center justify-center">
+      <section className="relative h-100 w-full overflow-hidden flex items-center justify-center">
         <img
           src="/images/bia1.jpg" 
           alt="Banner giới thiệu"
@@ -51,14 +51,14 @@ export default function GioiThieuPage() {
           {/* Hình ảnh bên trái */}
           <div className="w-full lg:w-1/2 relative">
             <Reveal x={-50} y={0}>
-              <div className="relative rounded-[3rem] overflow-hidden shadow-2xl border-[12px] border-white">
+              <div className="relative rounded-[3rem] overflow-hidden shadow-2xl border-12 border-white">
                 <img
                   src="/images/unnamed.jpg"
                   alt="Experience"
-                  className="w-full h-[500px] object-cover"
+                  className="w-full h-125 object-cover"
                 />
               </div>
-              <div className="absolute -top-6 -right-6 bg-orange-500 text-white w-36 h-36 rounded-full flex flex-col items-center justify-center border-[8px] border-white shadow-xl rotate-12">
+              <div className="absolute -top-6 -right-6 bg-orange-500 text-white w-36 h-36 rounded-full flex flex-col items-center justify-center border-8 border-white shadow-xl rotate-12">
                 <span className="text-4xl font-black">5+</span>
                 <span className="text-[10px] font-bold uppercase text-center leading-tight">
                   Năm kinh <br /> nghiệm
@@ -157,7 +157,7 @@ export default function GioiThieuPage() {
                   <img
                     src="/images/photo-1469854523086-cc02fe5d8800.jpg"
                     alt="Confident Travel"
-                    className="w-full h-[550px] object-cover"
+                    className="w-full h-137.5 object-cover"
                   />
                 </div>
               </Reveal>

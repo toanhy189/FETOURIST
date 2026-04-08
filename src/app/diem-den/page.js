@@ -77,7 +77,7 @@ export default async function DiemDenPage({ searchParams }) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-white rounded-[2rem] border border-dashed border-slate-300">
+          <div className="text-center py-20 bg-white rounded-4x1 border border-dashed border-slate-300">
              <div className="text-5xl mb-4">🏝️</div>
              <p className="text-slate-500 font-bold">Chưa có tour nào cho khu vực này.</p>
           </div>
