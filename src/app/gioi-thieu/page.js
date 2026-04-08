@@ -171,7 +171,7 @@ export default function GioiThieuPage() {
         <Reveal>
           <div className="container mx-auto px-4 max-w-3xl">
             <h2 className="text-3xl md:text-4xl font-black text-slate-400 leading-tight">
-              Gặp Gỡ Những Hướng Dẫn Viên Du Lịch Giàu Kinh Nghiệm Của Chúng Tôi
+              Cùng Chúng Tôi Tạo Ra Những Trải Nghiệm Tuyệt Vời 
             </h2>
             <div className="mt-6 w-24 h-1.5 bg-orange-500 mx-auto rounded-full"></div>
           </div>
