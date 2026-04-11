@@ -10,39 +10,42 @@
   --brand-strong: #064f81;
   --accent: #f6a828;
   --ink-soft: #4a627b;
-  --font-body: "Trebuchet MS", "Aptos", "Segoe UI", sans-serif;
-  --font-display: "Palatino Linotype", "Book Antiqua", Georgia, serif;
-}
-:root {
-  /* Ép font Montserrat */
-  font-family: var(--font-montserrat), sans-serif;
+  
+
+  --font-system: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 }
 
-h1, h2, h3, h4, h5, h6 {
-  /* Ép tiêu đề luôn dùng font */
-  font-family: var(--font-montserrat), sans-serif;
-}
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-body);
+
+  --font-sans: var(--font-system);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html, 
 body {
   margin: 0;
   min-height: 100vh;
+
+  font-family: var(--font-system);
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), "Segoe UI", sans-serif;
   background-image:
     radial-gradient(circle at 8% 0%, rgb(10 108 174 / 22%), transparent 42%),
     radial-gradient(circle at 92% 8%, rgb(246 168 40 / 26%), transparent 40%),
     linear-gradient(180deg, #eef6ff 0%, #f8fbff 45%, #ffffff 100%);
   background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-system);
+  font-weight: 700;
 }
 
 a {
@@ -50,13 +53,17 @@ a {
   text-decoration: none;
 }
 
+
 input,
 button,
 select,
 textarea {
-  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
 }
 
+
 .font-display {
-  font-family: var(--font-display), "Times New Roman", serif;
+  font-family: var(--font-system);
+  font-weight: 800;
 }
