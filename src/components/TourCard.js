@@ -128,7 +128,7 @@ export default function TourCard({ tour }) {
             </div>
             <div className="flex items-center gap-1.5 text-xs text-slate-600">
               <GroupIcon className="h-4 w-4 text-slate-400" />
-              <span>Còn: <span className="font-bold text-rose-600">{tour.availableSeats || 0}</span></span>
+              <span>Còn: <span className="font-bold text-rose-400">{tour.availableSeats || 0}</span></span>
             </div>
           </div>
         </div>
@@ -138,14 +138,14 @@ export default function TourCard({ tour }) {
       <div className="mt-auto flex items-center justify-between border-t border-slate-50 p-4 bg-slate-50/30">
         <div>
           <span className="block text-[10px] font-bold text-slate-400 uppercase">Giá từ:</span>
-          <div className="text-lg font-black text-rose-600">
+          <div className="text-lg font-black text-rose-400">
             {formatVnd(tour.displayPrice)}
           </div>
         </div>
 
         <Link
           href={`/tour/${tour.slug}`}
-          className="rounded-lg border-2 border-rose-500 px-4 py-1.5 text-xs font-bold text-rose-500 transition-all hover:bg-rose-500 hover:text-white active:scale-95"
+          className="rounded-lg border-2 border-rose-400 px-4 py-1.5 text-xs font-bold text-rose-400 transition-all hover:bg-rose-400 hover:text-white active:scale-95"
         >
           Đặt ngay
         </Link>
