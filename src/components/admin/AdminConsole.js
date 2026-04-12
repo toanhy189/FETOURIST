@@ -9,8 +9,9 @@ import AdminManagersPanel from "@/components/admin/AdminManagersPanel";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import AdminTourWorkspace from "@/components/admin/AdminTourWorkspace";
-import BookingsPanel from "@/components/admin/BookingsPanel";
+// import BookingsPanel from "@/components/admin/BookingsPanel";
 import UsersPanel from "@/components/admin/UsersPanel";
+import BookingsPanel from "./bookings/BookingsPanel";
 import {
   ADMIN_ROUTE_MAP,
   adminNavItems,

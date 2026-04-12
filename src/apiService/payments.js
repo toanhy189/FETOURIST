@@ -45,3 +45,11 @@ export async function updatePaymentTransactionStatus(transactionId, payload) {
 
   return response.data;
 }
+
+export async function confirmVNPayReturn(searchParams = {}) {
+  const response = await privateRequest("/api/payments/vnpay/return", {
+    searchParams,
+  });
+
+  return response.data;
+}

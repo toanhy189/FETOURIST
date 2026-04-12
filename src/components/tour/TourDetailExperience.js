@@ -20,6 +20,7 @@ const paymentMethodOptions = [
   { value: "bank_transfer", label: "Chuyển khoản" },
   { value: "credit_card", label: "Thẻ tín dụng" },
   { value: "e_wallet", label: "Ví điện tử" },
+  { value: "vnpay", label: "VNPAY" },
 ];
 
 const guestFieldConfigs = [
