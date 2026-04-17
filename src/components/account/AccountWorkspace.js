@@ -68,7 +68,7 @@ export default function AccountWorkspace() {
   const loadDashboard = useCallback(async () => {
     const [historyResult, favoriteResult, paymentResult, notificationResult] =
       await Promise.allSettled([
-        getMyBookingHistory({ limit: 8 }),
+        getMyBookingHistory({ page: 1, limit: 50 }),
         getMyFavorites({ limit: 8 }),
         getMyPaymentHistory({ limit: 8 }),
         getMyNotifications({ limit: 8 }),

@@ -175,7 +175,7 @@ function BookingDetailPanel({
   const isBankTransfer = paymentForm.method === "bank_transfer";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-h-[820px] overflow-y-auto pr-2">
       <div className="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white">
         <div className="bg-gradient-to-br from-sky-600 to-cyan-500 px-5 py-5 text-white">
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sky-100">
@@ -305,7 +305,7 @@ export default function BookingTab({
 }) {
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_420px]">
-      <div className="space-y-4">
+      <div className="space-y-4 max-h-[820px] overflow-y-auto pr-2">
         {bookings?.length > 0 ? (
           bookings.map((booking) => (
             <BookingItem
