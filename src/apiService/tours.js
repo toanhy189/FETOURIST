@@ -3,18 +3,18 @@ import { fetchApi, toAssetUrl } from "@/apiService/base";
 import { normalizeItinerarySteps } from "@/utils/tourItinerary";
 
 const transportLabels = {
-  bus: "Xe du lich",
-  plane: "May bay",
-  train: "Tau hoa",
-  ship: "Tau thuyen",
-  car: "Xe rieng",
-  mixed: "Linh hoat",
+  bus: "Xe du lịch",
+  plane: "Máy bay",
+  train: "Tàu hỏa",
+  ship: "Tàu thuyền",
+  car: "Xe riêng",
+  mixed: "Linh hoạt",
 };
 
+// CÁC HÀM TRỢ GIÚP (HELPER FUNCTIONS)
+
 function mapDeparture(departure) {
-  if (!departure) {
-    return null;
-  }
+  if (!departure) return null;
 
   const normalizedDiscountPrice =
     typeof departure.discountPrice === "number" && departure.discountPrice > 0
@@ -45,8 +45,7 @@ function buildTourSummary(tour) {
   if (tour.highlights?.length) {
     return tour.highlights.slice(0, 2).join(" - ");
   }
-
-  return `Khoi hanh tu ${tour.departureLocation} den ${tour.destination}.`;
+  return `Khởi hành từ ${tour.departureLocation || "nhiều nơi"} đến ${tour.destination || "điểm đến"}.`;
 }
 
 function mapItinerary(step) {
@@ -55,25 +54,25 @@ function mapItinerary(step) {
     blocks: Array.isArray(step?.blocks)
       ? step.blocks.map((block) =>
           block?.type === "image"
-            ? {
-                ...block,
-                url: toAssetUrl(block.url),
-              }
+            ? { ...block, url: toAssetUrl(block.url) }
             : block
         )
       : [],
   };
 }
 
+//HÀM CHUYỂN ĐỔI DỮ LIỆU CHÍNH 
+
 export function mapTour(tour) {
+  if (!tour) return null;
+
   const normalizedDiscountPrice =
     typeof tour.discountPrice === "number" && tour.discountPrice > 0
       ? tour.discountPrice
       : null;
   const displayPrice =
-    normalizedDiscountPrice !== null
-      ? normalizedDiscountPrice
-      : tour.price;
+    normalizedDiscountPrice !== null ? normalizedDiscountPrice : tour.price;
+
   const itinerary = normalizeItinerarySteps(tour.itinerary).map(mapItinerary);
 
   return {
@@ -81,7 +80,7 @@ export function mapTour(tour) {
     slug: tour.slug,
     title: tour.title,
     destination: tour.destination,
-    departureLocation: tour.departureLocation,
+    departureLocation: tour.departureLocation, 
     category: tour.category
       ? {
           id: tour.category._id,
@@ -101,7 +100,7 @@ export function mapTour(tour) {
     durationDays: tour.durationDays,
     durationNights: tour.durationNights,
     transport: tour.transport,
-    transportLabel: transportLabels[tour.transport] || "Tour tron goi",
+    transportLabel: transportLabels[tour.transport] || "Tour trọn gói",
     price: tour.price,
     discountPrice: normalizedDiscountPrice,
     singleRoomSupplement: tour.singleRoomSupplement ?? 0,
@@ -129,14 +128,24 @@ export function mapTour(tour) {
   };
 }
 
+// --- CÁC HÀM GỌI API CHO PUBLIC USER ---
+
 export async function getTours(searchParams = {}) {
+  // Loại bỏ các trường rỗng/null để tránh gửi query "rác"
+  const cleanParams = {};
+  Object.keys(searchParams).forEach((key) => {
+    if (searchParams[key] !== undefined && searchParams[key] !== null && searchParams[key] !== "") {
+      cleanParams[key] = searchParams[key];
+    }
+  });
+
   const response = await fetchApi("/api/tours", {
-    searchParams,
-    next: { revalidate: 60 },
+    searchParams: cleanParams,
+    next: { revalidate: 0 }, 
   });
 
   return {
-    tours: Array.isArray(response.data) ? response.data.map(mapTour) : [],
+    tours: Array.isArray(response.data) ? response.data.map(mapTour).filter(Boolean) : [],
     pagination: response.pagination ?? null,
     message: response.message,
   };
@@ -144,7 +153,7 @@ export async function getTours(searchParams = {}) {
 
 export async function getTourDetail(idOrSlug) {
   const response = await fetchApi(`/api/tours/${idOrSlug}`, {
-    next: { revalidate: 60 },
+    next: { revalidate: 0 },
   });
 
   return mapTour(response.data);
@@ -157,7 +166,7 @@ export async function getRelatedTours(idOrSlug, searchParams = {}) {
   });
 
   return {
-    tours: Array.isArray(response.data) ? response.data.map(mapTour) : [],
+    tours: Array.isArray(response.data) ? response.data.map(mapTour).filter(Boolean) : [],
     message: response.message,
   };
 }
@@ -173,6 +182,8 @@ export async function getTourDepartures(idOrSlug, searchParams = {}) {
     message: response.message,
   };
 }
+
+// --- CÁC HÀM GỌI API CHO ADMIN ---
 
 export async function getToursForAdmin(searchParams = {}) {
   const response = await privateRequest("/api/tours/admin/all", {
@@ -196,7 +207,6 @@ export async function createTour(payload) {
     method: "POST",
     data: payload,
   });
-
   return mapTour(response.data);
 }
 
@@ -205,7 +215,6 @@ export async function updateTour(tourId, payload) {
     method: "PATCH",
     data: payload,
   });
-
   return mapTour(response.data);
 }
 
@@ -213,7 +222,6 @@ export async function deleteTour(tourId) {
   const response = await privateRequest(`/api/tours/${tourId}`, {
     method: "DELETE",
   });
-
   return response.data;
 }
 
@@ -225,9 +233,10 @@ export async function uploadTourImages(tourId, files) {
     method: "POST",
     data: formData,
   });
-
   return response.data;
 }
+
+// 
 
 export async function getTourDeparturesForAdmin(tourId, searchParams = {}) {
   const response = await privateRequest(`/api/tours/${tourId}/departures/admin`, {
@@ -246,7 +255,6 @@ export async function createTourDeparture(tourId, payload) {
     method: "POST",
     data: payload,
   });
-
   return mapDeparture(response.data);
 }
 
@@ -255,7 +263,6 @@ export async function updateTourDeparture(tourId, departureId, payload) {
     method: "PATCH",
     data: payload,
   });
-
   return mapDeparture(response.data);
 }
 
@@ -263,6 +270,5 @@ export async function deleteTourDeparture(tourId, departureId) {
   const response = await privateRequest(`/api/tours/${tourId}/departures/${departureId}`, {
     method: "DELETE",
   });
-
   return response.data;
 }
