@@ -113,9 +113,6 @@ export default function PaymentTab({ payments }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h3 className="text-xl font-bold text-slate-900">Lịch sử giao dịch</h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Theo dõi tất cả các lần thanh toán của bạn theo từng booking.
-            </p>
           </div>
         </div>
 

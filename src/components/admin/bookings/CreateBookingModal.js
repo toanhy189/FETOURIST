@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import BookingModal from "./BookingModal";
-import { BOOKING_STATUSES, PAYMENT_METHODS } from "./bookingConstants";
+import {
+  BOOKING_STATUSES,
+  PAYMENT_METHODS,
+  getPaymentMethodLabel,
+  getBookingStatusLabel,
+} from "./bookingConstants";
 
 const initialCreateForm = {
   userId: "",
@@ -187,7 +192,7 @@ export default function CreateBookingModal({
             >
               {PAYMENT_METHODS.map((method) => (
                 <option key={method} value={method}>
-                  {method}
+                  {getPaymentMethodLabel(method)}
                 </option>
               ))}
             </FormSelect>
@@ -200,7 +205,7 @@ export default function CreateBookingModal({
             >
               {BOOKING_STATUSES.filter((item) => item === "pending" || item === "confirmed").map((status) => (
                 <option key={status} value={status}>
-                  {status}
+                  {getBookingStatusLabel(status)}
                 </option>
               ))}
             </FormSelect>

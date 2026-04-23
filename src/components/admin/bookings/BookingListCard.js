@@ -1,5 +1,9 @@
 "use client";
-
+import {
+  getBookingStatusLabel,
+  getPaymentMethodLabel,
+  getPaymentStatusLabel,
+} from "./bookingConstants";
 import { formatVnd } from "@/utils/format";
 
 function cn(...classes) {
@@ -82,7 +86,7 @@ export default function BookingListCard({
                           getBookingStatusClass(booking.bookingStatus)
                         )}
                       >
-                        {booking.bookingStatus}
+                        {getBookingStatusLabel(booking.bookingStatus)}
                       </span>
                       <span
                         className={cn(
@@ -90,7 +94,7 @@ export default function BookingListCard({
                           getPaymentStatusClass(booking.paymentStatus)
                         )}
                       >
-                        {booking.paymentStatus}
+                        {getPaymentStatusLabel(booking.paymentStatus)}
                       </span>
                     </div>
 
@@ -105,7 +109,7 @@ export default function BookingListCard({
                       </p>
                       <p>
                         <span className="font-medium text-slate-700">Thanh toán:</span>{" "}
-                        {booking.paymentMethod || "--"}
+                        {getPaymentMethodLabel(booking.paymentMethod)}
                       </p>
                       <p>
                         <span className="font-medium text-slate-700">Tổng tiền:</span>{" "}

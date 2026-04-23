@@ -10,9 +10,8 @@ import {
   updateBookingStatusForAdmin,
 } from "@/apiService/bookings";
 import { getUsers } from "@/apiService/auth";
-import { updatePaymentTransactionStatus } from "@/apiService/payments";
 import { getTourDeparturesForAdmin, getToursForAdmin } from "@/apiService/tours";
-
+import { updatePaymentTransactionStatus } from "@/apiService/payments";
 import BookingStatsRow from "./BookingStatsRow";
 import BookingListCard from "./BookingListCard";
 import CreateBookingModal from "./CreateBookingModal";
@@ -198,7 +197,22 @@ export default function BookingsPanel() {
       throw actionError;
     }
   }
+  async function handleUpdateTransaction(transactionId, status) {
+    if (!selectedBooking?.orderCode) return;
 
+    clearFeedback();
+
+    try {
+      await updatePaymentTransactionStatus(transactionId, { status });
+      setMessage("Đã cập nhật trạng thái giao dịch.");
+      await Promise.all([
+        loadBootstrap(),
+        loadBookingDetail(selectedBooking.orderCode),
+      ]);
+    } catch (actionError) {
+      setError(actionError.message || "Không cập nhật được giao dịch.");
+    }
+  }
   async function handleSaveBookingInfo(orderCode, payload) {
     clearFeedback();
 
@@ -206,9 +220,9 @@ export default function BookingsPanel() {
       await updateBookingForAdmin(orderCode, payload);
       setMessage("Đã cập nhật booking.");
       await Promise.all([loadBootstrap(), loadBookingDetail(orderCode)]);
-      setIsUpdateOpen(false);
     } catch (actionError) {
       setError(actionError.message || "Không cập nhật được booking.");
+      throw actionError;
     }
   }
 
@@ -219,9 +233,9 @@ export default function BookingsPanel() {
       await updateBookingStatusForAdmin(orderCode, payload);
       setMessage("Đã cập nhật trạng thái booking.");
       await Promise.all([loadBootstrap(), loadBookingDetail(orderCode)]);
-      setIsUpdateOpen(false);
     } catch (actionError) {
       setError(actionError.message || "Không cập nhật được trạng thái booking.");
+      throw actionError;
     }
   }
 
@@ -240,19 +254,6 @@ export default function BookingsPanel() {
     }
   }
 
-  async function handleUpdateTransaction(transactionId, status) {
-    if (!selectedBooking?.orderCode) return;
-
-    clearFeedback();
-
-    try {
-      await updatePaymentTransactionStatus(transactionId, { status });
-      setMessage("Đã cập nhật trạng thái giao dịch.");
-      await Promise.all([loadBootstrap(), loadBookingDetail(selectedBooking.orderCode)]);
-    } catch (actionError) {
-      setError(actionError.message || "Không cập nhật được giao dịch.");
-    }
-  }
 
   const filteredBookings = useMemo(() => {
     const normalized = keyword.trim().toLowerCase();
@@ -384,17 +385,20 @@ export default function BookingsPanel() {
       <UpdateBookingModal
         open={isUpdateOpen}
         booking={selectedBooking}
+        tours={tours}
+        departures={departures}
+        onLoadDepartures={loadDeparturesForTour}
         onClose={() => setIsUpdateOpen(false)}
         onSaveInfo={handleSaveBookingInfo}
         onSaveStatus={handleSaveBookingStatus}
         onDelete={handleDeleteBooking}
+        onUpdateTransaction={handleUpdateTransaction}
       />
 
       <BookingDetailModal
         open={isDetailOpen}
         booking={loadingDetail ? null : selectedBooking}
         onClose={() => setIsDetailOpen(false)}
-        onUpdateTransaction={handleUpdateTransaction}
       />
     </section>
   );
