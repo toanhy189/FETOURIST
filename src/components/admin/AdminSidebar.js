@@ -192,7 +192,7 @@ export default function AdminSidebar({
   isOpen = true,
   onClose,
 }) {
-  const currentName = currentUser?.fullName || "Admin BETOURIST";
+  const currentName = currentUser?.fullName || "Admin TRAVELPTIT";
   const [manualExpandedItems, setManualExpandedItems] = useState({});
 
   function handleSelect(href) {

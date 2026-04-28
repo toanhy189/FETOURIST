@@ -4,9 +4,9 @@ import { buildApiUrl } from "@/apiService/base";
 import { isTokenExpired } from "@/utils/authenticate";
 
 const STORAGE_KEYS = {
-  accessToken: "betourist.accessToken",
-  refreshToken: "betourist.refreshToken",
-  user: "betourist.user",
+  accessToken: "travelptit.accessToken",
+  refreshToken: "travelptit.refreshToken",
+  user: "travelptit.user",
 };
 
 let refreshPromise = null;

@@ -17,7 +17,7 @@ export function BrandMark({ className = "h-12 w-12", compact = false }) {
       <span className="absolute right-[13%] top-[14%] h-[18%] w-[18%] rounded-full bg-white/90" />
       {!compact ? (
         <span className="absolute bottom-[18%] left-1/2 -translate-x-1/2 text-[0.48rem] font-black tracking-[0.08em] text-emerald-800">
-          BT
+          PT
         </span>
       ) : null}
     </span>
@@ -31,7 +31,7 @@ export default function BrandLogo({ href = "/", markClassName, textClassName, co
       <span
         className={`font-black uppercase leading-none tracking-[0.01em] text-emerald-950 ${textClassName || "text-3xl"}`}
       >
-        BETOURIST
+        TRAVELPTIT
       </span>
     </Link>
   );

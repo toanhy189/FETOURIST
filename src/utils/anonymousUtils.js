@@ -1,4 +1,4 @@
-const ANONYMOUS_ID_KEY = "betourist.anonymousId";
+const ANONYMOUS_ID_KEY = "travelptit.anonymousId";
 
 function generateAnonymousId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {

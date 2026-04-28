@@ -4,7 +4,6 @@ import { formatDateVi, formatVnd } from "@/utils/format";
 const fallbackCover =
   "linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(3, 105, 161, 0.82), rgba(14, 165, 233, 0.72))";
 
-// --- Các Icon giữ nguyên như code cũ của bạn ---
 function TicketIcon({ className = "h-4 w-4" }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
@@ -51,101 +50,109 @@ function GroupIcon({ className = "h-4 w-4" }) {
   );
 }
 
-// --- Helper functions ---
 function getCoverStyle(imageUrl) {
   if (!imageUrl) return { background: fallbackCover };
   return {
-    backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.05), rgba(15, 23, 42, 0.3)), url("${imageUrl}")`,
+    backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.18)), url("${imageUrl}")`,
     backgroundPosition: "center",
     backgroundSize: "cover",
   };
 }
 
-export default function TourCard({ tour }) {
-  return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl w-full max-w-[380px] mx-auto md:mx-0">
-      
-      {/* 1. Phần hình ảnh - Fix chiều cao để tạo cảm giác ô vuông */}
-      <div className="relative h-52 w-full overflow-hidden" style={getCoverStyle(tour.imageUrl)}>
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+function getCardRemainingSeats(tour) {
+  const totalRemainingSeats = Number(tour?.totalRemainingSeats);
+  if (Number.isFinite(totalRemainingSeats)) {
+    return Math.max(totalRemainingSeats, 0);
+  }
 
-        {/* Badge địa điểm & loại hình */}
+  if (Array.isArray(tour?.upcomingDepartures)) {
+    return tour.upcomingDepartures.reduce((total, departure) => {
+      const departureRemainingSeats = Number(departure?.remainingSeats);
+      return Number.isFinite(departureRemainingSeats)
+        ? total + Math.max(departureRemainingSeats, 0)
+        : total;
+    }, 0);
+  }
+
+  const availableSeats = Number(tour?.availableSeats);
+  return Number.isFinite(availableSeats) ? Math.max(availableSeats, 0) : 0;
+}
+
+export default function TourCard({ tour }) {
+  const remainingSeats = getCardRemainingSeats(tour);
+
+  return (
+    <article className="group mx-auto flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-[1.05rem] border border-slate-200/90 bg-white shadow-[0_18px_42px_-30px_rgba(15,23,42,0.88)] transition-all hover:-translate-y-1 hover:shadow-[0_24px_54px_-32px_rgba(15,23,42,0.9)]">
+      <div className="relative h-[162px] w-full overflow-hidden" style={getCoverStyle(tour.imageUrl)}>
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-          <span className="rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold text-slate-800 shadow-sm uppercase">
+          <span className="rounded-full bg-white/92 px-3 py-1 text-[10px] font-black uppercase text-slate-800 shadow-sm">
             {tour.destination || "Việt Nam"}
           </span>
-          {tour.category?.name && (
-            <span className="rounded-full bg-sky-600/90 px-2.5 py-1 text-[10px] font-bold text-white shadow-sm uppercase">
+          {tour.category?.name ? (
+            <span className="rounded-full bg-sky-600/95 px-3 py-1 text-[10px] font-black uppercase text-white shadow-sm">
               {tour.category.name}
             </span>
-          )}
-        </div>
-
-        {/* Thanh ngày khởi hành sát cạnh dưới ảnh */}
-        <div className="absolute bottom-0 left-0 right-0 flex items-center bg-white/95 text-[11px] font-bold backdrop-blur-sm border-t border-slate-100">
-          <div className="flex flex-1 items-center justify-center gap-1 py-2 text-sky-700 border-r border-slate-100">
-            <CalendarIcon className="h-3 w-3" />
-            <span>KHỞI HÀNH GẦN NHẤT</span>
-          </div>
-          <div className="flex-1 py-2 text-center text-rose-600">
-            {formatDateVi(tour.firstStartDate)}
-          </div>
+          ) : null}
         </div>
       </div>
 
-      {/* 2. Phần nội dung */}
-      <div className="flex flex-col gap-3 p-4">
+      <div className="flex items-center justify-between border-b border-slate-100 bg-white px-4 py-2 text-[11px] font-black uppercase">
+        <span className="inline-flex items-center gap-1.5 text-sky-700">
+          <CalendarIcon className="h-3.5 w-3.5" />
+          Khởi hành gần nhất
+        </span>
+        <span className="text-rose-500">{formatDateVi(tour.firstStartDate)}</span>
+      </div>
+
+      <div className="flex flex-1 flex-col gap-2.5 p-4">
         <Link href={`/tour/${tour.slug}`}>
-          <h3 className="line-clamp-2 text-[14px] font-extrabold text-slate-800 transition-colors hover:text-sky-600 leading-snug h-[40px]">
+          <h3 className="line-clamp-2 min-h-[42px] text-[15px] font-black leading-snug text-slate-900 transition-colors hover:text-sky-700">
             {tour.title}
           </h3>
         </Link>
 
-        {/* Mã tour nhỏ gọn */}
-        <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 uppercase tracking-wider">
-          <TicketIcon className="h-3 w-3" />
-          <span className="truncate">MÃ: {tour.slug?.toUpperCase() || "BETOURIST"}</span>
+        <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+          <TicketIcon className="h-3.5 w-3.5" />
+          <span className="truncate">Mã: {tour.slug?.toUpperCase() || "TRAVELPTIT"}</span>
         </div>
 
-        {/* Thông tin chi tiết */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-slate-600">
-            <PinIcon className="h-4 w-4 text-slate-400 shrink-0" />
+        <div className="space-y-1.5 text-[12px] text-slate-600">
+          <div className="flex items-center gap-2">
+            <PinIcon className="h-4 w-4 shrink-0 text-slate-400" />
             <span className="truncate">
-              Khởi hành: <span className="font-semibold text-sky-700">{tour.departureLocation}</span>
+              Khởi hành: <span className="font-bold text-sky-700">{tour.departureLocation}</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-600">
-            <CalendarIcon className="h-4 w-4 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="h-4 w-4 shrink-0 text-slate-400" />
             <span>Ngày: {formatDateVi(tour.firstStartDate)}</span>
           </div>
 
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-1.5 text-xs text-slate-600">
+          <div className="flex items-center justify-between pt-0.5">
+            <span className="flex items-center gap-1.5 font-semibold">
               <ClockIcon className="h-4 w-4 text-slate-400" />
-              <span className="font-medium">{tour.durationDays}N{tour.durationNights}Đ</span>
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-600">
+              {tour.durationDays}N{tour.durationNights}Đ
+            </span>
+            <span className="flex items-center gap-1.5">
               <GroupIcon className="h-4 w-4 text-slate-400" />
-              <span>Còn: <span className="font-bold text-rose-400">{tour.availableSeats || 0}</span></span>
-            </div>
+              Còn: <span className="font-black text-rose-500">{remainingSeats}</span>
+            </span>
           </div>
         </div>
       </div>
 
-      {/* 3. Phần giá và nút đặt */}
-      <div className="mt-auto flex items-center justify-between border-t border-slate-50 p-4 bg-slate-50/30">
+      <div className="mt-auto flex items-center justify-between border-t border-slate-100 bg-slate-50/60 px-4 py-3.5">
         <div>
-          <span className="block text-[10px] font-bold text-slate-400 uppercase">Giá từ:</span>
-          <div className="text-lg font-black text-rose-400">
+          <span className="block text-[10px] font-black uppercase text-slate-400">Giá từ:</span>
+          <div className="text-[1.2rem] font-black leading-tight text-rose-500">
             {formatVnd(tour.displayPrice)}
           </div>
         </div>
 
         <Link
           href={`/tour/${tour.slug}`}
-          className="rounded-lg border-2 border-rose-400 px-4 py-1.5 text-xs font-bold text-rose-400 transition-all hover:bg-rose-400 hover:text-white active:scale-95"
+          className="rounded-lg border border-rose-400 px-4 py-2 text-xs font-black text-slate-900 transition-all hover:bg-rose-500 hover:text-white"
         >
           Đặt ngay
         </Link>

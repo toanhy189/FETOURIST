@@ -4,10 +4,10 @@ import {
 } from "@/apiService/recentTours";
 import { getAnonymousId } from "@/utils/anonymousUtils";
 
-export const RECENT_TOURS_STORAGE_PREFIX = "betourist.recentTours.";
-export const RECENT_TOURS_MERGE_PREFIX = "betourist.recentTours.merged.";
+export const RECENT_TOURS_STORAGE_PREFIX = "travelptit.recentTours.";
+export const RECENT_TOURS_MERGE_PREFIX = "travelptit.recentTours.merged.";
 export const MAX_RECENT_TOURS = 8;
-const RECENT_TOURS_EVENT = "betourist:recentToursChanged";
+const RECENT_TOURS_EVENT = "travelptit:recentToursChanged";
 const EMPTY_RECENT_TOURS = [];
 const recentToursSnapshotCache = new Map();
 
@@ -42,13 +42,18 @@ function toNumberOrNull(value) {
  * - Nếu không có chuyến sắp tới thì dùng `availableSeats` làm phương án dự phòng.
  */
 function resolveAvailableSeats(tour) {
-  const firstUpcomingDeparture = Array.isArray(tour?.upcomingDepartures)
-    ? tour.upcomingDepartures[0]
-    : null;
-  const departureRemainingSeats = toNumberOrNull(firstUpcomingDeparture?.remainingSeats);
+  const totalRemainingSeats = toNumberOrNull(tour?.totalRemainingSeats);
+  if (totalRemainingSeats !== null) {
+    return totalRemainingSeats;
+  }
 
-  if (departureRemainingSeats !== null) {
-    return departureRemainingSeats;
+  if (Array.isArray(tour?.upcomingDepartures)) {
+    return tour.upcomingDepartures.reduce((total, departure) => {
+      const departureRemainingSeats = toNumberOrNull(departure?.remainingSeats);
+      return departureRemainingSeats === null
+        ? total
+        : total + Math.max(departureRemainingSeats, 0);
+    }, 0);
   }
 
   return toNumberOrNull(tour?.availableSeats);
@@ -61,7 +66,7 @@ function resolveAvailableSeats(tour) {
  * - Không có tham số; hàm tự lấy `anonymousId`.
  *
  * Đầu ra:
- * - Key dạng `betourist.recentTours.<anonymousId>`.
+ * - Key dạng `travelptit.recentTours.<anonymousId>`.
  *
  * Hành vi nghiệp vụ:
  * - Giữ local cache tách riêng theo từng định danh trình duyệt để khách cũng có

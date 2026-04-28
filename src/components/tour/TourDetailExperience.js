@@ -151,7 +151,7 @@ function getGalleryImages(tour) {
 }
 
 function getReferenceCode(tour) {
-  const seed = String(tour.id || tour.slug || "BETOURIST").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+  const seed = String(tour.id || tour.slug || "TRAVELPTIT").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
   return `BT-${seed.slice(-6).padStart(6, "0")}`;
 }
 
@@ -969,7 +969,7 @@ export default function TourDetailExperience({ tour }) {
                 ) : (
                   <div className="flex h-[190px] w-full items-end bg-[linear-gradient(135deg,#0f766e_0%,#0f4c81_55%,#f59e0b_100%)] p-5 text-white sm:h-[220px] lg:h-[248px]">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/80">BETOURIST</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.24em] text-white/80">TRAVELPTIT</p>
                       <h3 className="mt-2.5 max-w-xl text-[1.4rem] font-bold leading-tight">{tour.title}</h3>
                     </div>
                   </div>
@@ -1426,7 +1426,7 @@ export default function TourDetailExperience({ tour }) {
                             value={bookingForm.email}
                             onChange={(event) => patchBookingField("email", event.target.value)}
                             className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-base font-medium text-slate-900 outline-none transition focus:border-sky-400"
-                            placeholder="email@betourist.vn"
+                            placeholder="email@travelptit.vn"
                           />
                         </label>
 

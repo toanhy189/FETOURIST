@@ -69,7 +69,7 @@ export default function CategoryTourResults({
 
   if (!hasTours) {
     return (
-      <div className="rounded-[2.5rem] border-2 border-dashed border-slate-200 bg-white p-24 text-center shadow-inner">
+      <div className="travel-soft-panel rounded-[1.5rem] border-2 border-dashed border-slate-200 p-20 text-center">
         <h3 className="text-xl font-bold text-slate-800">
           Không tìm thấy tour phù hợp
         </h3>
@@ -81,8 +81,8 @@ export default function CategoryTourResults({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {tours.map((tour) => (
           <TourCard key={tour.id} tour={tour} />
         ))}
@@ -100,7 +100,7 @@ export default function CategoryTourResults({
             type="button"
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className="rounded-2xl border border-orange-200 bg-white px-6 py-3 text-sm font-bold text-orange-600 shadow-sm transition hover:border-orange-300 hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full border border-orange-300 bg-white px-10 py-4 text-sm font-black text-orange-600 shadow-[0_18px_34px_-24px_rgba(249,115,22,0.9)] transition hover:border-orange-400 hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoadingMore
               ? "Đang tải thêm..."

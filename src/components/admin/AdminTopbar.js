@@ -122,7 +122,7 @@ export default function AdminTopbar({
 }) {
   const router = useRouter();
   const dropdownRef = useRef(null);
-  const currentName = currentUser?.fullName || "Admin BETOURIST";
+  const currentName = currentUser?.fullName || "Admin TRAVELPTIT";
   const {
     notificationCount,
     logout,

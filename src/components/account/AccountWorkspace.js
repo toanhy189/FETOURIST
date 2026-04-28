@@ -13,11 +13,9 @@ import {
   createPaymentSession,
   getMyBookingPaymentDetail,
   getMyPaymentHistory,
-  simulateGatewayCallback,
 } from "@/apiService/payments";
 import { useAppContext } from "@/components/providers/AppProvider";
 import { cn } from "@/utils/cn";
-import { formatDateTimeVi, formatDateVi, formatVnd } from "@/utils/format";
 import {
   getEmptyRecentToursSnapshot,
   getRecentToursSnapshot,
@@ -64,7 +62,6 @@ export default function AccountWorkspace() {
     transactionType: "full_payment",
     amount: "",
     transactionCode: "",
-    result: "success",
   });
   const recentTours = useSyncExternalStore(
     subscribeRecentTours,
@@ -170,29 +167,6 @@ export default function AccountWorkspace() {
       setError(actionError.message || "Không tạo được phiên thanh toán.");
     } finally {
       patchLoading("createPayment", false);
-    }
-  }
-
-  async function handleMockPayment(event) {
-    event.preventDefault();
-    patchLoading("mockPayment", true);
-    pushFeedback();
-
-    try {
-      await simulateGatewayCallback({
-        transactionCode: paymentForm.transactionCode,
-        result: paymentForm.result,
-        gatewayTransactionId: `GW-${Date.now()}`,
-      });
-
-      setMessage("Da cap nhat callback thanh toan mo phong.");
-      if (selectedBooking?.orderCode) {
-        await Promise.all([loadDashboard(), openBooking(selectedBooking.orderCode)]);
-      }
-    } catch (actionError) {
-      setError(actionError.message || "Khong xu ly duoc callback thanh toan.");
-    } finally {
-      patchLoading("mockPayment", false);
     }
   }
 

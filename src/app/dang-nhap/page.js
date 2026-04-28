@@ -1,7 +1,7 @@
 import AuthFormCard from "@/components/auth/AuthFormCard";
 
 export const metadata = {
-  title: "Dang Nhap | BETOURIST",
+  title: "Dang Nhap | TRAVELPTIT",
   description: "Dang nhap de truy cap booking, payment, favorite va khu vuc quan tri.",
 };
 

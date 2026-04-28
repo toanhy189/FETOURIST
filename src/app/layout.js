@@ -3,8 +3,8 @@ import SiteShell from "@/components/SiteShell";
 import { AppProvider } from "@/components/providers/AppProvider";
 
 export const metadata = {
-  title: "BETOURIST | Website Du Lich",
-  description: "Giao dien website du lich co ket noi du lieu that tu backend BETOURIST.",
+  title: "TRAVELPTIT | Website Du Lich",
+  description: "Giao dien website du lich co ket noi du lieu that tu backend TRAVELPTIT.",
 };
 
 export const viewport = {

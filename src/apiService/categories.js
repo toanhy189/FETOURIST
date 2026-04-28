@@ -2,7 +2,7 @@ import { privateRequest } from "@/apiService/AxiosInstance/AxiosInstance";
 import { fetchApi, toAssetUrl } from "@/apiService/base";
 
 function mapCategory(category) {
-  // Map payload MongoDB/BETOURIST ve shape gon hon de UI dung thong nhat.
+  // Map payload MongoDB/TRAVELPTIT ve shape gon hon de UI dung thong nhat.
   return {
     id: category._id,
     name: category.name,

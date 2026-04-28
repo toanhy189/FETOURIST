@@ -199,10 +199,12 @@ export default function FilterSidebar({ categories = [] }) {
   }));
 
   return (
-    <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
-        <div className="h-5 w-1 rounded-full bg-orange-500"></div>
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800">
+    <div className="travel-soft-panel space-y-6 rounded-[1.5rem] p-7">
+      <div className="flex items-center gap-2 pb-2">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-white shadow-lg shadow-sky-100">
+          <DepartureIcon />
+        </div>
+        <h2 className="text-lg font-black uppercase tracking-tight text-slate-900">
           Tìm Kiếm Nhanh
         </h2>
       </div>
@@ -217,7 +219,7 @@ export default function FilterSidebar({ categories = [] }) {
           options={destinationOptions}
           placeholder="Nhập điểm đến..."
           emptyLabel="Tất cả điểm đến"
-          containerClassName="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-100"
+          containerClassName="rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-100"
           inputClassName="text-sm text-slate-700"
           dropdownClassName="max-h-72"
         />
@@ -230,7 +232,7 @@ export default function FilterSidebar({ categories = [] }) {
         <DatePickerField
           value={filters.startDate}
           onChange={(value) => handleChange("startDate", value)}
-          containerClassName="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-all focus-within:bg-white"
+          containerClassName="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm transition-all focus-within:bg-white"
           inputClassName="text-sm text-slate-700 placeholder:text-slate-400"
           ariaLabel="Chọn ngày khởi hành"
         />
@@ -246,7 +248,7 @@ export default function FilterSidebar({ categories = [] }) {
           options={departureLocations}
           placeholder="Tất cả địa điểm"
           emptyLabel="Tất cả địa điểm"
-          containerClassName="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 transition-all focus-within:bg-white"
+          containerClassName="rounded-xl border border-slate-200 bg-white px-3 py-3 transition-all focus-within:bg-white"
           inputClassName="text-xs font-semibold text-slate-700"
           dropdownClassName="max-h-72"
           leadingContent={<DepartureIcon />}
@@ -260,7 +262,7 @@ export default function FilterSidebar({ categories = [] }) {
         <select
           value={filters.category}
           onChange={(event) => handleChange("category", event.target.value)}
-          className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition-all focus:bg-white"
+          className="w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition-all focus:bg-white"
         >
           <option value="">Tất cả danh mục</option>
           {categories.map((category) => (
@@ -284,7 +286,7 @@ export default function FilterSidebar({ categories = [] }) {
           placeholder="Tất cả thời gian"
           emptyLabel="Tất cả thời gian"
           inputMode="numeric"
-          containerClassName="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 transition-all focus-within:bg-white"
+          containerClassName="rounded-xl border border-slate-200 bg-white px-3 py-3 transition-all focus-within:bg-white"
           inputClassName="text-xs font-semibold text-slate-700"
           dropdownClassName="max-h-72"
           leadingContent={<DurationIcon />}
@@ -301,7 +303,7 @@ export default function FilterSidebar({ categories = [] }) {
         <select
           value={filters.priceRange}
           onChange={(event) => handleChange("priceRange", event.target.value)}
-          className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition-all focus:bg-white"
+          className="w-full cursor-pointer rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm outline-none transition-all focus:bg-white"
         >
           {PRICE_RANGE_OPTIONS.map((option) => (
             <option key={option.value || "all"} value={option.value}>
@@ -314,13 +316,13 @@ export default function FilterSidebar({ categories = [] }) {
       <div className="space-y-3 pt-4">
         <button
           onClick={handleApplyFilter}
-          className="w-full rounded-xl bg-orange-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-100 transition-all hover:bg-orange-600 hover:shadow-orange-200 active:scale-95"
+          className="w-full rounded-xl bg-[#ff6a00] py-3.5 text-base font-black text-white shadow-lg shadow-orange-100 transition-all hover:bg-orange-600 hover:shadow-orange-200 active:scale-95"
         >
           Áp dụng bộ lọc
         </button>
         <button
           onClick={handleReset}
-          className="w-full py-2 text-center text-[11px] font-medium text-slate-400 transition-colors hover:text-rose-500"
+          className="w-full py-2 text-center text-sm font-semibold text-slate-400 transition-colors hover:text-rose-500"
         >
           Xóa tất cả bộ lọc
         </button>

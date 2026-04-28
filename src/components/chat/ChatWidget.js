@@ -9,8 +9,8 @@ import {
 import { useAppContext } from "@/components/providers/AppProvider";
 import { cn } from "@/utils/cn";
 
-const CHAT_SESSION_STORAGE_KEY = "betourist.chat.sessionId";
-const CHAT_CONVERSATION_STORAGE_KEY = "betourist.chat.conversationId";
+const CHAT_SESSION_STORAGE_KEY = "travelptit.chat.sessionId";
+const CHAT_CONVERSATION_STORAGE_KEY = "travelptit.chat.conversationId";
 
 function buildScopedStorageKey(baseKey, scopeKey) {
   return `${baseKey}.${scopeKey || "guest"}`;
@@ -399,7 +399,7 @@ export default function ChatWidget() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-600">
-                  BETOURIST AI
+                  TRAVELPTIT AI
                 </p>
                 <h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-slate-900">
                   Tư vấn tour nhanh

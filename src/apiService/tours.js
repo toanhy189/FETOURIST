@@ -11,6 +11,38 @@ const transportLabels = {
   mixed: "Linh hoạt",
 };
 
+function toNumberOrNull(value) {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function resolveDepartureRemainingSeats(departure) {
+  if (!departure) return null;
+
+  const explicitRemainingSeats = toNumberOrNull(departure.remainingSeats);
+  if (explicitRemainingSeats !== null) {
+    return Math.max(explicitRemainingSeats, 0);
+  }
+
+  const seatCapacity = toNumberOrNull(departure.seatCapacity);
+  const seatsBooked = toNumberOrNull(departure.seatsBooked);
+
+  if (seatCapacity !== null && seatsBooked !== null) {
+    return Math.max(seatCapacity - seatsBooked, 0);
+  }
+
+  return null;
+}
+
+function sumDeparturesRemainingSeats(departures) {
+  if (!Array.isArray(departures)) return null;
+
+  return departures.reduce(
+    (total, departure) => total + (resolveDepartureRemainingSeats(departure) ?? 0),
+    0
+  );
+}
+
 function mapDeparture(departure) {
   // Gom lich khoi hanh ve shape chung de card/detail/booking dung cung gia.
   if (!departure) return null;
@@ -23,6 +55,7 @@ function mapDeparture(departure) {
     normalizedDiscountPrice !== null
       ? normalizedDiscountPrice
       : departure.price;
+  const remainingSeats = resolveDepartureRemainingSeats(departure) ?? 0;
 
   return {
     id: departure._id,
@@ -33,7 +66,7 @@ function mapDeparture(departure) {
     price: departure.price,
     discountPrice: normalizedDiscountPrice,
     displayPrice: sellingPrice,
-    remainingSeats: departure.remainingSeats ?? 0,
+    remainingSeats,
     seatCapacity: departure.seatCapacity ?? 0,
     seatsBooked: departure.seatsBooked ?? 0,
     note: departure.note || "",
@@ -74,6 +107,27 @@ export function mapTour(tour) {
     normalizedDiscountPrice !== null ? normalizedDiscountPrice : tour.price;
 
   const itinerary = normalizeItinerarySteps(tour.itinerary).map(mapItinerary);
+  const hasUpcomingDeparturesPayload = Array.isArray(tour.upcomingDepartures);
+  const upcomingDepartures = hasUpcomingDeparturesPayload
+    ? tour.upcomingDepartures.map(mapDeparture).filter(Boolean)
+    : [];
+  const departures = Array.isArray(tour.departures)
+    ? tour.departures.map(mapDeparture).filter(Boolean)
+    : [];
+  const firstUpcomingDeparture = upcomingDepartures[0] || null;
+  const firstStartDate =
+    firstUpcomingDeparture?.departureDate ||
+    (!hasUpcomingDeparturesPayload && Array.isArray(tour.startDates)
+      ? tour.startDates[0]
+      : null);
+  const totalRemainingSeats = toNumberOrNull(tour.totalRemainingSeats);
+  const availableSeats =
+    totalRemainingSeats ??
+    (hasUpcomingDeparturesPayload
+      ? sumDeparturesRemainingSeats(upcomingDepartures)
+      : null) ??
+    (hasUpcomingDeparturesPayload ? 0 : toNumberOrNull(tour.availableSeats)) ??
+    0;
 
   return {
     id: tour._id,
@@ -106,12 +160,13 @@ export function mapTour(tour) {
     singleRoomSupplement: tour.singleRoomSupplement ?? 0,
     displayPrice,
     maxGroupSize: tour.maxGroupSize,
-    availableSeats: tour.availableSeats,
+    availableSeats,
+    totalRemainingSeats: availableSeats,
     status: tour.status,
     ratingAverage: Number(tour.ratingAverage || 0),
     ratingCount: Number(tour.ratingCount || 0),
     startDates: Array.isArray(tour.startDates) ? tour.startDates : [],
-    firstStartDate: Array.isArray(tour.startDates) ? tour.startDates[0] : null,
+    firstStartDate,
     highlights: Array.isArray(tour.highlights) ? tour.highlights : [],
     itinerary,
     includedServices: Array.isArray(tour.includedServices) ? tour.includedServices : [],
@@ -119,12 +174,8 @@ export function mapTour(tour) {
     imageUrl: toAssetUrl(tour.images?.[0]),
     images: Array.isArray(tour.images) ? tour.images.map(toAssetUrl).filter(Boolean) : [],
     summary: buildTourSummary(tour),
-    upcomingDepartures: Array.isArray(tour.upcomingDepartures)
-      ? tour.upcomingDepartures.map(mapDeparture).filter(Boolean)
-      : [],
-    departures: Array.isArray(tour.departures)
-      ? tour.departures.map(mapDeparture).filter(Boolean)
-      : [],
+    upcomingDepartures,
+    departures,
   };
 }
 

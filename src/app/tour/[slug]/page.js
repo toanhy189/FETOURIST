@@ -14,12 +14,12 @@ export async function generateMetadata({ params }) {
     const tour = await getTourDetail(slug);
 
     return {
-      title: `${tour.title} | BETOURIST`,
+      title: `${tour.title} | TRAVELPTIT`,
       description: tour.summary,
     };
   } catch {
     return {
-      title: "Tour Không Tồn Tại | BETOURIST",
+      title: "Tour Không Tồn Tại | TRAVELPTIT",
       description: "Không tìm thấy tour bạn đang tìm.",
     };
   }

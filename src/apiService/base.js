@@ -42,7 +42,7 @@ export async function fetchApi(path, options = {}) {
     next,
   });
 
-  // Backend BETOURIST tra ve JSON co success/message/data,
+  // Backend TRAVELPTIT tra ve JSON co success/message/data,
   // nen service chung parse va nem loi o day de page tren gon hon.
   const payload = await response.json().catch(() => null);
 

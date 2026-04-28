@@ -284,9 +284,30 @@ async function fetchAllCategories() {
   return sortCategories(collectedCategories);
 }
 
-async function fetchTourCounts() {
-  // API category hiện không trả sẵn số tour, nên panel tự đếm từ danh sách tour admin.
+function buildCategoryTourCounts(categories, directTourCounts) {
+  const parentByCategoryId = new Map(
+    categories.map((category) => [category.id, category.parentCategory?.id || null])
+  );
   const categoryTourCounts = {};
+
+  Object.entries(directTourCounts).forEach(([categoryId, directCount]) => {
+    let currentCategoryId = categoryId;
+    const visitedCategoryIds = new Set();
+
+    while (currentCategoryId && !visitedCategoryIds.has(currentCategoryId)) {
+      visitedCategoryIds.add(currentCategoryId);
+      categoryTourCounts[currentCategoryId] =
+        (categoryTourCounts[currentCategoryId] || 0) + directCount;
+      currentCategoryId = parentByCategoryId.get(currentCategoryId);
+    }
+  });
+
+  return categoryTourCounts;
+}
+
+async function fetchTourCounts(categories = []) {
+  // API category hiện không trả sẵn số tour, nên panel tự đếm từ danh sách tour admin.
+  const directTourCounts = {};
   let page = 1;
 
   for (let guard = 0; guard < 80; guard += 1) {
@@ -299,7 +320,7 @@ async function fetchTourCounts() {
         return;
       }
 
-      categoryTourCounts[categoryId] = (categoryTourCounts[categoryId] || 0) + 1;
+      directTourCounts[categoryId] = (directTourCounts[categoryId] || 0) + 1;
     });
 
     if (!result.pagination?.hasNextPage) {
@@ -309,7 +330,7 @@ async function fetchTourCounts() {
     page += 1;
   }
 
-  return categoryTourCounts;
+  return buildCategoryTourCounts(categories, directTourCounts);
 }
 
 function renderCategoryPlaceholder(categoryName, compact = false) {
@@ -364,6 +385,11 @@ export default function CategoriesPanel() {
     try {
       const nextCategories = await fetchAllCategories();
       setCategories(nextCategories);
+      try {
+        setTourCounts(await fetchTourCounts(nextCategories));
+      } catch {
+        setTourCounts({});
+      }
     } catch (loadError) {
       setError(loadError.message || "Không tải được danh sách danh mục.");
     } finally {
@@ -371,18 +397,9 @@ export default function CategoriesPanel() {
     }
   }, []);
 
-  const loadTourCounts = useCallback(async () => {
-    try {
-      const nextTourCounts = await fetchTourCounts();
-      setTourCounts(nextTourCounts);
-    } catch {
-      setTourCounts({});
-    }
-  }, []);
-
   useEffect(() => {
-    void Promise.all([loadCategories(), loadTourCounts()]);
-  }, [loadCategories, loadTourCounts]);
+    void loadCategories();
+  }, [loadCategories]);
 
   const filteredCategories = useMemo(
     () => getFilteredCategories(categories, searchQuery),

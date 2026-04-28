@@ -121,7 +121,7 @@ function PaperPlaneLineIcon() {
     <svg
       viewBox="0 0 80 36"
       aria-hidden="true"
-      className="h-8 w-20 text-emerald-700 max-sm:hidden"
+      className="h-8 w-20 text-orange-500 max-sm:hidden"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.7"
@@ -177,7 +177,7 @@ function Field({
 }) {
   // Field dung chung de form lien he giu cung layout icon, label va validate HTML.
   const sharedClasses =
-    "w-full rounded-xl border border-[#dedede] bg-white/85 pl-[3.3rem] pr-4 text-[15px] text-slate-800 shadow-[0_12px_28px_-25px_rgba(15,23,42,0.5)] outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100";
+    "w-full rounded-xl border border-slate-200 bg-white/88 pl-[3.3rem] pr-4 text-[15px] text-slate-800 shadow-[0_12px_28px_-25px_rgba(15,23,42,0.5)] outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100";
 
   return (
     <label className="block">
@@ -187,7 +187,7 @@ function Field({
 
       <span className="relative block">
         <span
-          className={`pointer-events-none absolute left-4 text-emerald-700 ${
+          className={`pointer-events-none absolute left-4 text-sky-600 ${
             multiline ? "top-5" : "top-1/2 -translate-y-1/2"
           }`}
         >
@@ -223,7 +223,7 @@ function Field({
 function GalleryImage({ item, priority = false }) {
   // Anh ben phai chi la visual thay the, khong gan nghiep vu submit lien he.
   return (
-    <div className={`relative min-w-0 overflow-hidden rounded-2xl ${item.className}`}>
+    <div className={`relative min-w-0 overflow-hidden rounded-[1.35rem] border-[7px] border-white shadow-[0_22px_54px_-34px_rgba(15,23,42,0.85)] ${item.className}`}>
       <Image
         src={item.src}
         alt={item.alt}
@@ -273,7 +273,7 @@ export default function ContactPage() {
     try {
       await createContactMessage(formData);
       setSuccessMessage(
-        "Thông tin liên hệ đã được gửi. BETOURIST sẽ phản hồi bạn trong thời gian sớm nhất."
+        "Thông tin liên hệ đã được gửi. TRAVELPTIT sẽ phản hồi bạn trong thời gian sớm nhất."
       );
       setFormData((currentState) => ({
         ...initialFormState,
@@ -290,14 +290,14 @@ export default function ContactPage() {
 
   return (
     <section
-      className="relative left-1/2 w-screen -translate-x-1/2 bg-[linear-gradient(180deg,#ffffff_0%,#fbfaf7_100%)] px-4 pb-16 pt-6 sm:px-6 lg:px-8"
-      style={{ minHeight: "calc(100vh - 96px)" }}
+      className="travel-page-shell px-4 pb-16 pt-10 sm:px-6 lg:px-8"
+      style={{ minHeight: "calc(100vh - 76px)" }}
     >
-      <div className="mx-auto grid min-w-0 w-full max-w-[1440px] gap-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(410px,0.92fr)] lg:items-stretch xl:gap-7">
-        <div className="min-w-0 rounded-[1.25rem] border border-[#e1e1dc] bg-white/90 p-6 shadow-[0_28px_70px_-48px_rgba(15,23,42,0.45)] backdrop-blur sm:p-8 lg:p-9">
+      <div className="travel-content grid min-w-0 gap-8 lg:grid-cols-[minmax(0,0.98fr)_minmax(410px,1.02fr)] lg:items-stretch xl:gap-10">
+        <div className="min-w-0 rounded-[1.35rem] border border-slate-200/80 bg-white/86 p-6 shadow-[0_28px_70px_-48px_rgba(15,23,42,0.45)] backdrop-blur sm:p-8 lg:p-9">
           <div className="flex min-w-0 items-center gap-2">
             <p
-              className="text-[26px] leading-none text-emerald-700"
+              className="text-[26px] leading-none text-orange-500"
               style={{ fontFamily: '"Segoe Script", "Brush Script MT", cursive' }}
             >
               Chúng tôi luôn sẵn sàng
@@ -305,8 +305,8 @@ export default function ContactPage() {
             <PaperPlaneLineIcon />
           </div>
 
-          <h1 className="mt-3 font-serif text-[2.45rem] font-bold leading-[1.04] tracking-normal text-emerald-950 sm:text-[3rem] lg:whitespace-nowrap xl:text-[3.35rem]">
-            Liên hệ với BETOURIST
+          <h1 className="mt-3 text-[2.45rem] font-black leading-[1.04] tracking-tight text-slate-900 sm:text-[3rem] lg:whitespace-nowrap xl:text-[3.35rem]">
+            Liên hệ với TRAVELPTIT
           </h1>
 
           <p className="mt-4 max-w-2xl text-[17px] leading-7 text-slate-600">
@@ -376,14 +376,14 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-emerald-700 px-7 text-base font-semibold text-white shadow-[0_20px_35px_-22px_rgba(4,120,87,0.95)] transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-emerald-300 sm:w-[190px]"
+                className="inline-flex h-14 w-full items-center justify-center gap-3 rounded-xl bg-[#ff6a00] px-7 text-base font-black text-white shadow-[0_20px_35px_-22px_rgba(249,115,22,0.95)] transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300 sm:w-[190px]"
               >
                 <SendIcon />
                 {isSubmitting ? "Đang gửi..." : "Gửi tin nhắn"}
               </button>
 
               <div className="flex items-start gap-4 text-sm text-slate-600 md:max-w-[380px]">
-                <span className="mt-1 text-emerald-700">
+                <span className="mt-1 text-sky-600">
                   <ShieldIcon />
                 </span>
 
@@ -407,11 +407,11 @@ export default function ContactPage() {
             <GalleryImage item={galleryItems[2]} />
           </div>
 
-          <div className="pointer-events-none absolute left-1/2 top-[47%] z-10 flex h-[13.2rem] w-[13.2rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[5px] border-[#d2e6c6] bg-white/[0.97] shadow-[0_28px_68px_-32px_rgba(15,23,42,0.52)] max-sm:h-[10.5rem] max-sm:w-[10.5rem]">
-            <div className="flex h-[11.7rem] w-[11.7rem] flex-col items-center justify-center rounded-full border border-[#e7eed9] bg-[radial-gradient(circle,_rgba(255,255,255,1)_0%,_rgba(246,250,241,1)_100%)] max-sm:h-[9.1rem] max-sm:w-[9.1rem]">
+          <div className="pointer-events-none absolute left-1/2 top-[47%] z-10 flex h-[13.2rem] w-[13.2rem] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-[5px] border-sky-100 bg-white/[0.97] shadow-[0_28px_68px_-32px_rgba(15,23,42,0.52)] max-sm:h-[10.5rem] max-sm:w-[10.5rem]">
+            <div className="flex h-[11.7rem] w-[11.7rem] flex-col items-center justify-center rounded-full border border-sky-100 bg-[radial-gradient(circle,_rgba(255,255,255,1)_0%,_rgba(241,248,255,1)_100%)] max-sm:h-[9.1rem] max-sm:w-[9.1rem]">
               <BrandMark className="h-[70px] w-[70px] max-sm:h-[54px] max-sm:w-[54px]" />
-              <p className="mt-4 text-center text-[1.48rem] font-black uppercase leading-none tracking-normal text-emerald-950 max-sm:text-[1rem]">
-                BETOURIST
+              <p className="mt-4 text-center text-[1.48rem] font-black uppercase leading-none tracking-normal text-slate-900 max-sm:text-[1rem]">
+                TRAVELPTIT
               </p>
             </div>
           </div>

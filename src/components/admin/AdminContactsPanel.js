@@ -249,7 +249,7 @@ function ReplyHistoryModal({ contact, onClose }) {
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold text-slate-900">
-                        {reply.adminName || reply.admin?.fullName || "Admin BETOURIST"}
+                        {reply.adminName || reply.admin?.fullName || "Admin TRAVELPTIT"}
                       </p>
                       <p className="mt-1 text-xs uppercase tracking-wide text-slate-400">
                         {reply.emailStatus === "sent" ? "Đã gửi email" : "Lỗi gửi email"}

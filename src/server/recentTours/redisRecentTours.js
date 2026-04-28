@@ -61,9 +61,9 @@ async function createRedisConnection() {
  * - Nếu lần khởi tạo đầu tiên thất bại, phía gọi sẽ nhận lỗi để xử lý dự phòng.
  */
 export async function getRedisClient() {
-  if (!globalRedisState.__betouristRecentToursRedisPromise) {
-    globalRedisState.__betouristRecentToursRedisPromise = createRedisConnection();
+  if (!globalRedisState.__travelptitRecentToursRedisPromise) {
+    globalRedisState.__travelptitRecentToursRedisPromise = createRedisConnection();
   }
 
-  return globalRedisState.__betouristRecentToursRedisPromise;
+  return globalRedisState.__travelptitRecentToursRedisPromise;
 }

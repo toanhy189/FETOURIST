@@ -111,11 +111,17 @@ function mapRecentTourCard(tour) {
     normalizedDiscountPrice !== null
       ? normalizedDiscountPrice
       : toNumberOrNull(tour.price);
-  const firstUpcomingDeparture = Array.isArray(tour.upcomingDepartures)
-    ? tour.upcomingDepartures[0]
+  const departureRemainingSeats = Array.isArray(tour.upcomingDepartures)
+    ? tour.upcomingDepartures.reduce((total, departure) => {
+        const remainingSeats = toNumberOrNull(departure?.remainingSeats);
+        return remainingSeats === null
+          ? total
+          : total + Math.max(remainingSeats, 0);
+      }, 0)
     : null;
   const availableSeats =
-    toNumberOrNull(firstUpcomingDeparture?.remainingSeats) ??
+    toNumberOrNull(tour.totalRemainingSeats) ??
+    departureRemainingSeats ??
     toNumberOrNull(tour.availableSeats);
   const imageSource = Array.isArray(tour.images) ? tour.images[0] : tour.imageUrl;
 

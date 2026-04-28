@@ -6,7 +6,6 @@ import FilterSidebar from "@/components/tour/FilterSidebar";
 export const dynamic = "force-dynamic";
 
 function pickSearchParam(value) {
-  // Next searchParams co the la string hoac array; page chi dung gia tri dau tien.
   if (Array.isArray(value)) {
     return value[0] || "";
   }
@@ -15,7 +14,6 @@ function pickSearchParam(value) {
 }
 
 function buildCategoryTourFilter({ activeCategory, selectedCategory, hasChildCategories }) {
-  // Category cha lay toan bo cay con; category la la thi loc dung category do.
   if (selectedCategory) {
     return hasChildCategories
       ? { parentCategory: selectedCategory.slug }
@@ -81,28 +79,28 @@ export default async function DanhMucPage({ searchParams }) {
   const departureLocation = tourFilters.departureLocation;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col items-start gap-8 lg:flex-row">
-          <aside className="w-full shrink-0 lg:sticky lg:top-24 lg:w-[300px]">
+    <div className="travel-page-shell min-h-screen">
+      <div className="travel-content py-8 lg:py-10">
+        <div className="flex flex-col items-start gap-7 lg:flex-row">
+          <aside className="w-full shrink-0 lg:sticky lg:top-[92px] lg:w-[310px]">
             <FilterSidebar categories={categories} />
           </aside>
 
           <main className="w-full flex-1">
-            <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="travel-soft-panel mb-6 rounded-2xl p-6">
               <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                 <div>
-                  <h1 className="text-2xl font-black tracking-tight text-slate-800">
+                  <h1 className="text-3xl font-black tracking-tight text-slate-900 md:text-[2.35rem]">
                     {buildPageTitle({
                       destination,
                       activeCategory,
                       activeCategoryName,
                     })}
                   </h1>
-                  <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
-                    <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+                  <p className="mt-2 flex items-center gap-2 text-sm text-slate-600">
+                    <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
                     Tìm thấy{" "}
-                    <span className="font-bold text-sky-600">{totalTours}</span>{" "}
+                    <span className="font-black text-sky-600">{totalTours}</span>{" "}
                     tour phù hợp với yêu cầu của bạn
                   </p>
                 </div>
