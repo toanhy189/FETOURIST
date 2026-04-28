@@ -286,3 +286,30 @@ export async function deleteTourDeparture(tourId, departureId) {
   });
   return response.data;
 }
+
+export async function getFeaturedTours(searchParams = {}) {
+  const cleanParams = {};
+
+  Object.keys(searchParams).forEach((key) => {
+    if (
+      searchParams[key] !== undefined &&
+      searchParams[key] !== null &&
+      searchParams[key] !== ""
+    ) {
+      cleanParams[key] = searchParams[key];
+    }
+  });
+
+  const response = await fetchApi("/api/tours/featured", {
+    searchParams: cleanParams,
+    next: { revalidate: 0 },
+  });
+
+  return {
+    tours: Array.isArray(response.data)
+      ? response.data.map(mapTour).filter(Boolean)
+      : [],
+    pagination: response.pagination ?? null,
+    message: response.message,
+  };
+}

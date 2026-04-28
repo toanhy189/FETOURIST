@@ -7,6 +7,7 @@ import HeaderActions from "@/components/HeaderActions";
 import ChatWidget from "@/components/chat/ChatWidget";
 import TourMegaMenu from "./header/TourMegaMenu";
 import Footer from "./footer/Footer";
+import { cn } from "@/utils/cn";
 
 export default function SiteShell({ children }) {
   const pathname = usePathname();
@@ -14,7 +15,7 @@ export default function SiteShell({ children }) {
 
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-
+  const isAccountRoute = pathname?.startsWith("/tai-khoan");
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -63,8 +64,8 @@ export default function SiteShell({ children }) {
             <Link
               href="/"
               className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${isActiveRoute("/")
-                  ? "bg-sky-600 text-white shadow-md"
-                  : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
+                ? "bg-sky-600 text-white shadow-md"
+                : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
                 }`}
             >
               Trang Chủ
@@ -74,8 +75,8 @@ export default function SiteShell({ children }) {
             <Link
               href="/gioi-thieu"
               className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${isActiveRoute("/gioi-thieu")
-                  ? "bg-sky-600 text-white shadow-md"
-                  : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
+                ? "bg-sky-600 text-white shadow-md"
+                : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
                 }`}
             >
               Giới thiệu
@@ -89,8 +90,8 @@ export default function SiteShell({ children }) {
             <Link
               href="/diem-den"
               className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${isActiveRoute("/diem-den")
-                  ? "bg-sky-600 text-white shadow-md"
-                  : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
+                ? "bg-sky-600 text-white shadow-md"
+                : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
                 }`}
             >
               Điểm đến
@@ -100,8 +101,8 @@ export default function SiteShell({ children }) {
             <Link
               href="/lien-he"
               className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${isActiveRoute("/lien-he")
-                  ? "bg-sky-600 text-white shadow-md"
-                  : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
+                ? "bg-sky-600 text-white shadow-md"
+                : "text-slate-600 hover:bg-slate-200/50 hover:text-sky-800"
                 }`}
             >
               Liên hệ
@@ -117,7 +118,14 @@ export default function SiteShell({ children }) {
         </div>
       </header>
 
-      <main className="mx-auto flex-grow w-full max-w-6xl px-4 pb-16 pt-24 md:px-8">
+      <main
+        className={cn(
+          "flex-grow w-full pb-16 pt-24",
+          isAccountRoute
+            ? "max-w-none px-2 md:px-3 lg:px-4"
+            : "mx-auto max-w-6xl px-4 md:px-8"
+        )}
+      >
         {children}
       </main>
 

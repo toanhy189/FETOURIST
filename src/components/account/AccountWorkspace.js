@@ -26,22 +26,29 @@ import {
 } from "@/utils/recentTours";
 import AccountCard from "./AccountCard";
 import BookingTab from "./BookingTab";
-import PaymentTab from "./PaymentTab";
 import OverviewTab from "./OverviewTab";
 import FavoriteTab from "./FavoriteTab";
 import NotificationTab from "./NotificationTab";
+import AccountProfileTab from "./AccountProfileTab";
+import AccountPasswordTab from "./AccountPasswordTab";
 
-const tabs = [
-  { key: "tong-quan", label: "Tong quan" },
-  { key: "booking", label: "Booking" },
-  { key: "payment", label: "Thanh toan" },
-  { key: "favorite", label: "Yeu thich" },
-  { key: "notification", label: "Thong bao" },
-];
 
 export default function AccountWorkspace() {
-  const { currentUser, isAdmin, isAuthenticated, notificationCount, refreshNotifications } =
-    useAppContext();
+  const {
+    currentUser,
+    isAdmin,
+    isAuthenticated,
+    notificationCount,
+    refreshNotifications,
+  } = useAppContext();
+  const tabs = [
+    { key: "tong-quan", label: "Tổng quan" },
+    { key: "account", label: "Tài khoản" },
+    { key: "booking", label: "Booking" },
+    { key: "favorite", label: "Yêu thích" },
+    { key: "notification", label: "Thông báo" },
+    ...(currentUser?.isGoogleAccount ? [] : [{ key: "password", label: "Đổi mật khẩu" }]),
+  ];
   const [activeTab, setActiveTab] = useState("tong-quan");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -53,7 +60,7 @@ export default function AccountWorkspace() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedPaymentDetail, setSelectedPaymentDetail] = useState(null);
   const [paymentForm, setPaymentForm] = useState({
-    method: "bank_transfer",
+    method: "cash",
     transactionType: "full_payment",
     amount: "",
     transactionCode: "",
@@ -275,108 +282,123 @@ export default function AccountWorkspace() {
   }
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-700">Trang tai khoan</p>
-            <h1 className="mt-2 font-display text-4xl text-slate-900">{currentUser?.fullName}</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              {currentUser?.email} {currentUser?.phoneNumber ? `• ${currentUser.phoneNumber}` : ""}
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  "rounded-full border px-4 py-2 text-sm font-semibold transition",
-                  activeTab === tab.key
-                    ? "border-sky-300 bg-sky-100 text-sky-800"
-                    : "border-slate-200 bg-white text-slate-600"
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+    <div className="grid w-full max-w-none gap-5 lg:grid-cols-[230px_minmax(0,1fr)] lg:items-start">
+      <aside className="self-start rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24">
+        <div className="mt-6 flex flex-col gap-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                "flex w-full items-center justify-start rounded-xl border-l-4 px-4 py-3 text-left text-sm font-semibold transition",
+                activeTab === tab.key
+                  ? "border-sky-300 bg-sky-100 text-sky-800"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+
+          {isAdmin ? (
+            <Link
+              href="/admin"
+              className="mt-2 flex w-full items-center justify-start rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-800 transition hover:bg-sky-100"
+            >
+              Quản trị
+            </Link>
+          ) : null}
         </div>
-        {message ? <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{message}</div> : null}
-        {error ? <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div> : null}
-      </section>
+      </aside>
 
-      {activeTab === "tong-quan" ? (
-        <AccountCard
-          title="Tổng quan tài khoản"
-          description="Tóm tắt nhanh booking, yêu thích và thông báo mới nhất của bạn."
-        >
-          <OverviewTab
-            history={history}
-            favorites={favorites}
-            notificationCount={notificationCount}
-            recentTours={recentTours}
-            isAdmin={isAdmin}
-            openBooking={openBooking}
-            setActiveTab={setActiveTab}
-          />
-        </AccountCard>
-      ) : null}
+      <div className="min-w-0 w-full space-y-6">
+        {message ? (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {message}
+          </div>
+        ) : null}
 
-      {activeTab === "booking" ? (
-        <AccountCard
-          title="Quan ly booking"
-          description="Mo chi tiet tung booking, tao phien thanh toan va mock callback ngay tai day."
-        >
-          <BookingTab
-            bookings={history.bookings}
-            loading={loading}
-            selectedBooking={selectedBooking}
-            selectedPaymentDetail={selectedPaymentDetail}
-            paymentForm={paymentForm}
-            setPaymentForm={setPaymentForm}
-            openBooking={openBooking}
-            handleCreatePayment={handleCreatePayment}
-          />
-        </AccountCard>
-      ) : null}
+        {error ? (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {error}
+          </div>
+        ) : null}
 
-      {activeTab === "payment" ? (
-        <AccountCard
-          title="Lịch sử thanh toán"
-          description="Theo dõi trạng thái giao dịch và số tiền bạn đã thanh toán cho các booking."
-        >
-          <PaymentTab payments={payments} />
-        </AccountCard>
-      ) : null}
+        {activeTab === "tong-quan" ? (
+          <AccountCard
+            title="Tổng quan tài khoản"
+          >
+            <OverviewTab
+              history={history}
+              favorites={favorites}
+              notificationCount={notificationCount}
+              recentTours={recentTours}
+              isAdmin={isAdmin}
+              openBooking={openBooking}
+              setActiveTab={setActiveTab}
+            />
+          </AccountCard>
+        ) : null}
+        {activeTab === "account" ? (
+          <AccountCard
+            title="Tài khoản"
+            description="Thông tin cá nhân và cập nhật hồ sơ của bạn."
+          >
+            <AccountProfileTab currentUser={currentUser} />
+          </AccountCard>
+        ) : null}
 
-      {activeTab === "favorite" ? (
-        <AccountCard
-          title="Danh sách yêu thích"
-          description="Lưu lại những tour bạn muốn xem lại hoặc đặt sau."
-        >
-          <FavoriteTab
-            favorites={favorites}
-            loading={loading}
-            handleRemoveFavorite={handleRemoveFavorite}
-          />
-        </AccountCard>
-      ) : null}
+        {activeTab === "booking" ? (
+          <AccountCard
+            title="Đặt tour & thanh toán"
+          >
+            <BookingTab
+              bookings={history.bookings}
+              payments={payments}
+              loading={loading}
+              selectedBooking={selectedBooking}
+              selectedPaymentDetail={selectedPaymentDetail}
+              paymentForm={paymentForm}
+              setPaymentForm={setPaymentForm}
+              openBooking={openBooking}
+              handleCreatePayment={handleCreatePayment}
+            />
+          </AccountCard>
+        ) : null}
 
-      {activeTab === "notification" ? (
-        <AccountCard
-          title="Thông báo"
-          description="Cập nhật booking và thanh toán của bạn sẽ hiển thị tại đây."
-        >
-          <NotificationTab
-            notifications={notifications}
-            loading={loading}
-            handleMarkNotification={handleMarkNotification}
-            handleMarkAllNotifications={handleMarkAllNotifications}
-          />
-        </AccountCard>
-      ) : null}
+        {activeTab === "favorite" ? (
+          <AccountCard
+          >
+            <FavoriteTab
+              favorites={favorites}
+              loading={loading}
+              handleRemoveFavorite={handleRemoveFavorite}
+            />
+          </AccountCard>
+        ) : null}
+
+        {activeTab === "notification" ? (
+          <AccountCard
+          >
+            <NotificationTab
+              notifications={notifications}
+              loading={loading}
+              handleMarkNotification={handleMarkNotification}
+              handleMarkAllNotifications={handleMarkAllNotifications}
+            />
+          </AccountCard>
+        ) : null}
+
+        {activeTab === "password" && !currentUser?.isGoogleAccount ? (
+          <AccountCard
+            title="Đổi mật khẩu"
+            description="Cập nhật mật khẩu đăng nhập của bạn."
+          >
+            <AccountPasswordTab />
+          </AccountCard>
+        ) : null}
+      </div>
     </div>
   );
 }

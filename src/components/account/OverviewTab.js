@@ -100,9 +100,6 @@ export default function OverviewTab({
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
           <h3 className="text-2xl font-bold text-slate-900">Booking gần đây</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            Xem nhanh các booking mới nhất và mở chi tiết ngay.
-          </p>
 
           <div className="mt-4 space-y-3">
             {history.bookings?.length > 0 ? (
@@ -124,10 +121,6 @@ export default function OverviewTab({
 
         <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
           <h3 className="text-2xl font-bold text-slate-900">Tour đã xem gần đây</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            Những tour bạn đã mở trước đó sẽ hiện ở đây để quay lại nhanh hơn.
-          </p>
-
           <div className="mt-4 space-y-3">
             {recentTours.length > 0 ? (
               recentTours.slice(0, 4).map((tour) => (
