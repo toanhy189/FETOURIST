@@ -41,9 +41,6 @@ export default function FavoriteTab({ favorites, loading, handleRemoveFavorite }
     <div className="space-y-5">
       <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
         <h3 className="text-2xl font-bold text-slate-900">Danh sách yêu thích</h3>
-        <p className="mt-1 text-sm text-slate-500">
-          Những tour bạn lưu lại để xem sau sẽ hiển thị ở đây.
-        </p>
       </div>
 
       {favorites.length > 0 ? (

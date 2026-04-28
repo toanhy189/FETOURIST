@@ -54,9 +54,6 @@ export default function NotificationTab({
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.75rem] border border-slate-200 bg-slate-50 p-5">
         <div>
           <h3 className="text-2xl font-bold text-slate-900">Thông báo</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            Theo dõi cập nhật booking và thanh toán mới nhất của bạn.
-          </p>
         </div>
 
         <button

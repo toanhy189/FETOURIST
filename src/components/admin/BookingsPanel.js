@@ -14,10 +14,40 @@ import { updatePaymentTransactionStatus } from "@/apiService/payments";
 import { getTourDeparturesForAdmin, getToursForAdmin } from "@/apiService/tours";
 import { formatDateVi, formatVnd } from "@/utils/format";
 
-const PAYMENT_METHODS = ["cash", "bank_transfer", "credit_card", "e_wallet", "vnpay"];
-const BOOKING_STATUSES = ["pending", "confirmed", "cancelled", "completed"];
-const PAYMENT_STATUSES = ["pending", "partially_paid", "paid", "refunded", "failed"];
-const TRANSACTION_STATUSES = ["pending", "processing", "success", "failed", "cancelled"];
+const PAYMENT_METHOD_LABELS = {
+  cash: "Tiền mặt",
+  vnpay: "VNPay",
+};
+
+const BOOKING_STATUS_LABELS = {
+  pending: "Chờ xác nhận",
+  confirmed: "Đã xác nhận",
+  cancelled: "Đã hủy",
+  completed: "Hoàn thành",
+};
+
+const PAYMENT_STATUS_LABELS = {
+  pending: "Chờ thanh toán",
+  processing: "Đang xử lý",
+  success: "Thành công",
+  failed: "Thất bại",
+  cancelled: "Đã hủy",
+  paid: "Đã thanh toán",
+  partially_paid: "Đã thanh toán một phần",
+  refunded: "Đã hoàn tiền",
+};
+
+function getPaymentMethodLabel(method) {
+  return PAYMENT_METHOD_LABELS[method] || method || "--";
+}
+
+function getBookingStatusLabel(status) {
+  return BOOKING_STATUS_LABELS[status] || status || "--";
+}
+
+function getPaymentStatusLabel(status) {
+  return PAYMENT_STATUS_LABELS[status] || status || "--";
+}
 
 const initialCreateForm = {
   userId: "",
@@ -573,7 +603,7 @@ export default function BookingsPanel() {
                 >
                   {PAYMENT_METHODS.map((method) => (
                     <option key={method} value={method}>
-                      {method}
+                      {getPaymentMethodLabel(method)}
                     </option>
                   ))}
                 </FormSelect>
@@ -751,7 +781,7 @@ export default function BookingsPanel() {
                       >
                         {PAYMENT_METHODS.map((method) => (
                           <option key={method} value={method}>
-                            {method}
+                            {getPaymentMethodLabel(method)}
                           </option>
                         ))}
                       </FormSelect>
@@ -811,7 +841,7 @@ export default function BookingsPanel() {
                         >
                           {BOOKING_STATUSES.map((status) => (
                             <option key={status} value={status}>
-                              {status}
+                              {getBookingStatusLabel(status)}
                             </option>
                           ))}
                         </FormSelect>
