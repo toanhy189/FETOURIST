@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { getMyBookingDetail, getMyBookingHistory } from "@/apiService/bookings";
 import { getMyFavorites, removeFavorite } from "@/apiService/favorites";
 import {
@@ -16,9 +16,14 @@ import {
   simulateGatewayCallback,
 } from "@/apiService/payments";
 import { useAppContext } from "@/components/providers/AppProvider";
-import { getAnonymousId } from "@/utils/anonymousUtils";
 import { cn } from "@/utils/cn";
 import { formatDateTimeVi, formatDateVi, formatVnd } from "@/utils/format";
+import {
+  getEmptyRecentToursSnapshot,
+  getRecentToursSnapshot,
+  refreshRecentToursFromServer,
+  subscribeRecentTours,
+} from "@/utils/recentTours";
 import AccountCard from "./AccountCard";
 import BookingTab from "./BookingTab";
 import PaymentTab from "./PaymentTab";
@@ -47,7 +52,6 @@ export default function AccountWorkspace() {
   const [notifications, setNotifications] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedPaymentDetail, setSelectedPaymentDetail] = useState(null);
-  const [recentTours, setRecentTours] = useState([]);
   const [paymentForm, setPaymentForm] = useState({
     method: "bank_transfer",
     transactionType: "full_payment",
@@ -55,6 +59,11 @@ export default function AccountWorkspace() {
     transactionCode: "",
     result: "success",
   });
+  const recentTours = useSyncExternalStore(
+    subscribeRecentTours,
+    () => getRecentToursSnapshot({ limit: 8 }),
+    getEmptyRecentToursSnapshot
+  );
 
   function patchLoading(key, value) {
     setLoading((current) => ({ ...current, [key]: value }));
@@ -233,13 +242,18 @@ export default function AccountWorkspace() {
   }, [isAuthenticated, loadDashboard]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (!isAuthenticated) {
       return;
     }
 
-    const key = `${"betourist.recentTours."}${getAnonymousId()}`;
-    setRecentTours(JSON.parse(localStorage.getItem(key) || "[]"));
-  }, []);
+    /**
+     * Dashboard still renders local recent tours immediately through
+     * useSyncExternalStore, then quietly refreshes from the server. If Redis or
+     * the API is down, we intentionally keep the local snapshot instead of
+     * clearing the panel.
+     */
+    refreshRecentToursFromServer().catch(() => {});
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (

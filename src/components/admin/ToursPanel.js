@@ -53,6 +53,7 @@ const TRANSPORT_OPTIONS = [
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30];
 const PENDING_ITINERARY_IMAGE_PREFIX = "__pending_itinerary_image__:";
+const TOUR_IMAGE_UPLOAD_MAX_FILES = 20;
 
 const initialTourForm = {
   id: "",
@@ -650,6 +651,13 @@ export default function ToursPanel({ initialView = "form" }) {
     if (nextFiles.length === 0) {
       return [];
     }
+
+    if (selectedFiles.length + nextFiles.length > TOUR_IMAGE_UPLOAD_MAX_FILES) {
+      setError(`Chỉ có thể tải tối đa ${TOUR_IMAGE_UPLOAD_MAX_FILES} ảnh trong một lần lưu tour.`);
+      return [];
+    }
+
+    setError("");
 
     const baseIndex = selectedFiles.length;
     const nextPendingItems = nextFiles.map((file, index) => ({
@@ -1354,6 +1362,9 @@ export default function ToursPanel({ initialView = "form" }) {
                         <p className="mt-4 text-lg font-semibold text-slate-900">Thêm hình ảnh cho tour</p>
                         <p className="mt-2 text-sm text-slate-500">
                           Chọn nhiều ảnh minh họa. Khi cập nhật, ảnh mới sẽ được upload thêm vào tour hiện tại.
+                        </p>
+                        <p className="mt-1 text-xs text-slate-400">
+                          Tối đa {TOUR_IMAGE_UPLOAD_MAX_FILES} ảnh mỗi lần upload, mỗi ảnh không quá 5MB.
                         </p>
                         <label className="mt-5 inline-flex cursor-pointer items-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700">
                           Chọn ảnh

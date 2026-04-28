@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import HeaderActions from "@/components/HeaderActions";
+import ChatWidget from "@/components/chat/ChatWidget";
 import TourMegaMenu from "./header/TourMegaMenu";
 import Footer from "./footer/Footer";
 
@@ -121,6 +122,7 @@ export default function SiteShell({ children }) {
       </main>
 
       <Footer />
+      <ChatWidget />
     </div>
   );
 }

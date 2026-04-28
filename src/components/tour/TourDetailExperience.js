@@ -430,7 +430,12 @@ function DisclosureCard({ title, open, onToggle, children }) {
 }
 
 export default function TourDetailExperience({ tour }) {
-  const { currentUser, isAuthenticated, refreshNotifications } = useAppContext();
+  const {
+    currentUser,
+    isAuthenticated,
+    refreshNotifications,
+    setChatPageContext,
+  } = useAppContext();
   const galleryImages = getGalleryImages(tour);
   const highlightList = buildHighlightList(tour);
   const ratingMeta = getRatingMeta(tour);
@@ -505,6 +510,27 @@ export default function TourDetailExperience({ tour }) {
   const noteItems = createTourNotes(tour, selectedDeparture);
   const isLightboxOpen = lightboxIndex >= 0;
   const isFavoritePopupOpen = Boolean(favoriteNotice);
+
+  useEffect(() => {
+    setChatPageContext({
+      tourId: tour.id || tour._id || "",
+      tourSlug: tour.slug || "",
+      tourTitle: tour.title || "",
+      destination: tour.destination || "",
+      pagePath: tour.slug ? `/tour/${tour.slug}` : "",
+    });
+
+    return () => {
+      setChatPageContext(null);
+    };
+  }, [
+    setChatPageContext,
+    tour.destination,
+    tour.id,
+    tour._id,
+    tour.slug,
+    tour.title,
+  ]);
 
   function patchBookingField(field, value) {
     setBookingForm((currentForm) => ({

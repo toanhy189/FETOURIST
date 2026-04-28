@@ -13,6 +13,10 @@ import { readStoredSession } from "@/apiService/AxiosInstance/AxiosInstance";
 import { fetchMe, login, logout, register } from "@/apiService/auth";
 import { getUnreadNotificationCount } from "@/apiService/notifications";
 import { getAnonymousId } from "@/utils/anonymousUtils";
+import {
+  refreshRecentToursFromServer,
+  syncAnonymousRecentToursToUser,
+} from "@/utils/recentTours";
 
 const AppContext = createContext(null);
 const emptySession = {
@@ -25,6 +29,7 @@ export function AppProvider({ children }) {
   const [session, setSession] = useState(emptySession);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [chatPageContext, setChatPageContext] = useState(null);
 
   const refreshProfile = useCallback(async () => {
     const nextUser = await fetchMe();
@@ -131,6 +136,29 @@ export function AppProvider({ children }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!session.accessToken || !session.user?.id) {
+      return;
+    }
+
+    /**
+     * When a guest later authenticates, we replay the browser-local recent list
+     * into the user-scoped Redis key and then refresh the shared cache back into
+     * localStorage. This keeps the "guest to user" experience without blocking
+     * login and without removing the current local fallback path.
+     */
+    async function hydrateHybridRecentTours() {
+      try {
+        await syncAnonymousRecentToursToUser(session.user.id);
+        await refreshRecentToursFromServer();
+      } catch {
+        // The UI can safely continue on local cache if server sync is unavailable.
+      }
+    }
+
+    void hydrateHybridRecentTours();
+  }, [session.accessToken, session.user?.id]);
+
   const contextValue = useMemo(
     () => ({
       session,
@@ -139,13 +167,16 @@ export function AppProvider({ children }) {
       isAdmin: session.user?.role === "admin",
       isBootstrapping,
       notificationCount,
+      chatPageContext,
       login: loginWithCredentials,
       register: registerWithCredentials,
       logout: logoutCurrentUser,
       refreshProfile,
       refreshNotifications,
+      setChatPageContext,
     }),
     [
+      chatPageContext,
       isBootstrapping,
       loginWithCredentials,
       logoutCurrentUser,
@@ -153,6 +184,7 @@ export function AppProvider({ children }) {
       refreshNotifications,
       refreshProfile,
       registerWithCredentials,
+      setChatPageContext,
       session,
     ]
   );

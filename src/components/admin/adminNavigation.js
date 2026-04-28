@@ -52,7 +52,7 @@ export const ADMIN_ROUTE_MAP = {
     href: "/admin/contacts",
     label: "Liên hệ",
     description:
-      "Tổng hợp thông tin liên hệ từ booking để đội sales và CSKH xử lý nhanh.",
+      "Hộp thư liên hệ để CSKH xem yêu cầu, gửi phản hồi qua email và theo dõi lịch sử xử lý.",
   },
 };
 
@@ -78,7 +78,6 @@ function normalizeSegments(segments) {
 }
 
 export function resolveAdminRouteFromSegments(segments) {
-  // Match tường minh theo từng tầng route để tránh /admin/tours/create bị rơi về /admin.
   const normalizedSegments = normalizeSegments(segments);
 
   if (normalizedSegments.length === 0) {
@@ -133,7 +132,6 @@ export function findActiveAdminItem(items, activeKey) {
     }
 
     if (item.children?.length) {
-      // Nếu đang ở route con thì topbar/sidebar vẫn cần metadata của đúng route con đó.
       const matchedChild = item.children.find((child) => child.key === activeKey);
 
       if (matchedChild) {

@@ -1,78 +1,202 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
-import { getTours } from "@/apiService/tours";
+import { getTourFilterOptions } from "@/apiService/tours";
+import DatePickerField from "@/components/ui/DatePickerField";
+import SearchableSelect from "@/components/ui/SearchableSelect";
+
+const FALLBACK_DURATION_OPTIONS = [1, 2, 3, 4, 5, 6, 7];
+
+const PRICE_RANGE_OPTIONS = [
+  { label: "Tất cả mức giá", value: "", minPrice: "", maxPrice: "" },
+  { label: "Dưới 3 triệu", value: "0-3000000", minPrice: "0", maxPrice: "3000000" },
+  { label: "3 - 5 triệu", value: "3000000-5000000", minPrice: "3000000", maxPrice: "5000000" },
+  { label: "5 - 10 triệu", value: "5000000-10000000", minPrice: "5000000", maxPrice: "10000000" },
+  { label: "Trên 10 triệu", value: "10000000+", minPrice: "10000000", maxPrice: "" },
+];
+
+function getDurationDaysValue(searchParams) {
+  const durationDays = searchParams.get("durationDays");
+  if (durationDays) {
+    return durationDays;
+  }
+
+  const legacyDuration = searchParams.get("duration") || "";
+  const legacyMatch = legacyDuration.match(/^(\d+)-(\d+)$/);
+
+  if (legacyMatch && legacyMatch[1] === legacyMatch[2]) {
+    return legacyMatch[1];
+  }
+
+  return "";
+}
+
+function getPriceRangeValue(searchParams) {
+  const minPrice = searchParams.get("minPrice") || "";
+  const maxPrice = searchParams.get("maxPrice") || "";
+
+  const matchedOption = PRICE_RANGE_OPTIONS.find(
+    (option) => option.minPrice === minPrice && option.maxPrice === maxPrice
+  );
+
+  if (matchedOption) {
+    return matchedOption.value;
+  }
+
+  const legacyPriceRange = searchParams.get("priceRange") || "";
+  return PRICE_RANGE_OPTIONS.some((option) => option.value === legacyPriceRange)
+    ? legacyPriceRange
+    : "";
+}
+
+function createFiltersFromSearchParams(searchParams) {
+  return {
+    destination: searchParams.get("destination") || searchParams.get("search") || "",
+    startDate: searchParams.get("startDate") || "",
+    departureLocation:
+      searchParams.get("departureLocation") || searchParams.get("departure") || "",
+    category: searchParams.get("category") || "",
+    durationDays: getDurationDaysValue(searchParams),
+    priceRange: getPriceRangeValue(searchParams),
+  };
+}
+
+function normalizeDurationInput(value) {
+  const digits = String(value || "").replace(/[^\d]/g, "");
+  return digits ? String(Number.parseInt(digits, 10) || "") : "";
+}
+
+function DepartureIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="h-4 w-4"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
+      />
+    </svg>
+  );
+}
+
+function DurationIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      className="h-4 w-4"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z"
+      />
+    </svg>
+  );
+}
 
 export default function FilterSidebar({ categories = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 1. State cho các bộ lọc
-  const [filters, setFilters] = useState({
-    search: searchParams.get("search") || "",
-    startDate: searchParams.get("startDate") || "",
-    departure: searchParams.get("departure") || "",
-    category: searchParams.get("category") || "",
-    duration: searchParams.get("duration") || "",
-    priceRange: searchParams.get("priceRange") || "",
-  });
-
-  // 2. State lưu danh sách địa điểm khởi hành động
+  const [filters, setFilters] = useState(() =>
+    createFiltersFromSearchParams(searchParams)
+  );
+  const [destinationOptions, setDestinationOptions] = useState([]);
   const [departureLocations, setDepartureLocations] = useState([]);
+  const [durationOptions, setDurationOptions] = useState(FALLBACK_DURATION_OPTIONS);
 
-  // 3. Lấy danh sách địa điểm khởi hành từ API (Lọc từ tất cả các tour)
   useEffect(() => {
-    const fetchDeparturePoints = async () => {
+    const fetchFilterOptions = async () => {
       try {
-        // Gọi API lấy tour (không truyền tham số lọc để lấy được tất cả các điểm đi hiện có)
-        const response = await getTours({ limit: 100 }); 
-        if (response && response.tours) {
-          // Lấy giá trị từ trường departureLocation (đúng theo DB của bạn)
-          const uniquePoints = [
-            ...new Set(response.tours.map((tour) => tour.departureLocation)),
-          ].filter(Boolean); // Loại bỏ các giá trị null hoặc rỗng
-          
-          setDepartureLocations(uniquePoints);
+        const filterOptions = await getTourFilterOptions();
+
+        if (Array.isArray(filterOptions.destinations)) {
+          setDestinationOptions(filterOptions.destinations);
+        }
+        if (Array.isArray(filterOptions.departureLocations)) {
+          setDepartureLocations(filterOptions.departureLocations);
+        }
+        if (
+          Array.isArray(filterOptions.durationDays) &&
+          filterOptions.durationDays.length > 0
+        ) {
+          setDurationOptions(filterOptions.durationDays);
         }
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách điểm khởi hành:", error);
+        console.error("Khong the tai bo loc tour:", error);
       }
     };
-    fetchDeparturePoints();
+
+    fetchFilterOptions();
   }, []);
 
-  // 4. Cập nhật State mỗi khi URL thay đổi
   useEffect(() => {
-    setFilters({
-      search: searchParams.get("search") || "",
-      startDate: searchParams.get("startDate") || "",
-      departure: searchParams.get("departure") || "",
-      category: searchParams.get("category") || "",
-      duration: searchParams.get("duration") || "",
-      priceRange: searchParams.get("priceRange") || "",
-    });
+    setFilters(createFiltersFromSearchParams(searchParams));
   }, [searchParams]);
 
   const handleChange = (name, value) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleApplyFilter = (e) => {
-    if (e) e.preventDefault();
+  const handleApplyFilter = (event) => {
+    if (event) {
+      event.preventDefault();
+    }
+
     const params = new URLSearchParams();
+    const trimmedDestination = filters.destination.trim();
+    const trimmedDepartureLocation = filters.departureLocation.trim();
+    const normalizedDurationDays = Number.parseInt(filters.durationDays, 10);
+    const selectedPriceRange = PRICE_RANGE_OPTIONS.find(
+      (option) => option.value === filters.priceRange
+    );
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-    });
+    if (trimmedDestination) {
+      params.set("destination", trimmedDestination);
+    }
+    if (filters.startDate) {
+      params.set("startDate", filters.startDate);
+    }
+    if (trimmedDepartureLocation) {
+      params.set("departureLocation", trimmedDepartureLocation);
+    }
+    if (filters.category) {
+      params.set("category", filters.category);
+    }
+    if (Number.isInteger(normalizedDurationDays) && normalizedDurationDays > 0) {
+      params.set("durationDays", String(normalizedDurationDays));
+    }
+    if (selectedPriceRange?.minPrice) {
+      params.set("minPrice", selectedPriceRange.minPrice);
+    }
+    if (selectedPriceRange?.maxPrice) {
+      params.set("maxPrice", selectedPriceRange.maxPrice);
+    }
 
-    params.delete("page"); 
-    router.push(`/danh-muc?${params.toString()}`);
+    const query = params.toString();
+    router.push(query ? `/danh-muc?${query}` : "/danh-muc");
   };
 
   const handleReset = () => {
     router.push("/danh-muc");
   };
+
+  const durationSelectOptions = durationOptions.map((duration) => ({
+    value: String(duration),
+    label: duration === 1 ? "1 ngày" : `${duration} ngày`,
+    searchText: `${duration} ngày`,
+  }));
 
   return (
     <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -83,121 +207,111 @@ export default function FilterSidebar({ categories = [] }) {
         </h2>
       </div>
 
-      {/* MỤC 1: TÌM KIẾM TỪ KHÓA */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Bạn muốn đi đâu?</label>
-        <input
-          type="text"
-          placeholder="Tên tour, điểm đến..."
-          value={filters.search}
-          onChange={(e) => handleChange("search", e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-sky-100 transition-all"
+        <label className="ml-1 text-[11px] font-bold uppercase text-slate-400">
+          Bạn muốn đi đâu?
+        </label>
+        <SearchableSelect
+          value={filters.destination}
+          onChange={(value) => handleChange("destination", value)}
+          options={destinationOptions}
+          placeholder="Nhập điểm đến..."
+          emptyLabel="Tất cả điểm đến"
+          containerClassName="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 transition-all focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-100"
+          inputClassName="text-sm text-slate-700"
+          dropdownClassName="max-h-72"
         />
       </div>
 
-      {/* MỤC 2: NGÀY KHỞI HÀNH */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Ngày khởi hành</label>
-        <input
-          type="date"
+        <label className="ml-1 text-[11px] font-bold uppercase text-slate-400">
+          Ngày khởi hành
+        </label>
+        <DatePickerField
           value={filters.startDate}
-          onChange={(e) => handleChange("startDate", e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:bg-white transition-all cursor-pointer"
+          onChange={(value) => handleChange("startDate", value)}
+          containerClassName="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm transition-all focus-within:bg-white"
+          inputClassName="text-sm text-slate-700 placeholder:text-slate-400"
+          ariaLabel="Chọn ngày khởi hành"
         />
       </div>
 
-      {/* --- MỤC KHỞI HÀNH (CODE ĐÃ CHUYỂN ĐỔI TỪ TRANG CHỦ) --- */}
       <div className="space-y-2">
-        <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">
+        <label className="ml-1 text-[10px] font-bold uppercase text-slate-400">
           Khởi hành từ
         </label>
-        <div className="relative flex items-center bg-slate-50 rounded-xl border border-slate-200 px-3 py-2.5 focus-within:bg-white transition-all">
-          {/* Icon SVG từ code trang chủ của bạn */}
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" 
-            className="w-4 h-4 text-slate-400 mr-2 shrink-0"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-          </svg>
-          
-          <select
-            name="departure"
-            value={filters.departure}
-            onChange={(e) => handleChange("departure", e.target.value)}
-            className="w-full text-slate-700 outline-none text-xs font-semibold bg-transparent cursor-pointer"
-          >
-            <option value="">Tất cả địa điểm</option>
-            {departureLocations.map((Location, index) => (
-              <option key={index} value={Location}>
-                {Location}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SearchableSelect
+          value={filters.departureLocation}
+          onChange={(value) => handleChange("departureLocation", value)}
+          options={departureLocations}
+          placeholder="Tất cả địa điểm"
+          emptyLabel="Tất cả địa điểm"
+          containerClassName="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 transition-all focus-within:bg-white"
+          inputClassName="text-xs font-semibold text-slate-700"
+          dropdownClassName="max-h-72"
+          leadingContent={<DepartureIcon />}
+        />
       </div>
 
-      {/* VÙNG MIỀN */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Phân Loại</label>
+        <label className="ml-1 text-[11px] font-bold uppercase text-slate-400">
+          Phân Loại
+        </label>
         <select
           value={filters.category}
-          onChange={(e) => handleChange("category", e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all cursor-pointer"
+          onChange={(event) => handleChange("category", event.target.value)}
+          className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition-all focus:bg-white"
         >
           <option value="">Tất cả danh mục</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.slug}>
-              {cat.name}
+          {categories.map((category) => (
+            <option key={category.id} value={category.slug}>
+              {category.name}
             </option>
           ))}
         </select>
       </div>
 
-      {/* SỐ NGÀY TOUR */}
-      <div className="space-y-3">
-        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Số ngày tour</label>
-        <div className="grid grid-cols-1 gap-2 pl-1">
-          {[
-            { label: "Tất cả thời gian", value: "" },
-            { label: "1-2 ngày", value: "1-2" },
-            { label: "3-4 ngày", value: "3-4" },
-            { label: "5 ngày", value: "5-5" },
-            { label: "6 ngày trở lên", value: "6-20" },
-          ].map((item) => (
-            <label key={item.value} className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="radio"
-                name="duration"
-                checked={filters.duration === item.value}
-                onChange={() => handleChange("duration", item.value)}
-                className="h-4 w-4 border-slate-300 text-orange-500 focus:ring-orange-400"
-              />
-              <span className={`text-xs transition-colors ${filters.duration === item.value ? "text-orange-600 font-bold" : "text-slate-600 group-hover:text-orange-500"}`}>
-                {item.label}
-              </span>
-            </label>
-          ))}
-        </div>
+      <div className="space-y-2">
+        <label className="ml-1 text-[11px] font-bold uppercase text-slate-400">
+          Số ngày tour
+        </label>
+        <SearchableSelect
+          value={filters.durationDays}
+          onChange={(value) =>
+            handleChange("durationDays", normalizeDurationInput(value))
+          }
+          options={durationSelectOptions}
+          placeholder="Tất cả thời gian"
+          emptyLabel="Tất cả thời gian"
+          inputMode="numeric"
+          containerClassName="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 transition-all focus-within:bg-white"
+          inputClassName="text-xs font-semibold text-slate-700"
+          dropdownClassName="max-h-72"
+          leadingContent={<DurationIcon />}
+        />
+        <p className="pl-1 text-[11px] text-slate-400">
+          Để trống nếu muốn xem tất cả thời lượng tour.
+        </p>
       </div>
 
-      {/* MỨC GIÁ TOUR */}
       <div className="space-y-2">
-        <label className="text-[11px] font-bold uppercase text-slate-400 ml-1">Mức giá tour</label>
+        <label className="ml-1 text-[11px] font-bold uppercase text-slate-400">
+          Mức giá tour
+        </label>
         <select
           value={filters.priceRange}
-          onChange={(e) => handleChange("priceRange", e.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:bg-white transition-all cursor-pointer"
+          onChange={(event) => handleChange("priceRange", event.target.value)}
+          className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition-all focus:bg-white"
         >
-          <option value="">Tất cả mức giá</option>
-          <option value="0-3000000">Dưới 3 triệu</option>
-          <option value="3000000-5000000">3 - 5 triệu</option>
-          <option value="5000000-10000000">5 - 10 triệu</option>
-          <option value="10000000-100000000">Trên 10 triệu</option>
+          {PRICE_RANGE_OPTIONS.map((option) => (
+            <option key={option.value || "all"} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </select>
       </div>
 
-      {/* ACTIONS */}
-      <div className="pt-4 space-y-3">
+      <div className="space-y-3 pt-4">
         <button
           onClick={handleApplyFilter}
           className="w-full rounded-xl bg-orange-500 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-100 transition-all hover:bg-orange-600 hover:shadow-orange-200 active:scale-95"
@@ -206,7 +320,7 @@ export default function FilterSidebar({ categories = [] }) {
         </button>
         <button
           onClick={handleReset}
-          className="w-full py-2 text-center text-[11px] font-medium text-slate-400 hover:text-rose-500 transition-colors"
+          className="w-full py-2 text-center text-[11px] font-medium text-slate-400 transition-colors hover:text-rose-500"
         >
           Xóa tất cả bộ lọc
         </button>

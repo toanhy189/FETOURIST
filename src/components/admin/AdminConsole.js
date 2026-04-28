@@ -9,7 +9,6 @@ import AdminManagersPanel from "@/components/admin/AdminManagersPanel";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import AdminTourWorkspace from "@/components/admin/AdminTourWorkspace";
-// import BookingsPanel from "@/components/admin/BookingsPanel";
 import UsersPanel from "@/components/admin/UsersPanel";
 import BookingsPanel from "./bookings/BookingsPanel";
 import {
@@ -25,12 +24,10 @@ export default function AdminConsole() {
   const router = useRouter();
   const { currentUser, isAuthenticated, isAdmin } = useAppContext();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  // Luôn suy ra panel từ URL thật để vào thẳng /admin/... hoặc refresh trang con vẫn đứng đúng màn.
   const activeRoute = useMemo(
     () => resolveAdminRouteFromPathname(pathname) || ADMIN_ROUTE_MAP.dashboard,
     [pathname]
   );
-  // Topbar lấy metadata theo route đang active, kể cả khi route đó là mục con của "Tour".
   const activeItem = useMemo(
     () => findActiveAdminItem(adminNavItems, activeRoute.key),
     [activeRoute.key]
@@ -48,7 +45,6 @@ export default function AdminConsole() {
   }
 
   function renderActivePanel() {
-    // Layout admin giữ nguyên, chỉ thay panel nội dung theo route key đã resolve ở trên.
     if (activeRoute.key === "dashboard") {
       return <AdminDashboard />;
     }
