@@ -20,11 +20,11 @@ const Reveal = ({ children, delay = 0, x = 0, y = 50 }) => {
 export default function GioiThieuPage() {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      
+
       {/* --- SECTION 1: HERO BANNER --- */}
       <section className="relative h-100 w-full overflow-hidden flex items-center justify-center">
         <img
-          src="/images/bia1.jpg" 
+          src="/images/bia1.jpg"
           alt="Banner giới thiệu"
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -47,7 +47,7 @@ export default function GioiThieuPage() {
       {/* --- SECTION 2: KINH NGHIỆM & CÔNG TY --- */}
       <section className="py-24 container mx-auto px-4">
         <div className="flex flex-col lg:flex-row items-center gap-16">
-          
+
           {/* Hình ảnh bên trái */}
           <div className="w-full lg:w-1/2 relative">
             <Reveal x={-50} y={0}>
@@ -90,7 +90,7 @@ export default function GioiThieuPage() {
                   <div key={i} className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center text-white">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     </div>
                     <span className="font-bold text-slate-700">{item}</span>
@@ -101,7 +101,7 @@ export default function GioiThieuPage() {
 
             <Reveal delay={0.5}>
               {/* CẬP NHẬT: Hover đổi sang màu cam */}
-              <Link 
+              <Link
                 href="/danh-muc"
                 className="inline-block px-10 py-4 bg-white text-white rounded-full font-bold shadow-lg shadow-green-200 hover:bg-orange-500 hover:shadow-orange-200 hover:-translate-y-1 transition-all duration-300"
               >
@@ -141,7 +141,7 @@ export default function GioiThieuPage() {
                 </div>
 
                 {/* CẬP NHẬT: Hover đổi sang màu cam */}
-                <Link 
+                <Link
                   href="/diem-den"
                   className="inline-block px-10 py-4 bg-white text-white rounded-full font-bold shadow-lg shadow-green-200 hover:bg-orange-500 hover:shadow-orange-200 hover:-translate-y-1 transition-all duration-300"
                 >
@@ -171,7 +171,7 @@ export default function GioiThieuPage() {
         <Reveal>
           <div className="container mx-auto px-4 max-w-3xl">
             <h2 className="text-3xl md:text-4xl font-black text-slate-400 leading-tight">
-              Cùng Chúng Tôi Tạo Ra Những Trải Nghiệm Tuyệt Vời 
+              Cùng Chúng Tôi Tạo Ra Những Trải Nghiệm Tuyệt Vời
             </h2>
             <div className="mt-6 w-24 h-1.5 bg-orange-500 mx-auto rounded-full"></div>
           </div>

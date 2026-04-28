@@ -51,14 +51,13 @@ export default async function TourDetailPage({ params }) {
   return (
     <div className="space-y-8">
       <TourDetailExperience tour={tour} />
+      <TourSocialHub tour={tour} />
       <TourCardGridSection
         title={`Tours du lịch ${tour.destination} liên quan`}
-        description="Danh sách này được backend xếp hạng sẵn theo mức độ liên quan của tour đang xem."
         tours={relatedTours}
         emptyMessage="Chưa tìm thấy tour liên quan phù hợp để gợi ý."
       />
       <RecentlyViewedTours tour={tour} />
-      <TourSocialHub tour={tour} />
     </div>
   );
 }

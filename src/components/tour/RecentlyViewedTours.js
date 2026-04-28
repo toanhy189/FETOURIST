@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
+import { syncRecentTourToServer } from "@/apiService/recentTours";
 import TourCardGridSection from "@/components/tour/TourCardGridSection";
 import {
   getEmptyRecentToursSnapshot,
   getRecentToursSnapshot,
-  saveRecentTour,
+  refreshRecentToursFromServer,
+  saveRecentTourLocal,
   subscribeRecentTours,
 } from "@/utils/recentTours";
-
+// Trang xem lịch tour gần đây
 export default function RecentlyViewedTours({ tour, limit = 3 }) {
   const recentTours = useSyncExternalStore(
     subscribeRecentTours,
@@ -17,17 +19,37 @@ export default function RecentlyViewedTours({ tour, limit = 3 }) {
   );
 
   useEffect(() => {
-    // Khi người dùng mở trang chi tiết, tour hiện tại sẽ được ghi vào localStorage của trình duyệt.
-    // Danh sách hiển thị bên dưới tự cập nhật lại qua subscription mà không cần gọi API.
-    saveRecentTour(tour);
+    let isMounted = true;
+
+    saveRecentTourLocal(tour);
+
+    async function syncRecentTour() {
+      try {
+        await syncRecentTourToServer({
+          tourId: tour?.id,
+        });
+
+        if (isMounted) {
+          await refreshRecentToursFromServer();
+        }
+      } catch {
+        // Local cache already contains the optimistic UI state.
+      }
+    }
+
+    void syncRecentTour();
+
+    return () => {
+      isMounted = false;
+    };
   }, [tour]);
 
   return (
     <TourCardGridSection
-      title="Tours du lịch bạn đã xem gần đây"
-      description="Dữ liệu này được lưu ngay trên trình duyệt hiện tại để người dùng mở lại nhanh."
+      title="Tour du lịch bạn đã xem gần đây"
+
       tours={recentTours}
-      emptyMessage="Chưa có tour nào trong lịch sử xem gần đây trên trình duyệt này."
+      emptyMessage="Chưa có tour nào trong lịch sử xem gần đây trong tài khoản này"
     />
   );
 }

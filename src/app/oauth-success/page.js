@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { saveStoredSession } from "@/apiService/AxiosInstance/AxiosInstance";
-import { fetchMe } from "@/apiService/auth.js"; // Điều chỉnh đường dẫn đến hàm fetchMe của bạn
+import { fetchMe } from "@/apiService/auth";
 
-export default function OAuthSuccessPage() {
+function OAuthSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -14,32 +14,28 @@ export default function OAuthSuccessPage() {
       const accessToken = searchParams.get("accessToken");
       const refreshToken = searchParams.get("refreshToken");
 
-      if (accessToken && refreshToken) {
-        // 1. Lưu token (tạm thời chưa có user data đầy đủ, mapUser sẽ bỏ qua nếu null)
-        saveStoredSession({
-          accessToken,
-          refreshToken,
-          user: null,
-        });
-
-        try {
-          // 2. Gọi fetchMe() để đồng bộ thông tin user từ backend về frontend
-          await fetchMe();
-
-          // 3. Xong xuôi thì nhảy về trang chủ, trigger useEffect của AuthForm/AppProvider
-          // Cập nhật URL cứng hoặc dùng router (khuyến nghị dùng window.location.href để force re-mount AppProvider lấy state mới)
-          window.location.href = "/";
-        } catch (error) {
-          console.error("Lỗi khi đồng bộ thông tin user:", error);
-          router.replace("/dang-nhap?error=sync_failed");
-        }
-      } else {
+      if (!accessToken || !refreshToken) {
         router.replace("/dang-nhap?error=missing_tokens");
+        return;
+      }
+
+      saveStoredSession({
+        accessToken,
+        refreshToken,
+        user: null,
+      });
+
+      try {
+        await fetchMe();
+        window.location.href = "/";
+      } catch (error) {
+        console.error("Không thể đồng bộ thông tin người dùng sau OAuth:", error);
+        router.replace("/dang-nhap?error=sync_failed");
       }
     }
 
-    handleGoogleLogin();
-  }, [searchParams, router]);
+    void handleGoogleLogin();
+  }, [router, searchParams]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -48,5 +44,22 @@ export default function OAuthSuccessPage() {
         <p className="text-slate-600">Đang hoàn tất đăng nhập Google...</p>
       </div>
     </div>
+  );
+}
+
+export default function OAuthSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-sky-700 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+            <p className="text-slate-600">Đang khởi tạo phiên đăng nhập...</p>
+          </div>
+        </div>
+      }
+    >
+      <OAuthSuccessContent />
+    </Suspense>
   );
 }

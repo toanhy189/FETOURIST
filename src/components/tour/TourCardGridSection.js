@@ -2,7 +2,6 @@ import TourCard from "@/components/TourCard";
 
 export default function TourCardGridSection({
   title,
-  description = "",
   tours = [],
   emptyMessage = "Chưa có dữ liệu để hiển thị.",
 }) {
@@ -10,7 +9,6 @@ export default function TourCardGridSection({
     <section className="space-y-5 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
       <div className="space-y-1">
         <h2 className="text-2xl font-bold tracking-[-0.02em] text-slate-900">{title}</h2>
-        {description ? <p className="text-sm leading-6 text-slate-500">{description}</p> : null}
       </div>
 
       {tours.length > 0 ? (

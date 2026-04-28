@@ -11,9 +11,8 @@ const transportLabels = {
   mixed: "Linh hoạt",
 };
 
-// CÁC HÀM TRỢ GIÚP (HELPER FUNCTIONS)
-
 function mapDeparture(departure) {
+  // Gom lich khoi hanh ve shape chung de card/detail/booking dung cung gia.
   if (!departure) return null;
 
   const normalizedDiscountPrice =
@@ -42,6 +41,7 @@ function mapDeparture(departure) {
 }
 
 function buildTourSummary(tour) {
+  // Tom tat ngan cho card tour khi backend khong gui summary rieng.
   if (tour.highlights?.length) {
     return tour.highlights.slice(0, 2).join(" - ");
   }
@@ -49,6 +49,7 @@ function buildTourSummary(tour) {
 }
 
 function mapItinerary(step) {
+  // Anh trong lich trinh can duoc doi thanh URL day du de Next Image render duoc.
   return {
     ...step,
     blocks: Array.isArray(step?.blocks)
@@ -61,9 +62,8 @@ function mapItinerary(step) {
   };
 }
 
-//HÀM CHUYỂN ĐỔI DỮ LIỆU CHÍNH 
-
 export function mapTour(tour) {
+  // Map document Tour tu BE sang object FE dung thong nhat tren public va admin.
   if (!tour) return null;
 
   const normalizedDiscountPrice =
@@ -128,8 +128,6 @@ export function mapTour(tour) {
   };
 }
 
-// --- CÁC HÀM GỌI API CHO PUBLIC USER ---
-
 export async function getTours(searchParams = {}) {
   // Loại bỏ các trường rỗng/null để tránh gửi query "rác"
   const cleanParams = {};
@@ -148,6 +146,24 @@ export async function getTours(searchParams = {}) {
     tours: Array.isArray(response.data) ? response.data.map(mapTour).filter(Boolean) : [],
     pagination: response.pagination ?? null,
     message: response.message,
+  };
+}
+
+export async function getTourFilterOptions() {
+  const response = await fetchApi("/api/tours/filter-options", {
+    next: { revalidate: 300 },
+  });
+
+  return {
+    destinations: Array.isArray(response.data?.destinations)
+      ? response.data.destinations
+      : [],
+    departureLocations: Array.isArray(response.data?.departureLocations)
+      ? response.data.departureLocations
+      : [],
+    durationDays: Array.isArray(response.data?.durationDays)
+      ? response.data.durationDays
+      : [],
   };
 }
 
@@ -183,9 +199,8 @@ export async function getTourDepartures(idOrSlug, searchParams = {}) {
   };
 }
 
-// --- CÁC HÀM GỌI API CHO ADMIN ---
-
 export async function getToursForAdmin(searchParams = {}) {
+  // Admin list can token va co the lay ca tour draft/closed.
   const response = await privateRequest("/api/tours/admin/all", {
     searchParams,
   });
@@ -236,9 +251,8 @@ export async function uploadTourImages(tourId, files) {
   return response.data;
 }
 
-// 
-
 export async function getTourDeparturesForAdmin(tourId, searchParams = {}) {
+  // Departure la lich khoi hanh that cua tour, tach rieng voi template tour.
   const response = await privateRequest(`/api/tours/${tourId}/departures/admin`, {
     searchParams,
   });

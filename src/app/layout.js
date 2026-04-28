@@ -7,6 +7,11 @@ export const metadata = {
   description: "Giao dien website du lich co ket noi du lieu that tu backend BETOURIST.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
