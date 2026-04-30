@@ -10,6 +10,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import AdminTourWorkspace from "@/components/admin/AdminTourWorkspace";
 import UsersPanel from "@/components/admin/UsersPanel";
+import AdminSupportChatPage from "@/components/admin/chat/page.js";
 import BookingsPanel from "./bookings/BookingsPanel";
 import {
   ADMIN_ROUTE_MAP,
@@ -77,6 +78,10 @@ export default function AdminConsole() {
 
     if (activeRoute.key === "bookings") {
       return <BookingsPanel />;
+    }
+
+    if (activeRoute.key === "support-chat") {
+      return <AdminSupportChatPage />;
     }
 
     return <AdminContactsPanel />;

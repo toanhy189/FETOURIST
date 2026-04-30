@@ -54,6 +54,13 @@ export const ADMIN_ROUTE_MAP = {
     description:
       "Hộp thư liên hệ để CSKH xem yêu cầu, gửi phản hồi qua email và theo dõi lịch sử xử lý.",
   },
+  "support-chat": {
+    key: "support-chat",
+    href: "/admin/chat",
+    label: "Chat tư vấn",
+    description:
+      "Quản lý hội thoại realtime giữa khách hàng và quản trị viên, hỗ trợ tư vấn tour trực tiếp.",
+  },
 };
 
 export const adminNavItems = [
@@ -71,6 +78,7 @@ export const adminNavItems = [
   },
   ADMIN_ROUTE_MAP.bookings,
   ADMIN_ROUTE_MAP.contacts,
+  ADMIN_ROUTE_MAP["support-chat"],
 ];
 
 function normalizeSegments(segments) {
@@ -100,6 +108,8 @@ export function resolveAdminRouteFromSegments(segments) {
         return ADMIN_ROUTE_MAP.bookings;
       case "contacts":
         return ADMIN_ROUTE_MAP.contacts;
+      case "chat":
+        return ADMIN_ROUTE_MAP["support-chat"];
       default:
         return null;
     }

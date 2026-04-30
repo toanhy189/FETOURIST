@@ -52,7 +52,11 @@ function getPriceRangeValue(searchParams) {
 
 function createFiltersFromSearchParams(searchParams) {
   return {
-    destination: searchParams.get("destination") || searchParams.get("search") || "",
+    destination:
+      searchParams.get("q") ||
+      searchParams.get("search") ||
+      searchParams.get("destination") ||
+      "",
     startDate: searchParams.get("startDate") || "",
     departureLocation:
       searchParams.get("departureLocation") || searchParams.get("departure") || "",
@@ -163,7 +167,7 @@ export default function FilterSidebar({ categories = [] }) {
     );
 
     if (trimmedDestination) {
-      params.set("destination", trimmedDestination);
+      params.set("q", trimmedDestination);
     }
     if (filters.startDate) {
       params.set("startDate", filters.startDate);

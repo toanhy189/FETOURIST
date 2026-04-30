@@ -142,6 +142,25 @@ function ContactsIcon() {
   );
 }
 
+function ChatIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5 5.5A3.5 3.5 0 0 1 8.5 2h7A3.5 3.5 0 0 1 19 5.5v5A3.5 3.5 0 0 1 15.5 14H11l-4.5 4v-4A3.5 3.5 0 0 1 5 10.5v-5Z" />
+      <path d="M9 7.5h6" />
+      <path d="M9 10.5h3.5" />
+    </svg>
+  );
+}
+
 function ChevronIcon({ isOpen }) {
   return (
     <svg
@@ -167,6 +186,7 @@ const NAV_ICON_MAP = {
   tours: ToursIcon,
   bookings: BookingsIcon,
   contacts: ContactsIcon,
+  "support-chat": ChatIcon,
 };
 
 function getInitials(fullName) {

@@ -44,10 +44,23 @@ function DepartureIcon() {
   );
 }
 
+// function createFormData(searchParams) {
+//   return {
+//     destination:
+//       searchParams.get("destination") || searchParams.get("search") || "",
+//     startDate: searchParams.get("startDate") || "",
+//     departureLocation:
+//       searchParams.get("departureLocation") || searchParams.get("departure") || "",
+//   };
+// }
+
 function createFormData(searchParams) {
   return {
     destination:
-      searchParams.get("destination") || searchParams.get("search") || "",
+      searchParams.get("q") ||
+      searchParams.get("search") ||
+      searchParams.get("destination") ||
+      "",
     startDate: searchParams.get("startDate") || "",
     departureLocation:
       searchParams.get("departureLocation") || searchParams.get("departure") || "",
@@ -103,7 +116,7 @@ export default function SearchForm() {
     const trimmedDepartureLocation = formData.departureLocation.trim();
 
     if (trimmedDestination) {
-      params.set("destination", trimmedDestination);
+      params.set("q", trimmedDestination);
     }
     if (formData.startDate) {
       params.set("startDate", formData.startDate);
