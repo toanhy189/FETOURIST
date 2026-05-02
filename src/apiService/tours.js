@@ -180,21 +180,26 @@ export function mapTour(tour) {
 }
 
 export async function getTours(searchParams = {}) {
-  // Loại bỏ các trường rỗng/null để tránh gửi query "rác"
   const cleanParams = {};
   Object.keys(searchParams).forEach((key) => {
-    if (searchParams[key] !== undefined && searchParams[key] !== null && searchParams[key] !== "") {
+    if (
+      searchParams[key] !== undefined &&
+      searchParams[key] !== null &&
+      searchParams[key] !== ""
+    ) {
       cleanParams[key] = searchParams[key];
     }
   });
 
-  const response = await fetchApi("/api/tours", {
+  const response = await fetchApi("/api/tours/search", {
     searchParams: cleanParams,
-    next: { revalidate: 0 }, 
+    next: { revalidate: 0 },
   });
 
   return {
-    tours: Array.isArray(response.data) ? response.data.map(mapTour).filter(Boolean) : [],
+    tours: Array.isArray(response.data)
+      ? response.data.map(mapTour).filter(Boolean)
+      : [],
     pagination: response.pagination ?? null,
     message: response.message,
   };

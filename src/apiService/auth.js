@@ -9,6 +9,7 @@ import {
   saveStoredSession,
 } from "@/apiService/AxiosInstance/AxiosInstance";
 import { toAssetUrl } from "@/apiService/base";
+import { disconnectSupportChatSocket } from "@/apiService/supportChatSocket";
 
 function mapUser(user) {
   // Chuan hoa user object de FE dung chung 1 shape o moi man hinh.
@@ -83,6 +84,7 @@ export async function logout() {
     });
   } finally {
     clearStoredSession();
+    disconnectSupportChatSocket();
   }
 }
 

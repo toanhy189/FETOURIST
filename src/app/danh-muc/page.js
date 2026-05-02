@@ -23,7 +23,11 @@ function buildCategoryTourFilter({ activeCategory, selectedCategory, hasChildCat
   return activeCategory ? { category: activeCategory } : {};
 }
 
-function buildPageTitle({ destination, activeCategory, activeCategoryName }) {
+function buildPageTitle({ keyword, destination, activeCategory, activeCategoryName }) {
+  if (keyword) {
+    return `Kết quả tìm kiếm: "${keyword}"`;
+  }
+
   if (destination) {
     return `Kết quả cho điểm đến: "${destination}"`;
   }
@@ -34,13 +38,18 @@ function buildPageTitle({ destination, activeCategory, activeCategoryName }) {
 export default async function DanhMucPage({ searchParams }) {
   const params = await searchParams;
   const activeCategory = pickSearchParam(params?.category);
-  const destinationFilter =
-    pickSearchParam(params?.destination) || pickSearchParam(params?.search);
+
+  const keywordFilter =
+    pickSearchParam(params?.q) || pickSearchParam(params?.search);
+
+  const destinationFilter = pickSearchParam(params?.destination);
+
   const departureLocationFilter =
     pickSearchParam(params?.departureLocation) ||
     pickSearchParam(params?.departure);
 
   const baseTourFilters = {
+    q: keywordFilter,
     destination: destinationFilter,
     departureLocation: departureLocationFilter,
     startDate: pickSearchParam(params?.startDate),
@@ -75,6 +84,7 @@ export default async function DanhMucPage({ searchParams }) {
   const activeCategoryName =
     categories.find((category) => category.slug === activeCategory)?.name ||
     activeCategory;
+  const keyword = tourFilters.q;
   const destination = tourFilters.destination;
   const departureLocation = tourFilters.departureLocation;
 
@@ -92,6 +102,7 @@ export default async function DanhMucPage({ searchParams }) {
                 <div>
                   <h1 className="text-3xl font-black tracking-tight text-slate-900 md:text-[2.35rem]">
                     {buildPageTitle({
+                      keyword,
                       destination,
                       activeCategory,
                       activeCategoryName,

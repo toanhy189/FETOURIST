@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import HeaderActions from "@/components/HeaderActions";
 import ChatWidget from "@/components/chat/ChatWidget";
+import UserSupportChatWidget from "@/components/support-chat/UserSupportChatWidget";
 import TourMegaMenu from "./header/TourMegaMenu";
 import Footer from "./footer/Footer";
 import { cn } from "@/utils/cn";
@@ -143,6 +144,7 @@ export default function SiteShell({ children }) {
 
       <Footer />
       <ChatWidget />
+      <UserSupportChatWidget />
     </div>
   );
 }
