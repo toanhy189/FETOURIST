@@ -9,6 +9,7 @@ import {
   markSupportConversationRead,
 } from "@/apiService/supportChat";
 import { connectSupportChatSocket } from "@/apiService/supportChatSocket";
+import { toAssetUrl } from "@/apiService/base";
 function formatMessageTime(value) {
   if (!value) return "";
 
@@ -38,27 +39,8 @@ function getInitials(name) {
   return `${parts[0][0] || ""}${parts[parts.length - 1][0] || ""}`.toUpperCase();
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
 function resolveAssetUrl(url) {
-  if (!url) return "";
-
-  const value = String(url).trim();
-
-  if (
-    value.startsWith("http://") ||
-    value.startsWith("https://") ||
-    value.startsWith("data:") ||
-    value.startsWith("blob:")
-  ) {
-    return value;
-  }
-
-  if (value.startsWith("/")) {
-    return `${API_URL}${value}`;
-  }
-
-  return `${API_URL}/${value}`;
+  return toAssetUrl(url) || "";
 }
 
 function Avatar({

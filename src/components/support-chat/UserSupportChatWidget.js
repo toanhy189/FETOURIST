@@ -310,7 +310,7 @@ export default function UserSupportChatWidget() {
                 </div>
 
                 <div>
-                  <p className="text-sm font-bold">Tư vấn viên BETOURIST</p>
+                  <p className="text-sm font-bold">Tư vấn viên TRAVELPTIT</p>
                   <p className="text-xs text-blue-100">Đang trực tuyến</p>
                 </div>
               </div>

@@ -20,6 +20,18 @@ const paymentMethodOptions = [
   { value: "vnpay", label: "VNPAY" }
 ];
 
+const bookingStatusLabels = {
+  pending: "Chờ xác nhận",
+  confirmed: "Đã xác nhận",
+  cancelled: "Đã hủy",
+  completed: "Hoàn thành",
+};
+
+function getBookingStatusLabel(status) {
+  const normalizedStatus = String(status || "").toLowerCase();
+  return bookingStatusLabels[normalizedStatus] || status || "Đang cập nhật";
+}
+
 const guestFieldConfigs = [
   { key: "adults", label: "Người lớn", hint: "> 9 tuổi", min: 1 },
   { key: "children", label: "Trẻ em", hint: "5 - 9 tuổi", min: 0 },
@@ -878,7 +890,7 @@ export default function TourDetailExperience({ tour }) {
   }, [guests.adults, guests.children, guests.infants, isAuthenticated, selectedDepartureId]);
 
   return (
-    <div className="mx-auto max-w-[1100px] space-y-5">
+    <div className="mx-auto max-w-[1100px] space-y-5 pt-4 md:pt-5">
       <section className="px-1">
         <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
           <Link href="/" className="transition hover:text-sky-700">
@@ -1497,7 +1509,7 @@ export default function TourDetailExperience({ tour }) {
                       {latestBooking ? (
                         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-900">
                           <p className="font-semibold">Booking vừa tạo: {latestBooking.orderCode}</p>
-                          <p className="mt-1">Trạng thái: {latestBooking.bookingStatus}</p>
+                          <p className="mt-1">Trạng thái: {getBookingStatusLabel(latestBooking.bookingStatus)}</p>
                           <p className="mt-1">Tổng tiền: {formatVnd(latestBooking.totalAmount)}</p>
                         </div>
                       ) : null}

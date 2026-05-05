@@ -149,7 +149,7 @@ export default function UpdateBookingModal({
   const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
-    if (!booking) return;
+    if (!open || !booking) return;
 
     const nextTourId = booking.tour?._id || booking.tour?.id || "";
     const nextDepartureId = booking.departure?._id || booking.departure?.id || "";
@@ -175,7 +175,7 @@ export default function UpdateBookingModal({
     if (nextTourId && onLoadDepartures) {
       void onLoadDepartures(nextTourId);
     }
-  }, [booking, onLoadDepartures]);
+  }, [open, booking, onLoadDepartures]);
 
   const availableStatuses = useMemo(() => {
     if (!booking?.bookingStatus) return [];
@@ -206,13 +206,7 @@ export default function UpdateBookingModal({
     setSavingAll(true);
 
     try {
-      await onSaveInfo(booking.orderCode, {
-        departureId: form.departureId || undefined,
-        guests: {
-          adults: Number(form.adults),
-          children: Number(form.children),
-          infants: Number(form.infants),
-        },
+      const infoPayload = {
         contactInfo: {
           fullName: form.contactFullName,
           email: form.contactEmail,
@@ -222,7 +216,18 @@ export default function UpdateBookingModal({
         depositAmount: form.depositAmount === "" ? 0 : Number(form.depositAmount),
         specialRequest: form.specialRequest,
         note: form.note,
-      });
+      };
+
+      if (!disableTravelFields) {
+        infoPayload.departureId = form.departureId || undefined;
+        infoPayload.guests = {
+          adults: Number(form.adults),
+          children: Number(form.children),
+          infants: Number(form.infants),
+        };
+      }
+
+      await onSaveInfo(booking.orderCode, infoPayload);
 
       await onSaveStatus(booking.orderCode, {
         bookingStatus: form.bookingStatus,
