@@ -135,6 +135,22 @@ export default function AdminTopbar({
   const [loadingKey, setLoadingKey] = useState("");
 
   useEffect(() => {
+    refreshNotifications();
+
+    const intervalId = window.setInterval(() => {
+      refreshNotifications();
+
+      if (isNotificationOpen) {
+        loadNotifications();
+      }
+    }, 30000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [isNotificationOpen, refreshNotifications]);
+
+  useEffect(() => {
     if (!isNotificationOpen) {
       return undefined;
     }

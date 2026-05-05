@@ -1,6 +1,7 @@
 import { readStoredSession } from "@/apiService/AxiosInstance/AxiosInstance";
+import { API_BASE_URL } from "@/apiService/constant";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL = API_BASE_URL;
 
 const getAuthHeaders = () => {
   const { accessToken } = readStoredSession();
