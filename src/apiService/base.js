@@ -1,4 +1,8 @@
 const DEFAULT_API_BASE_URL = "http://localhost:4000";
+const LOCAL_API_ORIGINS = new Set([
+  "http://localhost:4000",
+  "http://127.0.0.1:4000",
+]);
 
 // Gom base URL vao 1 cho de sau nay doi server local/staging chi can sua env.
 export function getApiBaseUrl() {
@@ -63,6 +67,15 @@ export function toAssetUrl(assetPath) {
   }
 
   if (/^https?:\/\//i.test(assetPath)) {
+    try {
+      const url = new URL(assetPath);
+      if (LOCAL_API_ORIGINS.has(url.origin)) {
+        return new URL(`${url.pathname}${url.search}${url.hash}`, getApiBaseUrl()).toString();
+      }
+    } catch {
+      return assetPath;
+    }
+
     return assetPath;
   }
 
