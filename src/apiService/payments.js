@@ -1,6 +1,6 @@
 "use client";
 
-import { privateRequest } from "@/apiService/AxiosInstance/AxiosInstance";
+import { privateRequest, publicRequest } from "@/apiService/AxiosInstance/AxiosInstance";
 
 export async function createPaymentSession(payload) {
   const response = await privateRequest("/api/payments/checkout", {
@@ -47,7 +47,7 @@ export async function updatePaymentTransactionStatus(transactionId, payload) {
 }
 
 export async function confirmVNPayReturn(searchParams = {}) {
-  const response = await privateRequest("/api/payments/vnpay/return", {
+  const response = await publicRequest("/api/payments/vnpay/return", {
     searchParams,
   });
 
