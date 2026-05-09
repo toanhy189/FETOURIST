@@ -50,26 +50,28 @@ export default async function Home() {
 
   return (
     <div className="travel-page-shell min-h-screen pb-14">
-      <section className="relative z-10 h-[390px] w-full overflow-hidden md:h-[420px] lg:h-[430px]">
-        <div
-          aria-label="Banner du lịch TRAVELPTIT"
-          className="absolute inset-0 bg-cover"
-          style={{
-            backgroundImage: 'url("/sl_260302_top-banner1.webp")',
-            backgroundPosition: "center 48%",
-            filter: "saturate(1.08) contrast(1.04)",
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 36%, rgba(255,255,255,0) 72%)",
-          }}
-        />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white/35 to-transparent" />
+      <section className="relative z-30 h-[390px] w-full overflow-visible md:h-[420px] lg:h-[430px]">
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            aria-label="Banner du lịch TRAVELPTIT"
+            className="absolute inset-0 bg-cover"
+            style={{
+              backgroundImage: 'url("/sl_260302_top-banner1.webp")',
+              backgroundPosition: "center 48%",
+              filter: "saturate(1.08) contrast(1.04)",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 36%, rgba(255,255,255,0) 72%)",
+            }}
+          />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white/35 to-transparent" />
+        </div>
 
-        <div className="absolute bottom-5 left-1/2 z-20 w-[calc(100%_-_2rem)] max-w-[1360px] -translate-x-1/2 md:bottom-6">
+        <div className="absolute bottom-5 left-1/2 z-40 w-[calc(100%_-_2rem)] max-w-[1360px] -translate-x-1/2 md:bottom-6">
           <SearchForm />
         </div>
       </section>

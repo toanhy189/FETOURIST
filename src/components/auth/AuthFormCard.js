@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { API_BASE_URL } from "@/apiService/constant";
 import { useAppContext } from "@/components/providers/AppProvider";
 import { checkPasswordStrength } from "@/utils/password";
 
 export default function AuthFormCard({ mode }) {
   const router = useRouter();
   const { isAuthenticated, isAdmin, login, register } = useAppContext();
+  const googleLoginUrl = `${API_BASE_URL}/api/auth/google`;
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -72,7 +74,8 @@ export default function AuthFormCard({ mode }) {
   }
 
   return (
-    <div className="mx-auto max-w-xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg md:p-8">
+    <section className="flex min-h-[calc(100vh-76px)] w-full items-start justify-center px-4 py-10 sm:py-12 lg:py-14">
+      <div className="w-full max-w-xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-lg md:p-8">
       <h1 className="mt-3 text-center font-display text-4xl text-slate-900">
         {isRegister ? "Đăng ký" : "Đăng nhập"}
       </h1>
@@ -153,7 +156,7 @@ export default function AuthFormCard({ mode }) {
 
         {/* Nút đăng nhập Google trỏ thẳng tới API backend */}
         <a
-          href="http://localhost:4000/api/auth/google"
+          href={googleLoginUrl}
           className="flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:border-slate-300"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" xmlns="http://www.w3.org/2000/svg">
@@ -172,6 +175,7 @@ export default function AuthFormCard({ mode }) {
           {isRegister ? "Đăng nhập ngay" : "Đăng ký ngay"}
         </Link>
       </p>
-    </div>
+      </div>
+    </section>
   );
 }

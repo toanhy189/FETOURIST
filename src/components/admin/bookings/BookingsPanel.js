@@ -130,7 +130,7 @@ export default function BookingsPanel() {
     };
   }, []);
 
-  async function loadDeparturesForTour(tourId) {
+  const loadDeparturesForTour = useCallback(async (tourId) => {
     if (!tourId) {
       setDepartures([]);
       return;
@@ -138,7 +138,7 @@ export default function BookingsPanel() {
 
     const result = await getTourDeparturesForAdmin(tourId, { limit: 50 });
     setDepartures(result?.departures || []);
-  }
+  }, []);
 
   async function loadBookingDetail(orderCode) {
     setLoadingDetail(true);

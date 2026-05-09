@@ -114,10 +114,14 @@ export default function AccountWorkspace() {
 
       setSelectedBooking(bookingDetail);
       setSelectedPaymentDetail(paymentDetail);
-      setPaymentForm((current) => ({
-        ...current,
+      setPaymentForm({
+        method: ["cash", "vnpay"].includes(bookingDetail.paymentMethod)
+          ? bookingDetail.paymentMethod
+          : "cash",
+        transactionType: "full_payment",
+        amount: "",
         transactionCode: paymentDetail.transactions?.[0]?.transactionCode || "",
-      }));
+      });
     } catch (loadError) {
       setError(loadError.message || "Khong tai duoc chi tiet booking.");
     } finally {

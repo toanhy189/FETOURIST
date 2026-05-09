@@ -69,6 +69,7 @@ export function toAssetUrl(assetPath) {
   if (/^https?:\/\//i.test(assetPath)) {
     try {
       const url = new URL(assetPath);
+
       if (LOCAL_API_ORIGINS.has(url.origin)) {
         return new URL(`${url.pathname}${url.search}${url.hash}`, getApiBaseUrl()).toString();
       }

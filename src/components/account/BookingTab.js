@@ -37,6 +37,16 @@ const TRANSACTION_TYPE_LABELS = {
   refund: "Hoàn tiền",
 };
 
+const PAYMENT_METHOD_OPTIONS = [
+  { value: "cash", label: PAYMENT_METHOD_LABELS.cash },
+  { value: "vnpay", label: PAYMENT_METHOD_LABELS.vnpay },
+];
+
+const USER_TRANSACTION_TYPE_OPTIONS = [
+  { value: "full_payment", label: TRANSACTION_TYPE_LABELS.full_payment },
+  { value: "deposit", label: TRANSACTION_TYPE_LABELS.deposit },
+];
+
 function getBookingStatusLabel(status) {
   return BOOKING_STATUS_LABELS[status] || status || "--";
 }
@@ -276,14 +286,14 @@ function BookingDetailPanel({
   }
 
   const paidAmount =
-    selectedPaymentDetail?.paymentOverview?.paidAmount ||
-    selectedBooking?.paymentSummary?.paidAmount ||
+    selectedPaymentDetail?.paymentOverview?.paidAmount ??
+    selectedBooking?.paymentSummary?.paidAmount ??
     0;
 
   const remainingAmount =
-    selectedPaymentDetail?.paymentOverview?.remainingAmount ||
-    selectedBooking?.paymentSummary?.remainingAmount ||
-    0;
+    selectedPaymentDetail?.paymentOverview?.remainingAmount ??
+    selectedBooking?.paymentSummary?.remainingAmount ??
+    Math.max(Number(selectedBooking.totalAmount || 0) - Number(paidAmount || 0), 0);
 
   const payableAmount =
     paymentForm.amount && !Number.isNaN(Number(paymentForm.amount))
@@ -292,6 +302,10 @@ function BookingDetailPanel({
 
   const isFullyPaid =
     selectedBooking?.paymentStatus === "paid" || Number(remainingAmount) <= 0;
+  const isCancelled = selectedBooking?.bookingStatus === "cancelled";
+  const canCreatePayment = !isFullyPaid && !isCancelled;
+  const paymentButtonLabel =
+    paymentForm.method === "vnpay" ? "Thanh toán qua VNPay" : "Gửi yêu cầu thanh toán";
 
 
   return (
@@ -398,12 +412,102 @@ function BookingDetailPanel({
           <DetailItem label="Tiền cọc" value={formatVnd(selectedBooking.depositAmount || 0)} />
         </div>
         {isFullyPaid ? (
-    <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-4">
-      <p className="text-sm font-medium text-emerald-700">
-        Booking này đã được thanh toán đầy đủ.
-      </p>
-    </div>
-  ) : null}
+          <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-4">
+            <p className="text-sm font-medium text-emerald-700">
+              Booking này đã được thanh toán đầy đủ.
+            </p>
+          </div>
+        ) : null}
+
+        {isCancelled ? (
+          <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-4">
+            <p className="text-sm font-medium text-rose-700">
+              Booking đã hủy nên không thể tạo thanh toán.
+            </p>
+          </div>
+        ) : null}
+
+        {canCreatePayment ? (
+          <form onSubmit={handleCreatePayment} className="mt-5 space-y-4 border-t border-slate-100 pt-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-sm font-semibold text-slate-700">
+                Phương thức
+                <select
+                  value={paymentForm.method}
+                  onChange={(event) =>
+                    setPaymentForm((current) => ({
+                      ...current,
+                      method: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-sky-400"
+                >
+                  {PAYMENT_METHOD_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-sm font-semibold text-slate-700">
+                Loại thanh toán
+                <select
+                  value={paymentForm.transactionType}
+                  onChange={(event) =>
+                    setPaymentForm((current) => ({
+                      ...current,
+                      transactionType: event.target.value,
+                    }))
+                  }
+                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-sky-400"
+                >
+                  {USER_TRANSACTION_TYPE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <label className="block text-sm font-semibold text-slate-700">
+              Số tiền thanh toán
+              <input
+                type="number"
+                min={1}
+                max={remainingAmount || selectedBooking.totalAmount || undefined}
+                value={paymentForm.amount}
+                onChange={(event) =>
+                  setPaymentForm((current) => ({
+                    ...current,
+                    amount: event.target.value,
+                  }))
+                }
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-sky-400"
+                placeholder={` ${formatVnd(remainingAmount || selectedBooking.totalAmount || 0)}`}
+              />
+              <span className="mt-2 block text-xs font-normal text-slate-500">
+                Để trống nếu muốn thanh toán theo số tiền hệ thống đề xuất.
+              </span>
+            </label>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+
+              <button
+                type="submit"
+                disabled={createPaymentLoading}
+                className="inline-flex items-center justify-center rounded-2xl bg-sky-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {createPaymentLoading ? "Đang tạo..." : paymentButtonLabel}
+              </button>
+            </div>
+
+            <p className="text-xs leading-5 text-slate-500">
+              VNPay sẽ chuyển bạn sang cổng thanh toán. Tiền mặt sẽ tạo giao dịch chờ admin xác nhận.
+            </p>
+          </form>
+        ) : null}
       </InfoCard>
 
       {(selectedBooking.specialRequest || selectedBooking.note || selectedBooking.cancellationReason) ? (
