@@ -82,3 +82,4 @@ export function toAssetUrl(assetPath) {
 
   return new URL(assetPath, getApiBaseUrl()).toString();
 }
+
