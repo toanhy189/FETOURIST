@@ -67,7 +67,7 @@ function extractApiErrorDetail(details) {
 
 function buildApiErrorMessage(payload) {
   const baseMessage = payload?.message || "Khong the xu ly yeu cau.";
-  const detailMessage = extractApiErrorDetail(payload?.errorDetails);
+  const detailMessage = extractApiErrorDetail(payload?.errorDetails || payload?.error);
 
   if (!detailMessage || detailMessage === baseMessage) {
     return baseMessage;
