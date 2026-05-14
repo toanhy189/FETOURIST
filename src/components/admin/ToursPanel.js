@@ -65,8 +65,8 @@ const initialTourForm = {
   durationNights: 0,
   transport: "mixed",
   price: 0,
-  childPrice: 0,
-  infantPrice: 0,
+  childPrice: "",
+  infantPrice: "",
   discountPrice: "",
   singleRoomSupplement: "",
   maxGroupSize: 10,
@@ -115,36 +115,20 @@ function parsePositiveInteger(value) {
   return Number.isInteger(nextValue) && nextValue > 0 ? nextValue : null;
 }
 
-function toFiniteNumber(value) {
-  if (value === "" || value === null || value === undefined) {
-    return null;
-  }
-
-  const nextValue = Number(value);
-  return Number.isFinite(nextValue) ? nextValue : null;
-}
-
-function clampNumberByMax(value, maxValue) {
-  const parsedValue = toFiniteNumber(value);
-  const parsedMaxValue = toFiniteNumber(maxValue);
-
-  if (parsedValue === null || parsedMaxValue === null || parsedMaxValue < 0) {
-    return value;
-  }
-
-  return String(Math.min(parsedValue, parsedMaxValue));
-}
-
 function buildGuestPricePayload(adultPrice, childPrice, infantPrice) {
-  const normalizedAdultPrice = Number(adultPrice || 0);
-  const normalizedChildPrice = childPrice === "" ? normalizedAdultPrice : Number(childPrice || 0);
-  const normalizedInfantPrice = infantPrice === "" ? normalizedAdultPrice : Number(infantPrice || 0);
+  const guestPrices = {};
 
-  return {
-    adults: normalizedAdultPrice,
-    children: normalizedChildPrice,
-    infants: normalizedInfantPrice,
-  };
+  if (adultPrice !== "" && adultPrice !== undefined && adultPrice !== null) {
+    guestPrices.adults = Number(adultPrice || 0);
+  }
+  if (childPrice !== "" && childPrice !== undefined && childPrice !== null) {
+    guestPrices.children = Number(childPrice || 0);
+  }
+  if (infantPrice !== "" && infantPrice !== undefined && infantPrice !== null) {
+    guestPrices.infants = Number(infantPrice || 0);
+  }
+
+  return guestPrices;
 }
 
 function createTimelineStep(day) {
@@ -552,33 +536,11 @@ export default function ToursPanel({ initialView = "form" }) {
   }
 
   function patchTourForm(field, value) {
-    setTourForm((current) => {
-      const nextForm = { ...current, [field]: value };
-
-      if (field === "maxGroupSize") {
-        nextForm.availableSeats = clampNumberByMax(current.availableSeats, value);
-      }
-
-      if (field === "availableSeats") {
-        nextForm.availableSeats = clampNumberByMax(value, current.maxGroupSize);
-      }
-
-      return nextForm;
-    });
+    setTourForm((current) => ({ ...current, [field]: value }));
   }
 
   function patchDepartureForm(field, value) {
-    setDepartureForm((current) => {
-      if (field !== "seatCapacity") {
-        return { ...current, [field]: value };
-      }
-
-      const maxGroupSize = tourForm.maxGroupSize || selectedTour?.maxGroupSize;
-      return {
-        ...current,
-        seatCapacity: clampNumberByMax(value, maxGroupSize),
-      };
-    });
+    setDepartureForm((current) => ({ ...current, [field]: value }));
   }
 
   function resetDepartureEditor() {
@@ -873,8 +835,8 @@ export default function ToursPanel({ initialView = "form" }) {
       return;
     }
 
-    if (!Number.isFinite(availableSeats) || availableSeats < 0 || availableSeats > maxGroupSize) {
-      setError("Số chỗ còn lại phải nhỏ hơn hoặc bằng số lượng tối đa.");
+    if (!Number.isFinite(availableSeats) || availableSeats < 0) {
+      setError("Số chỗ còn lại phải lớn hơn hoặc bằng 0.");
       return;
     }
 
@@ -919,8 +881,6 @@ export default function ToursPanel({ initialView = "form" }) {
         transport: tourForm.transport,
         price: guestPrices.adults,
         adultPrice: guestPrices.adults,
-        childPrice: guestPrices.children,
-        infantPrice: guestPrices.infants,
         guestPrices,
         discountPrice: tourForm.discountPrice === "" ? undefined : Number(tourForm.discountPrice),
         singleRoomSupplement: tourForm.singleRoomSupplement === "" ? undefined : Number(tourForm.singleRoomSupplement),
@@ -932,6 +892,12 @@ export default function ToursPanel({ initialView = "form" }) {
         excludedServices: splitValues(tourForm.excludedServices),
         status: tourForm.status,
       };
+      if (guestPrices.children !== undefined) {
+        payload.childPrice = guestPrices.children;
+      }
+      if (guestPrices.infants !== undefined) {
+        payload.infantPrice = guestPrices.infants;
+      }
 
       if (tourForm.id) {
         let uploadedImageMap = {};
@@ -1026,14 +992,13 @@ export default function ToursPanel({ initialView = "form" }) {
     setError("");
     setMessage("");
 
-    const maxGroupSize = Number(tourForm.maxGroupSize || selectedTour.maxGroupSize || 0);
     const seatCapacity = departureForm.seatCapacity === "" ? null : Number(departureForm.seatCapacity);
 
     if (
       seatCapacity !== null &&
-      (!Number.isFinite(seatCapacity) || seatCapacity < 0 || seatCapacity > maxGroupSize)
+      (!Number.isFinite(seatCapacity) || seatCapacity < 1)
     ) {
-      setError("Số ghế của lịch khởi hành phải nhỏ hơn hoặc bằng số lượng tối đa của tour.");
+      setError("Số ghế của lịch khởi hành phải lớn hơn 0.");
       return;
     }
 
@@ -1049,24 +1014,29 @@ export default function ToursPanel({ initialView = "form" }) {
     setSubmittingDeparture(true);
 
     try {
-      const fallbackAdultPrice = departureForm.price === "" ? selectedTour.price : departureForm.price;
-      const fallbackChildPrice = departureForm.childPrice === "" ? selectedTour.childPrice : departureForm.childPrice;
-      const fallbackInfantPrice = departureForm.infantPrice === "" ? selectedTour.infantPrice : departureForm.infantPrice;
-      const guestPrices = buildGuestPricePayload(fallbackAdultPrice, fallbackChildPrice, fallbackInfantPrice);
+      const guestPrices = buildGuestPricePayload(
+        departureForm.price,
+        departureForm.childPrice,
+        departureForm.infantPrice
+      );
       const payload = {
         departureDate: departureForm.departureDate,
         returnDate: departureForm.returnDate || undefined,
         seatCapacity: departureForm.seatCapacity ? Number(departureForm.seatCapacity) : undefined,
         price: departureForm.price !== "" ? guestPrices.adults : undefined,
         adultPrice: departureForm.price !== "" ? guestPrices.adults : undefined,
-        childPrice: guestPrices.children,
-        infantPrice: guestPrices.infants,
         guestPrices,
         discountPrice: departureForm.discountPrice === "" ? undefined : Number(departureForm.discountPrice),
         meetingPoint: departureForm.meetingPoint,
         note: departureForm.note,
         status: departureForm.status || undefined,
       };
+      if (guestPrices.children !== undefined) {
+        payload.childPrice = guestPrices.children;
+      }
+      if (guestPrices.infants !== undefined) {
+        payload.infantPrice = guestPrices.infants;
+      }
 
       if (departureForm.id) {
         await updateTourDeparture(selectedTour.id, departureForm.id, payload);
@@ -1409,7 +1379,6 @@ export default function ToursPanel({ initialView = "form" }) {
                         <input
                           type="number"
                           min="0"
-                          max={tourForm.maxGroupSize || undefined}
                           value={tourForm.availableSeats}
                           onChange={(event) => patchTourForm("availableSeats", event.target.value)}
                           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
@@ -1913,7 +1882,6 @@ export default function ToursPanel({ initialView = "form" }) {
                         <input
                           type="number"
                           min="0"
-                          max={tourForm.maxGroupSize || selectedTour?.maxGroupSize || undefined}
                           value={departureForm.seatCapacity}
                           onChange={(event) => patchDepartureForm("seatCapacity", event.target.value)}
                           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
