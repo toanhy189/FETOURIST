@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/providers/AppProvider";
@@ -60,6 +61,8 @@ export default function HeaderActions() {
     logout,
     notificationCount,
   } = useAppContext();
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState("");
+  const activeAvatarUrl = currentUser?.avatarUrl || "";
 
   async function handleLogout() {
     await logout();
@@ -77,16 +80,16 @@ export default function HeaderActions() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <Link
           href="/dang-nhap"
-          className="rounded-full border border-slate-200/80 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-sky-300 hover:text-sky-800"
+          className="rounded-full border border-slate-200/80 px-2.5 py-2 text-xs font-semibold text-slate-600 transition hover:border-sky-300 hover:text-sky-800 sm:px-3 sm:text-sm"
         >
           Đăng nhập
         </Link>
         <Link
           href="/dang-ky"
-          className="rounded-full bg-sky-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-800"
+          className="rounded-full bg-sky-700 px-3 py-2 text-xs font-semibold text-white transition hover:bg-sky-800 sm:px-4 sm:text-sm"
         >
           Đăng ký
         </Link>
@@ -95,16 +98,17 @@ export default function HeaderActions() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 sm:gap-2">
       <Link
         href={isAdmin ? "/admin" : "/tai-khoan"}
-        className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-slate-200/80 bg-white shadow-sm transition hover:border-sky-300 hover:shadow"
+        className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-slate-200/80 bg-white shadow-sm transition hover:border-sky-300 hover:shadow sm:h-11 sm:w-11"
         title={currentUser?.fullName || "Tài khoản"}
       >
-        {currentUser?.avatarUrl ? (
+        {activeAvatarUrl && failedAvatarUrl !== activeAvatarUrl ? (
           <img
-            src={currentUser.avatarUrl}
+            src={activeAvatarUrl}
             alt={currentUser?.fullName || "Avatar"}
+            onError={() => setFailedAvatarUrl(activeAvatarUrl)}
             className="h-full w-full object-cover"
           />
         ) : (
@@ -116,7 +120,7 @@ export default function HeaderActions() {
 
       <Link
         href="/tai-khoan"
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
+        className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 sm:h-11 sm:w-11"
         title="Thông báo"
       >
         <BellIcon />
@@ -130,7 +134,7 @@ export default function HeaderActions() {
       {isAdmin ? (
         <Link
           href="/admin"
-          className="rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800 transition hover:bg-sky-100"
+          className="hidden rounded-full border border-sky-200 bg-sky-50 px-3 py-2 text-sm font-semibold text-sky-800 transition hover:bg-sky-100 sm:inline-flex"
         >
           Quản trị
         </Link>
@@ -139,7 +143,7 @@ export default function HeaderActions() {
       <button
         type="button"
         onClick={handleLogout}
-        className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-rose-300 hover:text-rose-700"
+        className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-rose-300 hover:text-rose-700 sm:h-11 sm:w-11"
         title="Đăng xuất"
       >
         <LogOutIcon />
