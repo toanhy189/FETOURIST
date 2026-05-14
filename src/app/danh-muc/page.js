@@ -90,7 +90,7 @@ export default async function DanhMucPage({ searchParams }) {
 
   return (
     <div className="travel-page-shell min-h-screen">
-      <div className="travel-content py-8 lg:py-10">
+      <div className="travel-content pb-16 pt-8 lg:pb-20 lg:pt-10">
         <div className="flex flex-col items-start gap-7 lg:flex-row">
           <aside className="w-full shrink-0 lg:sticky lg:top-[92px] lg:w-[310px]">
             <FilterSidebar categories={categories} />

@@ -171,20 +171,66 @@ function getGuestsCount(guests) {
   return Number(guests.adults || 0) + Number(guests.children || 0) + Number(guests.infants || 0);
 }
 
-function getDeparturePrice(departure, fallbackPrice) {
-  return typeof departure?.displayPrice === "number" ? departure.displayPrice : fallbackPrice;
+function getNumberOrNull(value) {
+  const parsedValue = Number(value);
+  return Number.isFinite(parsedValue) ? parsedValue : null;
 }
 
-function getBaseAmount(departure, guests, fallbackPrice) {
-  return getDeparturePrice(departure, fallbackPrice) * getGuestsCount(guests);
+function getGuestUnitPrices(departure, tour) {
+  const adultPrice =
+    getNumberOrNull(departure?.guestPrices?.adults) ??
+    getNumberOrNull(departure?.displayPrice) ??
+    getNumberOrNull(tour?.guestPrices?.adults) ??
+    getNumberOrNull(tour?.displayPrice) ??
+    0;
+  const childPrice =
+    getNumberOrNull(departure?.guestPrices?.children) ??
+    getNumberOrNull(departure?.childPrice) ??
+    getNumberOrNull(tour?.guestPrices?.children) ??
+    getNumberOrNull(tour?.childPrice) ??
+    adultPrice;
+  const infantPrice =
+    getNumberOrNull(departure?.guestPrices?.infants) ??
+    getNumberOrNull(departure?.infantPrice) ??
+    getNumberOrNull(tour?.guestPrices?.infants) ??
+    getNumberOrNull(tour?.infantPrice) ??
+    adultPrice;
+
+  return {
+    adults: Math.max(adultPrice, 0),
+    children: Math.max(childPrice, 0),
+    infants: Math.max(infantPrice, 0),
+  };
+}
+
+function getBaseAmount(departure, guests, tour) {
+  const prices = getGuestUnitPrices(departure, tour);
+
+  return (
+    prices.adults * Number(guests.adults || 0) +
+    prices.children * Number(guests.children || 0) +
+    prices.infants * Number(guests.infants || 0)
+  );
 }
 
 function getSingleRoomSupplementAmount(singleRoomSupplement, guests) {
   return getGuestsCount(guests) === 1 ? Number(singleRoomSupplement || 0) : 0;
 }
 
-function getEstimatedTotal(departure, guests, fallbackPrice, singleRoomSupplement = 0) {
-  return getBaseAmount(departure, guests, fallbackPrice) + getSingleRoomSupplementAmount(singleRoomSupplement, guests);
+function getEstimatedTotal(departure, guests, tour, singleRoomSupplement = 0) {
+  return getBaseAmount(departure, guests, tour) + getSingleRoomSupplementAmount(singleRoomSupplement, guests);
+}
+
+function hasPreviewGuestPricing(bookingPreview) {
+  const pricing = bookingPreview?.pricing || {};
+
+  return Boolean(
+    pricing.guestPrices ||
+      pricing.priceBreakdown ||
+      pricing.guestPriceBreakdown ||
+      pricing.childPrice ||
+      pricing.infantPrice
+  );
 }
 
 function getDurationLabel(tour) {
@@ -390,7 +436,7 @@ function GuestCounter({ label, hint, value, onChange, min = 0, priceLabel = "" }
         <p className="text-xs text-slate-500">{hint}</p>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
         {priceLabel ? (
           <span className="whitespace-nowrap text-[13px] font-medium text-amber-600">
             {priceLabel}
@@ -488,7 +534,8 @@ export default function TourDetailExperience({ tour }) {
 
   const selectedDeparture = departures.find((departure) => departure.id === selectedDepartureId) || null;
   const visibleDepartures = showAllDepartures ? departures : departures.slice(0, 6);
-  const currentUnitPrice = bookingPreview?.pricing?.unitPrice ?? getDeparturePrice(selectedDeparture, tour.displayPrice);
+  const currentGuestPrices = getGuestUnitPrices(selectedDeparture, tour);
+  const previewUsesGuestPricing = hasPreviewGuestPricing(bookingPreview);
   const totalGuests = getGuestsCount(guests);
   const calendarYears = getCalendarYears(
     departures,
@@ -499,9 +546,9 @@ export default function TourDetailExperience({ tour }) {
   const departurePriceRange = getDeparturePriceRange(departures);
   const calendarDays = buildCalendarDays(calendarCursor.year, calendarCursor.month);
   const baseAmount =
-    typeof bookingPreview?.pricing?.baseAmount === "number"
+    previewUsesGuestPricing && typeof bookingPreview?.pricing?.baseAmount === "number"
       ? bookingPreview.pricing.baseAmount
-      : getBaseAmount(selectedDeparture, guests, tour.displayPrice);
+      : getBaseAmount(selectedDeparture, guests, tour);
   const singleRoomSupplementAmount =
     typeof bookingPreview?.pricing?.singleRoomSupplement === "number"
       ? bookingPreview.pricing.singleRoomSupplement
@@ -511,9 +558,9 @@ export default function TourDetailExperience({ tour }) {
       ? bookingPreview.pricing.singleRoomApplied
       : singleRoomSupplementAmount > 0;
   const totalAmount =
-    typeof bookingPreview?.totalAmount === "number"
+    previewUsesGuestPricing && typeof bookingPreview?.totalAmount === "number"
       ? bookingPreview.totalAmount
-      : getEstimatedTotal(selectedDeparture, guests, tour.displayPrice, tour.singleRoomSupplement);
+      : getEstimatedTotal(selectedDeparture, guests, tour, tour.singleRoomSupplement);
   const hasMultipleItineraryDays = tour.itinerary.length > 1;
   const itineraryAllExpanded = tour.itinerary.length > 0 && expandedDays.length === tour.itinerary.length;
   const noteItems = createTourNotes(tour, selectedDeparture);
@@ -1256,6 +1303,7 @@ export default function TourDetailExperience({ tour }) {
                           <div className="grid gap-3 md:grid-cols-2">
                             {visibleDepartures.map((departure) => {
                               const isActive = selectedDepartureId === departure.id;
+                              const departureGuestPrices = getGuestUnitPrices(departure, tour);
 
                               return (
                                 <button
@@ -1275,7 +1323,12 @@ export default function TourDetailExperience({ tour }) {
                                         <CalendarIcon className="h-4 w-4" />
                                         <span>{formatDateRangeVi(departure.departureDate, departure.returnDate)}</span>
                                       </div>
-                                      <p className="mt-2 text-xl font-bold text-slate-900">{formatVnd(departure.displayPrice)}/khách</p>
+                                      <p className="mt-2 text-xl font-bold text-slate-900">
+                                        Người lớn {formatVnd(departureGuestPrices.adults)}
+                                      </p>
+                                      <p className="mt-1 text-xs font-medium text-slate-500">
+                                        Trẻ em {formatVnd(departureGuestPrices.children)} | Trẻ nhỏ {formatVnd(departureGuestPrices.infants)}
+                                      </p>
                                       <p className="mt-1 text-sm text-slate-500">
                                         {departure.meetingPoint || "Điểm hẹn sẽ được xác nhận sau"}
                                       </p>
@@ -1336,7 +1389,7 @@ export default function TourDetailExperience({ tour }) {
                       </div>
 
                       <div className="space-y-3">
-                        {guestFieldConfigs.map((fieldConfig, index) => (
+                        {guestFieldConfigs.map((fieldConfig) => (
                           <GuestCounter
                             key={fieldConfig.key}
                             label={fieldConfig.label}
@@ -1344,7 +1397,7 @@ export default function TourDetailExperience({ tour }) {
                             value={guests[fieldConfig.key]}
                             min={fieldConfig.min}
                             onChange={(nextValue) => patchGuest(fieldConfig.key, nextValue)}
-                            priceLabel={index === 0 ? `x ${formatVnd(currentUnitPrice)}` : ""}
+                            priceLabel={`x ${formatVnd(currentGuestPrices[fieldConfig.key])}`}
                           />
                         ))}
                       </div>
@@ -1402,8 +1455,13 @@ export default function TourDetailExperience({ tour }) {
                             <p className="font-semibold text-slate-900">
                               {formatDateRangeVi(selectedDeparture.departureDate, selectedDeparture.returnDate)}
                             </p>
-                            <span className="font-semibold text-sky-700">{formatVnd(selectedDeparture.displayPrice)}/khách</span>
+                            <span className="font-semibold text-sky-700">
+                              NL {formatVnd(currentGuestPrices.adults)}
+                            </span>
                           </div>
+                          <p className="mt-2 text-xs font-medium text-slate-600">
+                            Trẻ em {formatVnd(currentGuestPrices.children)} | Trẻ nhỏ {formatVnd(currentGuestPrices.infants)}
+                          </p>
                           <p className="mt-2">Điểm hẹn: {selectedDeparture.meetingPoint || "Sẽ được cập nhật sau"}</p>
                         </div>
                       ) : null}
@@ -1571,7 +1629,7 @@ export default function TourDetailExperience({ tour }) {
               </div>
 
               <div className="mt-3.5 space-y-2.5">
-                {guestFieldConfigs.map((fieldConfig, index) => (
+                {guestFieldConfigs.map((fieldConfig) => (
                   <GuestCounter
                     key={fieldConfig.key}
                     label={fieldConfig.label}
@@ -1579,7 +1637,7 @@ export default function TourDetailExperience({ tour }) {
                     value={guests[fieldConfig.key]}
                     min={fieldConfig.min}
                     onChange={(nextValue) => patchGuest(fieldConfig.key, nextValue)}
-                    priceLabel={index === 0 ? `x ${formatVnd(currentUnitPrice)}` : ""}
+                    priceLabel={`x ${formatVnd(currentGuestPrices[fieldConfig.key])}`}
                   />
                 ))}
               </div>

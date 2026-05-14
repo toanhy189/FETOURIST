@@ -65,6 +65,8 @@ const initialTourForm = {
   durationNights: 0,
   transport: "mixed",
   price: 0,
+  childPrice: 0,
+  infantPrice: 0,
   discountPrice: "",
   singleRoomSupplement: "",
   maxGroupSize: 10,
@@ -85,6 +87,8 @@ const initialDepartureForm = {
   returnDate: "",
   seatCapacity: "",
   price: "",
+  childPrice: "",
+  infantPrice: "",
   discountPrice: "",
   meetingPoint: "",
   note: "",
@@ -109,6 +113,38 @@ function normalizeLooseText(value) {
 function parsePositiveInteger(value) {
   const nextValue = Number(value);
   return Number.isInteger(nextValue) && nextValue > 0 ? nextValue : null;
+}
+
+function toFiniteNumber(value) {
+  if (value === "" || value === null || value === undefined) {
+    return null;
+  }
+
+  const nextValue = Number(value);
+  return Number.isFinite(nextValue) ? nextValue : null;
+}
+
+function clampNumberByMax(value, maxValue) {
+  const parsedValue = toFiniteNumber(value);
+  const parsedMaxValue = toFiniteNumber(maxValue);
+
+  if (parsedValue === null || parsedMaxValue === null || parsedMaxValue < 0) {
+    return value;
+  }
+
+  return String(Math.min(parsedValue, parsedMaxValue));
+}
+
+function buildGuestPricePayload(adultPrice, childPrice, infantPrice) {
+  const normalizedAdultPrice = Number(adultPrice || 0);
+  const normalizedChildPrice = childPrice === "" ? normalizedAdultPrice : Number(childPrice || 0);
+  const normalizedInfantPrice = infantPrice === "" ? normalizedAdultPrice : Number(infantPrice || 0);
+
+  return {
+    adults: normalizedAdultPrice,
+    children: normalizedChildPrice,
+    infants: normalizedInfantPrice,
+  };
 }
 
 function createTimelineStep(day) {
@@ -343,6 +379,8 @@ function mapTourToForm(detail) {
     durationNights: detail.durationNights ?? 0,
     transport: detail.transport || "mixed",
     price: detail.price ?? 0,
+    childPrice: detail.childPrice ?? detail.guestPrices?.children ?? detail.price ?? 0,
+    infantPrice: detail.infantPrice ?? detail.guestPrices?.infants ?? detail.price ?? 0,
     discountPrice: detail.discountPrice ?? "",
     singleRoomSupplement: detail.singleRoomSupplement ?? "",
     maxGroupSize: detail.maxGroupSize ?? 10,
@@ -514,11 +552,33 @@ export default function ToursPanel({ initialView = "form" }) {
   }
 
   function patchTourForm(field, value) {
-    setTourForm((current) => ({ ...current, [field]: value }));
+    setTourForm((current) => {
+      const nextForm = { ...current, [field]: value };
+
+      if (field === "maxGroupSize") {
+        nextForm.availableSeats = clampNumberByMax(current.availableSeats, value);
+      }
+
+      if (field === "availableSeats") {
+        nextForm.availableSeats = clampNumberByMax(value, current.maxGroupSize);
+      }
+
+      return nextForm;
+    });
   }
 
   function patchDepartureForm(field, value) {
-    setDepartureForm((current) => ({ ...current, [field]: value }));
+    setDepartureForm((current) => {
+      if (field !== "seatCapacity") {
+        return { ...current, [field]: value };
+      }
+
+      const maxGroupSize = tourForm.maxGroupSize || selectedTour?.maxGroupSize;
+      return {
+        ...current,
+        seatCapacity: clampNumberByMax(value, maxGroupSize),
+      };
+    });
   }
 
   function resetDepartureEditor() {
@@ -759,6 +819,8 @@ export default function ToursPanel({ initialView = "form" }) {
       returnDate: departure.returnDate?.slice(0, 10) || "",
       seatCapacity: departure.seatCapacity || "",
       price: departure.price || "",
+      childPrice: departure.childPrice ?? departure.guestPrices?.children ?? "",
+      infantPrice: departure.infantPrice ?? departure.guestPrices?.infants ?? "",
       discountPrice: departure.discountPrice ?? "",
       meetingPoint: departure.meetingPoint || "",
       note: departure.note || "",
@@ -803,6 +865,19 @@ export default function ToursPanel({ initialView = "form" }) {
       return;
     }
 
+    const maxGroupSize = Number(tourForm.maxGroupSize);
+    const availableSeats = Number(tourForm.availableSeats);
+
+    if (!Number.isFinite(maxGroupSize) || maxGroupSize < 1) {
+      setError("Số lượng tối đa phải lớn hơn 0.");
+      return;
+    }
+
+    if (!Number.isFinite(availableSeats) || availableSeats < 0 || availableSeats > maxGroupSize) {
+      setError("Số chỗ còn lại phải nhỏ hơn hoặc bằng số lượng tối đa.");
+      return;
+    }
+
     setSubmittingTour(true);
 
     // Block ảnh có thể trỏ tới file local tạm thời; khi lưu cần upload ảnh trước
@@ -833,6 +908,7 @@ export default function ToursPanel({ initialView = "form" }) {
     }
 
     try {
+      const guestPrices = buildGuestPricePayload(tourForm.price, tourForm.childPrice, tourForm.infantPrice);
       const payload = {
         title: tourForm.title,
         destination: tourForm.destination,
@@ -841,7 +917,11 @@ export default function ToursPanel({ initialView = "form" }) {
         durationDays: Number(tourForm.durationDays),
         durationNights: Number(tourForm.durationNights),
         transport: tourForm.transport,
-        price: Number(tourForm.price),
+        price: guestPrices.adults,
+        adultPrice: guestPrices.adults,
+        childPrice: guestPrices.children,
+        infantPrice: guestPrices.infants,
+        guestPrices,
         discountPrice: tourForm.discountPrice === "" ? undefined : Number(tourForm.discountPrice),
         singleRoomSupplement: tourForm.singleRoomSupplement === "" ? undefined : Number(tourForm.singleRoomSupplement),
         maxGroupSize: Number(tourForm.maxGroupSize),
@@ -943,16 +1023,45 @@ export default function ToursPanel({ initialView = "form" }) {
       return;
     }
 
-    setSubmittingDeparture(true);
     setError("");
     setMessage("");
 
+    const maxGroupSize = Number(tourForm.maxGroupSize || selectedTour.maxGroupSize || 0);
+    const seatCapacity = departureForm.seatCapacity === "" ? null : Number(departureForm.seatCapacity);
+
+    if (
+      seatCapacity !== null &&
+      (!Number.isFinite(seatCapacity) || seatCapacity < 0 || seatCapacity > maxGroupSize)
+    ) {
+      setError("Số ghế của lịch khởi hành phải nhỏ hơn hoặc bằng số lượng tối đa của tour.");
+      return;
+    }
+
+    if (
+      departureForm.discountPrice !== "" &&
+      departureForm.price !== "" &&
+      Number(departureForm.discountPrice) >= Number(departureForm.price)
+    ) {
+      setError("Giá khuyến mãi của lịch khởi hành phải nhỏ hơn giá người lớn.");
+      return;
+    }
+
+    setSubmittingDeparture(true);
+
     try {
+      const fallbackAdultPrice = departureForm.price === "" ? selectedTour.price : departureForm.price;
+      const fallbackChildPrice = departureForm.childPrice === "" ? selectedTour.childPrice : departureForm.childPrice;
+      const fallbackInfantPrice = departureForm.infantPrice === "" ? selectedTour.infantPrice : departureForm.infantPrice;
+      const guestPrices = buildGuestPricePayload(fallbackAdultPrice, fallbackChildPrice, fallbackInfantPrice);
       const payload = {
         departureDate: departureForm.departureDate,
         returnDate: departureForm.returnDate || undefined,
         seatCapacity: departureForm.seatCapacity ? Number(departureForm.seatCapacity) : undefined,
-        price: departureForm.price ? Number(departureForm.price) : undefined,
+        price: departureForm.price !== "" ? guestPrices.adults : undefined,
+        adultPrice: departureForm.price !== "" ? guestPrices.adults : undefined,
+        childPrice: guestPrices.children,
+        infantPrice: guestPrices.infants,
+        guestPrices,
         discountPrice: departureForm.discountPrice === "" ? undefined : Number(departureForm.discountPrice),
         meetingPoint: departureForm.meetingPoint,
         note: departureForm.note,
@@ -1237,12 +1346,32 @@ export default function ToursPanel({ initialView = "form" }) {
                           ))}
                         </select>
                       </Field>
-                      <Field label="Giá tour" required>
+                      <Field label="Giá người lớn" required>
                         <input
                           type="number"
                           min="0"
                           value={tourForm.price}
                           onChange={(event) => patchTourForm("price", event.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
+                          required
+                        />
+                      </Field>
+                      <Field label="Giá trẻ em" required>
+                        <input
+                          type="number"
+                          min="0"
+                          value={tourForm.childPrice}
+                          onChange={(event) => patchTourForm("childPrice", event.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
+                          required
+                        />
+                      </Field>
+                      <Field label="Giá trẻ nhỏ" required>
+                        <input
+                          type="number"
+                          min="0"
+                          value={tourForm.infantPrice}
+                          onChange={(event) => patchTourForm("infantPrice", event.target.value)}
                           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
                           required
                         />
@@ -1280,6 +1409,7 @@ export default function ToursPanel({ initialView = "form" }) {
                         <input
                           type="number"
                           min="0"
+                          max={tourForm.maxGroupSize || undefined}
                           value={tourForm.availableSeats}
                           onChange={(event) => patchTourForm("availableSeats", event.target.value)}
                           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
@@ -1783,6 +1913,7 @@ export default function ToursPanel({ initialView = "form" }) {
                         <input
                           type="number"
                           min="0"
+                          max={tourForm.maxGroupSize || selectedTour?.maxGroupSize || undefined}
                           value={departureForm.seatCapacity}
                           onChange={(event) => patchDepartureForm("seatCapacity", event.target.value)}
                           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
@@ -1801,13 +1932,33 @@ export default function ToursPanel({ initialView = "form" }) {
                           ))}
                         </select>
                       </Field>
-                      <Field label="Giá áp dụng">
+                      <Field label="Giá người lớn">
                         <input
                           type="number"
                           min="0"
                           value={departureForm.price}
                           onChange={(event) => patchDepartureForm("price", event.target.value)}
                           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
+                        />
+                      </Field>
+                      <Field label="Giá trẻ em">
+                        <input
+                          type="number"
+                          min="0"
+                          value={departureForm.childPrice}
+                          onChange={(event) => patchDepartureForm("childPrice", event.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
+                          placeholder={String(selectedTour?.childPrice ?? selectedTour?.price ?? "")}
+                        />
+                      </Field>
+                      <Field label="Giá trẻ nhỏ">
+                        <input
+                          type="number"
+                          min="0"
+                          value={departureForm.infantPrice}
+                          onChange={(event) => patchDepartureForm("infantPrice", event.target.value)}
+                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-300"
+                          placeholder={String(selectedTour?.infantPrice ?? selectedTour?.price ?? "")}
                         />
                       </Field>
                       <Field label="Giá khuyến mãi">
@@ -1896,7 +2047,10 @@ export default function ToursPanel({ initialView = "form" }) {
                                     {departure.meetingPoint || "Chưa cập nhật điểm tập trung"}
                                   </p>
                                   <p className="mt-2 text-sm text-slate-600">
-                                    Giá: {formatVnd(departure.displayPrice)} | Còn lại {departure.remainingSeats} chỗ
+                                    Người lớn: {formatVnd(departure.displayPrice)} | Trẻ em: {formatVnd(departure.childPrice)} | Trẻ nhỏ: {formatVnd(departure.infantPrice)}
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    Còn lại {departure.remainingSeats} chỗ
                                   </p>
                                 </div>
                                 <div className="flex gap-2">
@@ -2059,7 +2213,8 @@ export default function ToursPanel({ initialView = "form" }) {
                                 <p className="mt-1 text-slate-400">{tour.transportLabel}</p>
                               </td>
                               <td className="px-6 py-5 text-sm text-slate-700">
-                                <p className="font-semibold text-slate-900">{formatVnd(tour.displayPrice)}</p>
+                                <p className="font-semibold text-slate-900">Người lớn {formatVnd(tour.displayPrice)}</p>
+                                <p className="mt-1 text-slate-500">Trẻ em {formatVnd(tour.childPrice)} | Trẻ nhỏ {formatVnd(tour.infantPrice)}</p>
                                 {tour.discountPrice ? (
                                   <p className="mt-1 text-slate-400">
                                     Giá gốc {formatVnd(tour.price)}

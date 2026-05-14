@@ -16,6 +16,64 @@ function toNumberOrNull(value) {
   return Number.isFinite(parsedValue) ? parsedValue : null;
 }
 
+function getFirstFiniteNumber(...values) {
+  for (const value of values) {
+    const parsedValue = toNumberOrNull(value);
+
+    if (parsedValue !== null) {
+      return parsedValue;
+    }
+  }
+
+  return null;
+}
+
+function normalizeGuestPrices(source, fallbackAdultPrice = 0) {
+  const nestedPrices =
+    source?.guestPrices ||
+    source?.guestPricing ||
+    source?.prices ||
+    source?.priceByGuestType ||
+    {};
+  const adultPrice =
+    getFirstFiniteNumber(
+      source?.adultPrice,
+      source?.priceAdult,
+      nestedPrices.adults,
+      nestedPrices.adult,
+      nestedPrices.adultPrice,
+      fallbackAdultPrice
+    ) ?? 0;
+  const childPrice =
+    getFirstFiniteNumber(
+      source?.childPrice,
+      source?.childrenPrice,
+      source?.priceChild,
+      source?.priceChildren,
+      nestedPrices.children,
+      nestedPrices.child,
+      nestedPrices.childPrice,
+      adultPrice
+    ) ?? adultPrice;
+  const infantPrice =
+    getFirstFiniteNumber(
+      source?.infantPrice,
+      source?.infantsPrice,
+      source?.priceInfant,
+      source?.priceInfants,
+      nestedPrices.infants,
+      nestedPrices.infant,
+      nestedPrices.infantPrice,
+      adultPrice
+    ) ?? adultPrice;
+
+  return {
+    adults: Math.max(adultPrice, 0),
+    children: Math.max(childPrice, 0),
+    infants: Math.max(infantPrice, 0),
+  };
+}
+
 function resolveDepartureRemainingSeats(departure) {
   if (!departure) return null;
 
@@ -43,7 +101,7 @@ function sumDeparturesRemainingSeats(departures) {
   );
 }
 
-function mapDeparture(departure) {
+function mapDeparture(departure, fallbackGuestPrices = null) {
   // Gom lich khoi hanh ve shape chung de card/detail/booking dung cung gia.
   if (!departure) return null;
 
@@ -51,21 +109,55 @@ function mapDeparture(departure) {
     typeof departure.discountPrice === "number" && departure.discountPrice > 0
       ? departure.discountPrice
       : null;
+  const baseAdultPrice =
+    getFirstFiniteNumber(departure.adultPrice, departure.price, fallbackGuestPrices?.adults) ?? 0;
   const sellingPrice =
     normalizedDiscountPrice !== null
       ? normalizedDiscountPrice
-      : departure.price;
+      : baseAdultPrice;
+  const rawGuestPrices = normalizeGuestPrices(departure, sellingPrice);
+  const guestPrices = {
+    adults: sellingPrice,
+    children:
+      getFirstFiniteNumber(
+        departure.childPrice,
+        departure.childrenPrice,
+        departure.guestPrices?.children,
+        departure.guestPricing?.children,
+        departure.prices?.children,
+        fallbackGuestPrices?.children,
+        rawGuestPrices.children
+      ) ?? sellingPrice,
+    infants:
+      getFirstFiniteNumber(
+        departure.infantPrice,
+        departure.infantsPrice,
+        departure.guestPrices?.infants,
+        departure.guestPricing?.infants,
+        departure.prices?.infants,
+        fallbackGuestPrices?.infants,
+        rawGuestPrices.infants
+      ) ?? sellingPrice,
+  };
   const remainingSeats = resolveDepartureRemainingSeats(departure) ?? 0;
 
   return {
-    id: departure._id,
+    id: departure._id || departure.id,
     departureDate: departure.departureDate,
     returnDate: departure.returnDate,
     meetingPoint: departure.meetingPoint || "",
     status: departure.status,
-    price: departure.price,
+    price: baseAdultPrice,
     discountPrice: normalizedDiscountPrice,
     displayPrice: sellingPrice,
+    adultPrice: baseAdultPrice,
+    childPrice: Math.max(Number(guestPrices.children || 0), 0),
+    infantPrice: Math.max(Number(guestPrices.infants || 0), 0),
+    guestPrices: {
+      adults: Math.max(Number(guestPrices.adults || 0), 0),
+      children: Math.max(Number(guestPrices.children || 0), 0),
+      infants: Math.max(Number(guestPrices.infants || 0), 0),
+    },
     remainingSeats,
     seatCapacity: departure.seatCapacity ?? 0,
     seatsBooked: departure.seatsBooked ?? 0,
@@ -103,16 +195,23 @@ export function mapTour(tour) {
     typeof tour.discountPrice === "number" && tour.discountPrice > 0
       ? tour.discountPrice
       : null;
+  const baseAdultPrice = getFirstFiniteNumber(tour.adultPrice, tour.price) ?? 0;
   const displayPrice =
-    normalizedDiscountPrice !== null ? normalizedDiscountPrice : tour.price;
+    normalizedDiscountPrice !== null ? normalizedDiscountPrice : baseAdultPrice;
+  const rawGuestPrices = normalizeGuestPrices(tour, displayPrice);
+  const guestPrices = {
+    adults: displayPrice,
+    children: rawGuestPrices.children,
+    infants: rawGuestPrices.infants,
+  };
 
   const itinerary = normalizeItinerarySteps(tour.itinerary).map(mapItinerary);
   const hasUpcomingDeparturesPayload = Array.isArray(tour.upcomingDepartures);
   const upcomingDepartures = hasUpcomingDeparturesPayload
-    ? tour.upcomingDepartures.map(mapDeparture).filter(Boolean)
+    ? tour.upcomingDepartures.map((departure) => mapDeparture(departure, guestPrices)).filter(Boolean)
     : [];
   const departures = Array.isArray(tour.departures)
-    ? tour.departures.map(mapDeparture).filter(Boolean)
+    ? tour.departures.map((departure) => mapDeparture(departure, guestPrices)).filter(Boolean)
     : [];
   const firstUpcomingDeparture = upcomingDepartures[0] || null;
   const firstStartDate =
@@ -155,8 +254,12 @@ export function mapTour(tour) {
     durationNights: tour.durationNights,
     transport: tour.transport,
     transportLabel: transportLabels[tour.transport] || "Tour trọn gói",
-    price: tour.price,
+    price: baseAdultPrice,
     discountPrice: normalizedDiscountPrice,
+    adultPrice: baseAdultPrice,
+    childPrice: guestPrices.children,
+    infantPrice: guestPrices.infants,
+    guestPrices,
     singleRoomSupplement: tour.singleRoomSupplement ?? 0,
     displayPrice,
     maxGroupSize: tour.maxGroupSize,

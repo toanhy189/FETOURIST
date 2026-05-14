@@ -8,6 +8,7 @@ import {
   markSupportConversationRead,
 } from "@/apiService/supportChat";
 import { connectSupportChatSocket } from "@/apiService/supportChatSocket";
+import { toAssetUrl } from "@/apiService/base";
 
 function formatMessageTime(value) {
   if (!value) return "";
@@ -44,6 +45,8 @@ function Avatar({
   className = "h-7 w-7 text-[11px]",
   tooltipPosition = "top",
 }) {
+  const [imageError, setImageError] = useState(false);
+  const resolvedAvatarUrl = toAssetUrl(avatarUrl) || "";
   const tooltipClassName =
     tooltipPosition === "left"
       ? "right-full top-1/2 mr-2 -translate-y-1/2"
@@ -53,10 +56,11 @@ function Avatar({
 
   return (
     <div className="group relative shrink-0">
-      {avatarUrl ? (
+      {resolvedAvatarUrl && !imageError ? (
         <img
-          src={avatarUrl}
+          src={resolvedAvatarUrl}
           alt={name || "Avatar"}
+          onError={() => setImageError(true)}
           className={`${className} rounded-full object-cover ring-1 ring-slate-200`}
         />
       ) : (

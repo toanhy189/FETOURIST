@@ -12,8 +12,8 @@ import { cn } from "@/utils/cn";
 
 function HeaderLogoMark() {
   return (
-    <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-sky-600 shadow-[0_12px_28px_-18px_rgba(2,132,199,0.85)] ring-2 ring-sky-100">
-      <svg viewBox="0 0 42 42" aria-hidden="true" className="h-9 w-9">
+    <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sky-600 shadow-[0_12px_28px_-18px_rgba(2,132,199,0.85)] ring-2 ring-sky-100 sm:h-12 sm:w-12">
+      <svg viewBox="0 0 42 42" aria-hidden="true" className="h-8 w-8 sm:h-9 sm:w-9">
         <path
           d="M35.5 7.8 5.4 19.6c-1.9.7-1.8 3.4.1 4l9.1 2.7 2.7 9.1c.6 2 3.3 2.1 4 .2L33.7 5.9c.4-1.1-.8-2.2-1.9-1.7Z"
           fill="currentColor"
@@ -66,16 +66,16 @@ export default function SiteShell({ children }) {
         className={`fixed left-0 right-0 top-0 z-50 w-full border-b border-sky-100/70 bg-white/92 shadow-[0_10px_28px_-24px_rgba(15,23,42,0.8)] backdrop-blur-xl transition-transform duration-300 ease-in-out ${isVisible ? "translate-y-0" : "-translate-y-full"
           }`}
       >
-        <div className="mx-auto flex h-[76px] w-full max-w-[1380px] items-center justify-between px-5 md:px-8">
+        <div className="mx-auto flex h-[76px] w-full max-w-[1380px] items-center justify-between gap-3 px-3 sm:px-5 md:px-8">
 
           {/* LOGO */}
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
             <HeaderLogoMark />
             <span className="flex flex-col leading-none">
-              <span className="text-[11px] font-extrabold uppercase tracking-[0.28em] text-sky-600">
+              <span className="hidden text-[11px] font-extrabold uppercase tracking-[0.28em] text-sky-600 sm:block">
                 Travel Website
               </span>
-              <span className="mt-1 text-[1.65rem] font-black uppercase tracking-tight text-sky-700">
+              <span className="text-[1.2rem] font-black uppercase tracking-tight text-sky-700 sm:mt-1 sm:text-[1.65rem]">
                 TRAVELPTIT
               </span>
             </span>
@@ -124,7 +124,7 @@ export default function SiteShell({ children }) {
           </nav>
 
           {/* NÚT ACTIONS BÊN PHẢI */}
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <HeaderActions />
           </div>
 

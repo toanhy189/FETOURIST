@@ -133,6 +133,56 @@ function buildTopTours(bookings, tours) {
     .slice(0, 6);
 }
 
+function getBookingTimestamp(booking) {
+  const parsedDate = booking?.createdAt ? new Date(booking.createdAt) : null;
+
+  return parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.getTime() : 0;
+}
+
+function sortBookingsNewestFirst(bookings) {
+  return [...bookings].sort((left, right) => getBookingTimestamp(right) - getBookingTimestamp(left));
+}
+
+async function getAllBookingsForDashboard() {
+  const pageSize = 100;
+  const maxPages = 50;
+  let page = 1;
+  let summary = null;
+  let pagination = null;
+  const bookings = [];
+  const seenBookingKeys = new Set();
+
+  do {
+    const result = await getBookingsForAdmin({
+      page,
+      limit: pageSize,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    });
+
+    summary = result.summary || summary;
+    pagination = result.pagination || null;
+
+    (result.bookings || []).forEach((booking) => {
+      const key = booking?._id || booking?.orderCode;
+
+      if (!key || seenBookingKeys.has(key)) {
+        return;
+      }
+
+      seenBookingKeys.add(key);
+      bookings.push(booking);
+    });
+
+    page += 1;
+  } while (pagination?.hasNextPage && page <= maxPages);
+
+  return {
+    bookings: sortBookingsNewestFirst(bookings),
+    summary,
+  };
+}
+
 // Tính doanh thu tổng, theo tháng, quý và năm từ danh sách booking.
 function buildRevenueStats(bookings, today = new Date()) {
   const currentYear = today.getFullYear();
@@ -363,7 +413,7 @@ function translateBookingStatus(status) {
 // Khung section có thể thu gọn/mở rộng để bọc các bảng bên dưới.
 function CollapsibleTableSection({ title, description, isOpen, onToggle, children }) {
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm sm:rounded-[2rem] sm:p-6">
       <button
         type="button"
         onClick={onToggle}
@@ -400,9 +450,9 @@ function MetricCard({ label, value, description, tone = "sky" }) {
       : "text-[#16b8ad]";
 
   return (
-    <article className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm sm:rounded-[2rem] sm:p-5">
       <p className="text-sm font-medium normal-case text-slate-500">{label}</p>
-      <p className={`mt-2 text-4xl font-semibold tracking-tight ${toneClassName}`}>{value}</p>
+      <p className={`mt-2 text-3xl font-semibold tracking-tight sm:text-4xl ${toneClassName}`}>{value}</p>
       {description ? <p className="mt-3 text-sm leading-6 text-slate-500">{description}</p> : null}
     </article>
   );
@@ -429,7 +479,7 @@ export default function AdminDashboard() {
         const [userList, tourList, bookingList] = await Promise.all([
           getUsers(),
           getToursForAdmin({ limit: 50 }),
-          getBookingsForAdmin({ limit: 50 }),
+          getAllBookingsForDashboard(),
         ]);
 
         if (!isMounted) {
@@ -467,7 +517,7 @@ export default function AdminDashboard() {
     [users]
   );
   const topTours = useMemo(() => buildTopTours(bookings, tours), [bookings, tours]);
-  const recentBookings = useMemo(() => bookings.slice(0, 6), [bookings]);
+  const recentBookings = useMemo(() => sortBookingsNewestFirst(bookings), [bookings]);
   const monthlyRevenueSeries = useMemo(() => buildMonthlyRevenueSeries(bookings), [bookings]);
   const revenueStats = useMemo(() => buildRevenueStats(bookings), [bookings]);
 
@@ -558,11 +608,10 @@ export default function AdminDashboard() {
           isOpen={isTopToursOpen}
           onToggle={() => setIsTopToursOpen((currentValue) => !currentValue)}
         >
-          <div className="overflow-x-auto rounded-3xl border border-slate-200">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-50">
+          <div className="max-h-[420px] overflow-auto rounded-3xl border border-slate-200">
+            <table className="min-w-[520px] text-sm">
+              <thead className="sticky top-0 z-10 bg-slate-50">
                 <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  <th className="border-b border-slate-200 px-4 py-3">ID</th>
                   <th className="border-b border-slate-200 px-4 py-3">Tên</th>
                   <th className="border-b border-slate-200 px-4 py-3">Số chỗ đã đặt</th>
                   <th className="border-b border-slate-200 px-4 py-3">Số chỗ còn trống</th>
@@ -572,7 +621,6 @@ export default function AdminDashboard() {
                 {topTours.length > 0 ? (
                   topTours.map((tour) => (
                     <tr key={tour.key} className="border-b border-slate-100 last:border-b-0">
-                      <td className="px-4 py-3 font-medium text-slate-700">{tour.id}</td>
                       <td className="px-4 py-3 text-slate-700">{tour.title}</td>
                       <td className="px-4 py-3 text-slate-700">{tour.bookedSeats}</td>
                       <td className="px-4 py-3 text-slate-700">
@@ -582,7 +630,7 @@ export default function AdminDashboard() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-500">
+                    <td colSpan={3} className="px-4 py-8 text-center text-sm text-slate-500">
                       Chưa có dữ liệu tour để tổng hợp.
                     </td>
                   </tr>
@@ -598,11 +646,10 @@ export default function AdminDashboard() {
           isOpen={isRecentBookingsOpen}
           onToggle={() => setIsRecentBookingsOpen((currentValue) => !currentValue)}
         >
-          <div className="overflow-x-auto rounded-3xl border border-slate-200">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-50">
+          <div className="max-h-[520px] overflow-auto rounded-3xl border border-slate-200">
+            <table className="min-w-[640px] text-sm">
+              <thead className="sticky top-0 z-10 bg-slate-50">
                 <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  <th className="border-b border-slate-200 px-4 py-3">ID</th>
                   <th className="border-b border-slate-200 px-4 py-3">Họ và tên</th>
                   <th className="border-b border-slate-200 px-4 py-3">Tên tour</th>
                   <th className="border-b border-slate-200 px-4 py-3">Tổng tiền</th>
@@ -613,9 +660,6 @@ export default function AdminDashboard() {
                 {recentBookings.length > 0 ? (
                   recentBookings.map((booking) => (
                     <tr key={booking._id || booking.orderCode} className="border-b border-slate-100 last:border-b-0">
-                      <td className="px-4 py-3 font-medium text-slate-700">
-                        {booking.orderCode || booking._id || "--"}
-                      </td>
                       <td className="px-4 py-3 text-slate-700">
                         {booking.contactInfo?.fullName || booking.user?.fullName || "Khách lẻ"}
                       </td>
@@ -638,7 +682,7 @@ export default function AdminDashboard() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-slate-500">
+                    <td colSpan={4} className="px-4 py-8 text-center text-sm text-slate-500">
                       Chưa có đơn đặt mới.
                     </td>
                   </tr>

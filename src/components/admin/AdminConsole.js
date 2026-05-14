@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import AdminContactsPanel from "@/components/admin/AdminContactsPanel";
 import CategoriesPanel from "@/components/admin/CategoriesPanel";
@@ -24,7 +24,9 @@ export default function AdminConsole() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, isAuthenticated, isAdmin } = useAppContext();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth >= 1024
+  );
   const activeRoute = useMemo(
     () => resolveAdminRouteFromPathname(pathname) || ADMIN_ROUTE_MAP.dashboard,
     [pathname]
@@ -33,6 +35,18 @@ export default function AdminConsole() {
     () => findActiveAdminItem(adminNavItems, activeRoute.key),
     [activeRoute.key]
   );
+
+  useEffect(() => {
+    function handleResize() {
+      setIsSidebarOpen(window.innerWidth >= 1024);
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   if (!isAuthenticated || !isAdmin) {
     return (

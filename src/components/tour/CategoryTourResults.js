@@ -32,6 +32,7 @@ export default function CategoryTourResults({
 
   const hasTours = tours.length > 0;
   const canLoadMore = hasNextPage && totalTours > tours.length;
+  const canCollapse = tours.length > initialTours.length;
 
   async function handleLoadMore() {
     // Load-more giu nguyen filter hien tai va loai tour trung id khi API tra overlap.
@@ -67,6 +68,13 @@ export default function CategoryTourResults({
     }
   }
 
+  function handleCollapseTours() {
+    setTours(initialTours);
+    setCurrentPage(Number(initialPagination?.page || 1));
+    setHasNextPage(Boolean(initialPagination?.hasNextPage));
+    setLoadMoreError("");
+  }
+
   if (!hasTours) {
     return (
       <div className="travel-soft-panel rounded-[1.5rem] border-2 border-dashed border-slate-200 p-20 text-center">
@@ -94,8 +102,20 @@ export default function CategoryTourResults({
         </div>
       ) : null}
 
-      {canLoadMore ? (
-        <div className="flex justify-center">
+      {canLoadMore || canCollapse ? (
+        <div className="flex flex-wrap justify-center gap-3">
+          {canCollapse ? (
+            <button
+              type="button"
+              onClick={handleCollapseTours}
+              disabled={isLoadingMore}
+              className="rounded-full border border-slate-300 bg-white px-8 py-4 text-sm font-black text-slate-600 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.45)] transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Rút gọn
+            </button>
+          ) : null}
+
+          {canLoadMore ? (
           <button
             type="button"
             onClick={handleLoadMore}
@@ -106,6 +126,7 @@ export default function CategoryTourResults({
               ? "Đang tải thêm..."
               : `Xem thêm ${Math.min(pageSize, totalTours - tours.length)} tour`}
           </button>
+          ) : null}
         </div>
       ) : null}
     </div>

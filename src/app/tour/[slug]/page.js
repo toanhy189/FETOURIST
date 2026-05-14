@@ -49,7 +49,7 @@ export default async function TourDetailPage({ params }) {
   const relatedTours = relatedResult.tours;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-16 lg:pb-20">
       <TourDetailExperience tour={tour} />
       <TourSocialHub tour={tour} />
       <TourCardGridSection
