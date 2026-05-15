@@ -14,6 +14,7 @@ import {
   updateTourDeparture,
   uploadTourImages,
 } from "@/apiService/tours";
+import StatusDialog from "@/components/StatusDialog";
 import { cn } from "@/utils/cn";
 import { formatDateVi, formatDuration, formatVnd } from "@/utils/format";
 import {
@@ -477,6 +478,7 @@ export default function ToursPanel({ initialView = "form" }) {
   const [busyTourId, setBusyTourId] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [statusDialog, setStatusDialog] = useState(null);
   // Start dates dùng mảng riêng để người dùng thêm/xóa từng input ngày dễ hơn
   // trước khi serialize lại về payload tour.
   const [startDateItems, setStartDateItems] = useState(() => parseStartDateValues(initialTourForm.startDates));
@@ -484,6 +486,15 @@ export default function ToursPanel({ initialView = "form" }) {
   const [itinerarySteps, setItinerarySteps] = useState(() =>
     syncItineraryWithDuration(parseItineraryValue(initialTourForm.itinerary), initialTourForm.durationDays)
   );
+
+  function showSuccessDialog(title, messageText, highlight = "") {
+    setMessage(messageText);
+    setStatusDialog({
+      title,
+      message: messageText,
+      highlight,
+    });
+  }
 
   const loadBootstrap = useCallback(async () => {
     setLoading(true);
@@ -918,7 +929,7 @@ export default function ToursPanel({ initialView = "form" }) {
 
         await loadBootstrap();
         await openTourEditor(tourForm.id);
-        setMessage("Đã cập nhật tour.");
+        showSuccessDialog("Cập nhật tour thành công", "Thông tin tour đã được lưu.");
       } else {
         const created = await createTour({
           ...payload,
@@ -944,7 +955,7 @@ export default function ToursPanel({ initialView = "form" }) {
         await loadBootstrap();
         resetTourBuilder();
         setActiveView("list");
-        setMessage("Đã tạo tour mới.");
+        showSuccessDialog("Thêm tour thành công", "Tour mới đã được tạo và sẵn sàng quản lý.", created.title);
       }
     } catch (actionError) {
       setError(actionError.message || "Không lưu được tour.");
@@ -974,7 +985,7 @@ export default function ToursPanel({ initialView = "form" }) {
         resetTourBuilder();
       }
       await loadBootstrap();
-      setMessage(`Đã xóa tour ${tour.title}.`);
+      showSuccessDialog("Xóa tour thành công", "Tour đã được xóa khỏi hệ thống.", tour.title);
     } catch (actionError) {
       setError(actionError.message || "Không xóa được tour.");
     } finally {
@@ -1040,10 +1051,10 @@ export default function ToursPanel({ initialView = "form" }) {
 
       if (departureForm.id) {
         await updateTourDeparture(selectedTour.id, departureForm.id, payload);
-        setMessage("Đã cập nhật đợt khởi hành.");
+        showSuccessDialog("Cập nhật lịch khởi hành thành công", "Lịch khởi hành đã được lưu.");
       } else {
         await createTourDeparture(selectedTour.id, payload);
-        setMessage("Đã tạo đợt khởi hành mới.");
+        showSuccessDialog("Thêm lịch khởi hành thành công", "Lịch khởi hành mới đã được tạo.");
       }
 
       resetDepartureEditor();
@@ -1073,7 +1084,7 @@ export default function ToursPanel({ initialView = "form" }) {
     try {
       await deleteTourDeparture(selectedTour.id, departureId);
       await openTourEditor(selectedTour.id);
-      setMessage("Đã xóa đợt khởi hành.");
+      showSuccessDialog("Xóa lịch khởi hành thành công", "Lịch khởi hành đã được xóa.");
     } catch (actionError) {
       setError(actionError.message || "Không xóa được đợt khởi hành.");
     }
@@ -1156,7 +1167,15 @@ export default function ToursPanel({ initialView = "form" }) {
   }
 
   return (
-    <section className="space-y-6">
+    <>
+      <StatusDialog
+        open={Boolean(statusDialog)}
+        title={statusDialog?.title}
+        message={statusDialog?.message}
+        highlight={statusDialog?.highlight}
+        onClose={() => setStatusDialog(null)}
+      />
+      <section className="space-y-6">
       <section className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm">
         <div className="px-6 py-5">
           {message ? (
@@ -2242,6 +2261,7 @@ export default function ToursPanel({ initialView = "form" }) {
           ) : null}
         </div>
       </section>
-    </section>
+      </section>
+    </>
   );
 }

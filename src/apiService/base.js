@@ -67,20 +67,31 @@ export function toAssetUrl(assetPath) {
     return null;
   }
 
-  if (/^https?:\/\//i.test(assetPath)) {
+  const normalizedAssetPath = String(assetPath).trim().replace(/\\/g, "/");
+  const publicPathIndex = normalizedAssetPath.indexOf("/public/");
+  const safeAssetPath =
+    publicPathIndex >= 0
+      ? normalizedAssetPath.slice(publicPathIndex)
+      : normalizedAssetPath.startsWith("public/")
+        ? `/${normalizedAssetPath}`
+        : normalizedAssetPath.startsWith("/uploads/")
+          ? `/public${normalizedAssetPath}`
+          : normalizedAssetPath;
+
+  if (/^https?:\/\//i.test(safeAssetPath)) {
     try {
-      const url = new URL(assetPath);
+      const url = new URL(safeAssetPath);
 
       if (LOCAL_API_ORIGINS.has(url.origin)) {
         return new URL(`${url.pathname}${url.search}${url.hash}`, getApiBaseUrl()).toString();
       }
     } catch {
-      return assetPath;
+      return safeAssetPath;
     }
 
-    return assetPath;
+    return safeAssetPath;
   }
 
-  return new URL(assetPath, getApiBaseUrl()).toString();
+  return new URL(safeAssetPath, getApiBaseUrl()).toString();
 }
 
