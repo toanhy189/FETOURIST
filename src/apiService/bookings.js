@@ -13,7 +13,7 @@ export async function calculateBookingPreview(payload) {
 }
 
 export async function createBooking(payload) {
-  // User booking route: can dang nhap va gui du departure + guests + contactInfo.
+  // User booking route: can đăng nhập va gui du departure + guests + contactInfo.
   const response = await privateRequest("/api/bookings", {
     method: "POST",
     data: payload,
@@ -33,7 +33,7 @@ export async function createBookingForAdmin(payload) {
 }
 
 export async function getMyBookings(searchParams = {}) {
-  // Danh sach booking hien tai cua user dang dang nhap.
+  // Danh sách booking hiện tại cua user dang đăng nhập.
   const response = await privateRequest("/api/bookings/me", {
     searchParams,
   });
@@ -45,7 +45,7 @@ export async function getMyBookings(searchParams = {}) {
 }
 
 export async function getMyBookingHistory(searchParams = {}) {
-  // History route tra them summary de lam dashboard tong quan.
+  // History route tra them summary de lam dashboard tổng quan.
   const response = await privateRequest("/api/bookings/me/history", {
     searchParams,
   });
@@ -58,13 +58,13 @@ export async function getMyBookingHistory(searchParams = {}) {
 }
 
 export async function getMyBookingDetail(bookingIdOrCode) {
-  // Detail cho user co the goi bang orderCode hoac bookingId.
+  // Detail cho user co the goi bang orderCode hoặc bookingId.
   const response = await privateRequest(`/api/bookings/me/${bookingIdOrCode}`);
   return response.data;
 }
 
 export async function getBookingsForAdmin(searchParams = {}) {
-  // Admin list la nguon du lieu cho panel van hanh booking.
+  // Admin list la nguon dữ liệu cho panel van hanh booking.
   const response = await privateRequest("/api/bookings/admin/all", {
     searchParams,
   });
@@ -77,13 +77,13 @@ export async function getBookingsForAdmin(searchParams = {}) {
 }
 
 export async function getBookingDetailForAdmin(bookingIdOrCode) {
-  // Admin detail tra ve nhieu du lieu hon, ke ca paymentTransactions.
+  // Admin detail trả về nhieu dữ liệu hon, ke ca paymentTransactions.
   const response = await privateRequest(`/api/bookings/admin/${bookingIdOrCode}`);
   return response.data;
 }
 
 export async function updateBookingForAdmin(bookingIdOrCode, payload) {
-  // Route nay sua thong tin booking, khong phai route doi bookingStatus.
+  // Route nay sua thông tin booking, không phải route doi bookingStatus.
   const response = await privateRequest(`/api/bookings/admin/${bookingIdOrCode}`, {
     method: "PATCH",
     data: payload,
@@ -93,7 +93,7 @@ export async function updateBookingForAdmin(bookingIdOrCode, payload) {
 }
 
 export async function updateBookingStatusForAdmin(bookingIdOrCode, payload) {
-  // Tach rieng route status de BE kiem soat nghiep vu huy/hoan tat booking.
+  // Tach rieng route status de BE kiem soat nghiep vu huy/hoàn tất booking.
   const response = await privateRequest(`/api/bookings/admin/${bookingIdOrCode}/status`, {
     method: "PATCH",
     data: payload,
@@ -103,7 +103,7 @@ export async function updateBookingStatusForAdmin(bookingIdOrCode, payload) {
 }
 
 export async function deleteBookingForAdmin(bookingIdOrCode) {
-  // Xoa booking chi danh cho admin va con phu thuoc rang buoc ben backend.
+  // Xóa booking chi danh cho admin va con phụ thuoc rang buoc ben backend.
   const response = await privateRequest(`/api/bookings/admin/${bookingIdOrCode}`, {
     method: "DELETE",
   });

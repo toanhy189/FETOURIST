@@ -1,8 +1,8 @@
 import AuthFormCard from "@/components/auth/AuthFormCard";
 
 export const metadata = {
-  title: "Dang Ky | TRAVELPTIT",
-  description: "Tao tai khoan TRAVELPTIT de dat tour, thanh toan va theo doi thong bao.",
+  title: "Đăng Ký | TRAVELPTIT",
+  description: "Tạo tài khoản TRAVELPTIT để đặt tour, thanh toán và theo dõi thông báo.",
 };
 
 export default function RegisterPage() {

@@ -86,12 +86,12 @@ export function AppProvider({ children }) {
   useEffect(() => {
     let isMounted = true;
 
-    // Anonymous ID duoc tao som de FE co the luu recent views/draft cho guest.
+    // Anonymous ID được tạo som de FE co the luu recent views/draft cho guest.
     getAnonymousId();
 
     async function bootstrap() {
       const storedSession = readStoredSession();
-      // Cho mount hoan tat roi moi dong bo state tu localStorage de tranh warning lint.
+      // Cho mount hoàn tất roi moi đồng bộ state tu localStorage de tranh warning lint.
       await Promise.resolve();
 
       if (!isMounted) {
@@ -201,7 +201,7 @@ export function AppProvider({ children }) {
 export function useAppContext() {
   const context = useContext(AppContext);
   if (!context) {
-    throw new Error("useAppContext phai duoc goi ben trong AppProvider.");
+    throw new Error("useAppContext phai được gọi ben trong AppProvider.");
   }
 
   return context;

@@ -25,7 +25,7 @@ function toDateSafely(value) {
 
 export function formatVnd(value) {
   if (typeof value !== "number" || Number.isNaN(value)) {
-    return "Lien he";
+    return "Liên hệ";
   }
 
   return vndFormatter.format(value);
@@ -34,7 +34,7 @@ export function formatVnd(value) {
 export function formatDateVi(value) {
   const date = toDateSafely(value);
   if (!date) {
-    return "Dang cap nhat";
+    return "Đang cập nhật";
   }
 
   return new Intl.DateTimeFormat("vi-VN", {
@@ -47,7 +47,7 @@ export function formatDateVi(value) {
 export function formatDateTimeVi(value) {
   const date = toDateSafely(value);
   if (!date) {
-    return "Dang cap nhat";
+    return "Đang cập nhật";
   }
 
   return new Intl.DateTimeFormat("vi-VN", {
@@ -61,16 +61,16 @@ export function formatDateTimeVi(value) {
 
 export function formatDuration(days, nights) {
   if (!Number.isFinite(days) || !Number.isFinite(nights)) {
-    return "Lich trinh linh hoat";
+    return "Lịch trình linh hoạt";
   }
 
-  return `${days} ngay ${nights} dem`;
+  return `${days} ngày ${nights} đêm`;
 }
 
 export function formatShortDateVi(value, { includeYear = false } = {}) {
   const date = toDateSafely(value);
   if (!date) {
-    return "Dang cap nhat";
+    return "Đang cập nhật";
   }
 
   return includeYear ? shortDateWithYearFormatter.format(date) : shortDateFormatter.format(date);
@@ -79,7 +79,7 @@ export function formatShortDateVi(value, { includeYear = false } = {}) {
 export function formatWeekdayDateVi(value, { includeYear = false } = {}) {
   const date = toDateSafely(value);
   if (!date) {
-    return "Dang cap nhat";
+    return "Đang cập nhật";
   }
 
   const weekdayLabel = WEEKDAY_LABELS[date.getDay()] || "CN";
@@ -91,7 +91,7 @@ export function formatDateRangeVi(startValue, endValue, { includeYear = true } =
   const endDate = toDateSafely(endValue);
 
   if (!startDate && !endDate) {
-    return "Dang cap nhat";
+    return "Đang cập nhật";
   }
 
   if (!startDate) {

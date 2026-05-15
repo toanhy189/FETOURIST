@@ -300,7 +300,7 @@ export default function AdminContactsPanel() {
   }, [activeStatusFilter]);
 
   const loadContactDetail = useCallback(async (contactId) => {
-    // Lay ticket dang chon de hien noi dung goc, reply history va nguoi xu ly.
+    // Lấy ticket dang chon de hien nội dung goc, reply history va người xử lý.
     if (!contactId) {
       setSelectedContact(null);
       setReplyDraft("");
@@ -324,7 +324,7 @@ export default function AdminContactsPanel() {
 
   const loadContacts = useCallback(
     async (preferredContactId) => {
-      // Tai danh sach inbox theo filter; giu selection hien tai neu ticket van con trong list.
+      // Tải danh sách inbox theo filter; giu selection hiện tại neu ticket van con trong list.
       setIsLoading(true);
       setError("");
 
@@ -376,7 +376,7 @@ export default function AdminContactsPanel() {
   }
 
   async function handleSendReply() {
-    // Gui email cho khach, sau do BE cap nhat status/reply history cua contact.
+    // Gửi email cho khach, sau do BE cập nhật status/reply history cua contact.
     if (!selectedContactId || !replyDraft.trim()) {
       return;
     }
@@ -399,7 +399,7 @@ export default function AdminContactsPanel() {
   }
 
   async function handleStatusChange(event) {
-    // Cho admin doi nhanh trang thai ma khong can gui email.
+    // Cho admin doi nhanh trạng thái ma không cần gui email.
     const nextStatus = event.target.value;
     if (!selectedContactId || !nextStatus || nextStatus === selectedContact?.status) {
       return;
@@ -607,7 +607,7 @@ export default function AdminContactsPanel() {
                       <label
                         className={`inline-flex rounded-lg border px-3 py-1.5 text-sm font-semibold ${selectedStatusMeta.badgeClassName}`}
                       >
-                        <span className="sr-only">Trang thai</span>
+                        <span className="sr-only">Trạng thái</span>
                         <select
                           value={selectedContact.status}
                           onChange={handleStatusChange}

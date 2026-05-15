@@ -12,7 +12,7 @@ import { toAssetUrl } from "@/apiService/base";
 import { disconnectSupportChatSocket } from "@/apiService/supportChatSocket";
 
 function mapUser(user) {
-  // Chuan hoa user object de FE dung chung 1 shape o moi man hinh.
+  // Chuẩn hóa user object de FE dùng chung 1 shape o moi màn hình.
   if (!user) {
     return null;
   }
@@ -52,7 +52,7 @@ export async function login(payload) {
 }
 
 export async function register(payload) {
-  // Register trong app nay cung tra ve session, nen FE dang ky xong la dang nhap luon.
+  // Register trong app nay cung trả về session, nen FE đăng ký xong la đăng nhập luon.
   const response = await publicRequest("/api/auth/register", {
     method: "POST",
     data: payload,
@@ -69,7 +69,7 @@ export async function register(payload) {
 }
 
 export async function fetchMe() {
-  // /me duoc goi luc bootstrap app de dong bo user moi nhat tu backend.
+  // /me được gọi luc bootstrap app de đồng bộ user moi nhat tu backend.
   const response = await privateRequest("/api/auth/me");
   const user = mapUser(response.data.user);
   patchStoredUser(user);
@@ -89,7 +89,7 @@ export async function logout() {
 }
 
 export async function getUsers(searchParams = {}) {
-  // Admin dashboard va cac man hinh quan tri dung route nay de liet ke user he thong.
+  // Admin dashboard va cac màn hình quản trị dùng route nay de liet ke user hệ thống.
   const response = await privateRequest("/api/auth/admin/users", {
     searchParams,
   });

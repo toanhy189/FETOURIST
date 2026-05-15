@@ -96,7 +96,7 @@ export default function AdminManagersPanel({ currentUser }) {
       setAdmin(nextUser);
       setDraft(createDraft(nextUser));
     } catch (loadError) {
-      setError(loadError.message || "Khong tai duoc thong tin admin.");
+      setError(loadError.message || "Không tải được thông tin admin.");
     } finally {
       setLoading(false);
     }

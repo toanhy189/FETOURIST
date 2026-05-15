@@ -58,7 +58,7 @@ export default function DatePickerField({
   buttonClassName = "",
   min,
   max,
-  ariaLabel = "Chon ngay",
+  ariaLabel = "Chọn ngày",
 }) {
   const inputRef = useRef(null);
   const displayValue = formatDateDisplay(value);

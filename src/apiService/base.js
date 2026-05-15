@@ -35,8 +35,8 @@ export function buildApiUrl(path, searchParams) {
 }
 
 export async function fetchApi(path, options = {}) {
-  // fetchApi duoc dung cho public/server requests, con private auth request
-  // se di qua AxiosInstance de tu dong gan token va refresh token.
+  // fetchApi được dùng cho public/server requests, con private auth request
+  // se di qua AxiosInstance de tự động gan token va refresh token.
   const { searchParams, next = { revalidate: 60 }, headers, ...fetchOptions } = options;
   const response = await fetch(buildApiUrl(path, searchParams), {
     ...fetchOptions,
@@ -47,12 +47,12 @@ export async function fetchApi(path, options = {}) {
     next,
   });
 
-  // Backend TRAVELPTIT tra ve JSON co success/message/data,
+  // Backend TRAVELPTIT trả về JSON co success/message/data,
   // nen service chung parse va nem loi o day de page tren gon hon.
   const payload = await response.json().catch(() => null);
 
   if (!response.ok || !payload?.success) {
-    const error = new Error(payload?.message || "Khong the tai du lieu tu API.");
+    const error = new Error(payload?.message || "Không thể tải dữ liệu từ API.");
     error.status = response.status;
     error.payload = payload;
     throw error;
@@ -62,7 +62,7 @@ export async function fetchApi(path, options = {}) {
 }
 
 export function toAssetUrl(assetPath) {
-  // Chuan hoa duong dan anh/file tu backend thanh URL FE co the render duoc ngay.
+  // Chuẩn hóa đường dẫn anh/file tu backend thanh URL FE co the render được ngay.
   if (!assetPath) {
     return null;
   }

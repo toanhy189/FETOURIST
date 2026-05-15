@@ -951,7 +951,7 @@ export default function ToursPanel({ initialView = "form" }) {
 
     if (hasPendingItineraryImages && selectedFiles.length === 0) {
       setSubmittingTour(false);
-      setError("Co block anh dang dung anh tam. Vui long chon lai anh o buoc 2 hoac doi anh khac.");
+      setError("Có block ảnh đang dùng ảnh tạm. Vui lòng chọn lại ảnh ở bước 2 hoặc đổi ảnh khác.");
       return;
     }
 
@@ -1087,7 +1087,7 @@ export default function ToursPanel({ initialView = "form" }) {
       return;
     }
 
-    const confirmed = window.confirm("Ban co chac muon xoa anh nay khoi tour?");
+    const confirmed = window.confirm("Bạn có chắc muốn xóa ảnh này khỏi tour?");
 
     if (!confirmed) {
       return;
@@ -1125,9 +1125,9 @@ export default function ToursPanel({ initialView = "form" }) {
       );
 
       await loadBootstrap();
-      showSuccessDialog("Xoa anh tour thanh cong", "Anh da duoc go khoi danh sach anh cua tour.");
+      showSuccessDialog("Xóa ảnh tour thành công", "Ảnh đã được gỡ khỏi danh sách ảnh của tour.");
     } catch (actionError) {
-      setError(actionError.message || "Khong xoa duoc anh tour.");
+      setError(actionError.message || "Không xóa được ảnh tour.");
     } finally {
       setBusyImageUrl("");
     }
@@ -1648,7 +1648,7 @@ export default function ToursPanel({ initialView = "form" }) {
                                   onClick={() => handleDeleteExistingTourImage(image)}
                                   disabled={busyImageUrl === image || submittingTour}
                                   className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-rose-600 shadow-sm transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                                  title="Xoa anh khoi tour"
+                                  title="Xóa ảnh khỏi tour"
                                 >
                                   <TrashIcon className="h-4 w-4" />
                                 </button>
@@ -1676,7 +1676,7 @@ export default function ToursPanel({ initialView = "form" }) {
                                   onClick={() => handleRemoveSelectedFile(index)}
                                   disabled={submittingTour}
                                   className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-rose-600 shadow-sm transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                                  title="Go anh da chon"
+                                  title="Gỡ ảnh đã chọn"
                                 >
                                   <TrashIcon className="h-4 w-4" />
                                 </button>

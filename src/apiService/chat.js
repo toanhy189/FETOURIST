@@ -6,7 +6,7 @@ import {
 } from "@/apiService/AxiosInstance/AxiosInstance";
 
 function buildChatHeaders(sessionId) {
-  // Chat guest dung x-chat-session-id, user da dang nhap gan them token de BE gan dung profile.
+  // Chat guest dung x-chat-session-id, user da đăng nhập gắn thêm token de BE gan dung profile.
   const headers = {};
   const session = readStoredSession();
 
@@ -22,7 +22,7 @@ function buildChatHeaders(sessionId) {
 }
 
 export async function createChatConversation(payload, sessionId) {
-  // Tao hoi thoai rong truoc, sau do FE se gui message dau tien vao hoi thoai nay.
+  // Tạo hội thoại rong truoc, sau do FE se gui message dau tien vao hội thoại nay.
   const response = await publicRequest("/api/chats/conversations", {
     method: "POST",
     data: {
@@ -36,7 +36,7 @@ export async function createChatConversation(payload, sessionId) {
 }
 
 export async function getCustomerConversation(conversationId, sessionId, query = {}) {
-  // Lay lai lich su theo session hien tai de guest khong doc duoc chat cua guest khac.
+  // Lấy lai lịch sử theo session hiện tại de guest khong doc được chat cua guest khac.
   const response = await publicRequest(`/api/chats/conversations/${conversationId}`, {
     method: "GET",
     searchParams: query,
@@ -47,7 +47,7 @@ export async function getCustomerConversation(conversationId, sessionId, query =
 }
 
 export async function sendCustomerChatMessage(conversationId, payload, sessionId) {
-  // Gui cau hoi cua khach; BE se luu customer message va sinh assistant message.
+  // Gửi cau hoi cua khach; BE se luu customer message va sinh assistant message.
   const response = await publicRequest(
     `/api/chats/conversations/${conversationId}/messages`,
     {

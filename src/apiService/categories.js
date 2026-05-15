@@ -2,12 +2,12 @@ import { privateRequest } from "@/apiService/AxiosInstance/AxiosInstance";
 import { fetchApi, toAssetUrl } from "@/apiService/base";
 
 function mapCategory(category) {
-  // Map payload MongoDB/TRAVELPTIT ve shape gon hon de UI dung thong nhat.
+  // Map payload MongoDB/TRAVELPTIT ve shape gon hon de UI dùng thống nhất.
   return {
     id: category._id,
     name: category.name,
     slug: category.slug,
-    description: category.description || "Danh muc giup ban loc tour nhanh hon.",
+    description: category.description || "Danh mục giúp bạn lọc tour nhanh hơn.",
     imageUrl: toAssetUrl(category.imageUrl),
     isActive: category.isActive ?? true,
     sortOrder: category.sortOrder ?? 0,
@@ -33,7 +33,7 @@ function mapCategory(category) {
 }
 
 export async function getCategories(searchParams = {}) {
-  // Public categories dung cho homepage, bo loc danh muc va trang kham pha.
+  // Public categories dung cho homepage, bộ lọc danh mục va trang kham pha.
   const response = await fetchApi("/api/categories", {
     searchParams,
     next: { revalidate: 60 },
@@ -47,7 +47,7 @@ export async function getCategories(searchParams = {}) {
 }
 
 export async function getCategoriesForAdmin(searchParams = {}) {
-  // Admin route can token va tra ve du lieu day du hon cho man quan tri.
+  // Admin route can token va trả về dữ liệu day du hon cho man quản trị.
   const response = await privateRequest("/api/categories/admin/all", {
     searchParams,
   });
@@ -60,13 +60,13 @@ export async function getCategoriesForAdmin(searchParams = {}) {
 }
 
 export async function getCategoryDetailForAdmin(idOrSlug) {
-  // Chap nhan id hoac slug de panel admin co the goi linh hoat hon.
+  // Chap nhan id hoặc slug de panel admin co the goi linh hoat hon.
   const response = await privateRequest(`/api/categories/admin/${idOrSlug}`);
   return mapCategory(response.data);
 }
 
 export async function createCategory(payload) {
-  // Payload duoc gui nguyen trang vi backend da chiu trach nhiem validate.
+  // Payload được gửi nguyen trang vi backend da chiu trach nhiem validate.
   const response = await privateRequest("/api/categories", {
     method: "POST",
     data: payload,
@@ -76,7 +76,7 @@ export async function createCategory(payload) {
 }
 
 export async function updateCategory(categoryId, payload) {
-  // Patch category va map lai ngay de UI khong phai tu xu ly shape response.
+  // Patch category va map lai ngay de UI không phải tu xử lý shape response.
   const response = await privateRequest(`/api/categories/${categoryId}`, {
     method: "PATCH",
     data: payload,
@@ -101,7 +101,7 @@ export async function uploadCategoryImage(file) {
 }
 
 export async function deleteCategory(categoryId) {
-  // Delete khong can map vi BE tra ve object xac nhan da xoa.
+  // Delete không cần map vi BE trả về object xác nhận da xoa.
   const response = await privateRequest(`/api/categories/${categoryId}`, {
     method: "DELETE",
   });

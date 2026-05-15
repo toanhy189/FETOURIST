@@ -72,7 +72,7 @@ function getInitials(fullName = "") {
 }
 
 function Avatar({ user, className = "", textClassName = "" }) {
-  const fullName = user?.fullName || "Thanh vien TRAVELPTIT";
+  const fullName = user?.fullName || "Thành viên TRAVELPTIT";
 
   if (user?.avatarUrl) {
     return (
@@ -186,7 +186,7 @@ function ReviewItem({ review }) {
         <div className="flex min-w-0 items-start gap-3">
           <Avatar user={review.user} className="h-10 w-10" textClassName="text-xs" />
           <div className="min-w-0">
-            <p className="font-semibold text-slate-900">{review.user?.fullName || "Thanh vien TRAVELPTIT"}</p>
+            <p className="font-semibold text-slate-900">{review.user?.fullName || "Thành viên TRAVELPTIT"}</p>
             <p className="mt-1 text-xs text-slate-400">{formatDateTimeVi(review.updatedAt || review.createdAt)}</p>
           </div>
         </div>
@@ -244,7 +244,7 @@ function CommentItem({
         <div className="flex min-w-0 items-start gap-3">
           <Avatar user={comment.user} className="h-10 w-10" textClassName="text-xs" />
           <div className="min-w-0">
-            <p className="font-semibold text-slate-900">{comment.user?.fullName || "Thanh vien TRAVELPTIT"}</p>
+            <p className="font-semibold text-slate-900">{comment.user?.fullName || "Thành viên TRAVELPTIT"}</p>
             <p className="mt-1 text-xs text-slate-400">
               {formatDateTimeVi(comment.createdAt)}
               {comment.editedAt ? " • Đã chỉnh sửa" : ""}

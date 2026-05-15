@@ -492,7 +492,7 @@ export default function AdminDashboard() {
         setSummary(bookingList.summary || null);
       } catch (loadError) {
         if (isMounted) {
-          setError(loadError.message || "Khong tai duoc dashboard admin.");
+          setError(loadError.message || "Không tải được dashboard admin.");
         }
       } finally {
         if (isMounted) {
@@ -559,7 +559,7 @@ export default function AdminDashboard() {
                 Theo dõi doanh thu của các booking không bị huỷ từ đầu năm đến hiện tại.
               </p>
             </div>
-            {loading ? <p className="text-sm text-slate-400">Dang tai...</p> : null}
+            {loading ? <p className="text-sm text-slate-400">Đang tải...</p> : null}
           </div>
 
           <RevenueChart series={monthlyRevenueSeries} loading={loading} />
@@ -573,7 +573,7 @@ export default function AdminDashboard() {
                 Tổng hợp doanh thu theo mốc thời gian để admin theo dõi nhanh.
               </p>
             </div>
-            {loading ? <p className="text-sm text-slate-400">Dang tai...</p> : null}
+            {loading ? <p className="text-sm text-slate-400">Đang tải...</p> : null}
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2">

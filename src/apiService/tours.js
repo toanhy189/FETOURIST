@@ -108,7 +108,7 @@ function cleanSearchParams(searchParams = {}) {
 }
 
 function mapDeparture(departure, fallbackGuestPrices = null) {
-  // Gom lich khoi hanh ve shape chung de card/detail/booking dung cung gia.
+  // Gom lich khởi hành ve shape chung de card/detail/booking dung cung gia.
   if (!departure) return null;
 
   const normalizedDiscountPrice =
@@ -180,7 +180,7 @@ function buildTourSummary(tour) {
 }
 
 function mapItinerary(step) {
-  // Anh trong lich trinh can duoc doi thanh URL day du de Next Image render duoc.
+  // Anh trong lịch trình can được đổi thanh URL day du de Next Image render được.
   return {
     ...step,
     blocks: Array.isArray(step?.blocks)
@@ -194,7 +194,7 @@ function mapItinerary(step) {
 }
 
 export function mapTour(tour) {
-  // Map document Tour tu BE sang object FE dung thong nhat tren public va admin.
+  // Map document Tour tu BE sang object FE dùng thống nhất tren public va admin.
   if (!tour) return null;
 
   const normalizedDiscountPrice =
@@ -420,7 +420,7 @@ export async function deleteTourImage(tourId, imageUrl) {
 }
 
 export async function getTourDeparturesForAdmin(tourId, searchParams = {}) {
-  // Departure la lich khoi hanh that cua tour, tach rieng voi template tour.
+  // Departure la lich khởi hành that cua tour, tach rieng voi template tour.
   const response = await privateRequest(`/api/tours/${tourId}/departures/admin`, {
     searchParams,
   });

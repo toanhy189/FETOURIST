@@ -32,7 +32,7 @@ function PaymentResultContent() {
         }
       } catch (err) {
         if (!ignore) {
-          setError(err.message || "Khong xac nhan duoc ket qua thanh toan.");
+          setError(err.message || "Không xác nhận được kết quả thanh toán.");
         }
       } finally {
         if (!ignore) {
@@ -45,7 +45,7 @@ function PaymentResultContent() {
       void verifyReturn();
     } else {
       setLoading(false);
-      setError("Thieu du lieu tra ve tu VNPay.");
+      setError("Thiếu dữ liệu trả về từ VNPay.");
     }
 
     return () => {

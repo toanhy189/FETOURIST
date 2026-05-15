@@ -1,8 +1,8 @@
 import AuthFormCard from "@/components/auth/AuthFormCard";
 
 export const metadata = {
-  title: "Dang Nhap | TRAVELPTIT",
-  description: "Dang nhap de truy cap booking, payment, favorite va khu vuc quan tri.",
+  title: "Đăng Nhập | TRAVELPTIT",
+  description: "Đăng nhập để truy cập booking, payment, favorite và khu vực quản trị.",
 };
 
 export default function LoginPage() {

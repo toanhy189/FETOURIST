@@ -97,7 +97,7 @@ export default function SearchForm() {
             : []
         );
       } catch (error) {
-        console.error("Khong the tai danh sach diem loc tour:", error);
+        console.error("Không thể tải danh sách điểm lọc tour:", error);
       }
     };
 

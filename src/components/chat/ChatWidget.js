@@ -29,7 +29,7 @@ function createBrowserSessionId() {
 }
 
 function ensureChatSessionId(scopeKey) {
-  // Moi user/guest co session rieng de BE phan quyen lich su chat theo trinh duyet.
+  // Moi user/guest co session rieng de BE phan quyen lịch sử chat theo trinh duyet.
   if (typeof window === "undefined") {
     return "";
   }
@@ -46,7 +46,7 @@ function ensureChatSessionId(scopeKey) {
 }
 
 function persistConversationId(conversationId, scopeKey) {
-  // Luu conversation dang mo de lan sau mo widget se tai lai dung lich su.
+  // Luu conversation đang mở de lan sau mo widget se tai lai dung lịch sử.
   if (typeof window === "undefined") {
     return;
   }
@@ -74,7 +74,7 @@ function getStoredConversationId(scopeKey) {
 }
 
 function getConversationStatusMeta(conversation) {
-  // Badge trang thai cho biet AI dang tra loi binh thuong hay can admin xac minh.
+  // Badge trạng thái cho biet AI dang trả lời binh thuong hay can admin xac minh.
   if (!conversation) {
     return {
       label: "AI sẵn sàng hỗ trợ",
@@ -160,7 +160,7 @@ function CloseIcon({ className = "h-4 w-4" }) {
 }
 
 function createLocalMessage(content) {
-  // Message tam thoi giup UI phan hoi ngay trong luc doi BE luu va AI tra loi.
+  // Message tạm thời giup UI phản hồi ngay trong luc doi BE luu va AI trả lời.
   return {
     id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     senderType: "customer",
@@ -231,7 +231,7 @@ export default function ChatWidget() {
         setErrorMessage("");
       } catch (error) {
         if (error?.status === 404 && scopeKey) {
-          // BE khong tim thay conversation trong session nay thi xoa cache local de tao luong moi.
+          // BE khong tìm thấy conversation trong session nay thi xóa cache local de tạo luồng moi.
           persistConversationId("", scopeKey);
           setConversationId("");
           resetConversationState();

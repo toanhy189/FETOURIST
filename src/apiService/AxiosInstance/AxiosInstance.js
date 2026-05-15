@@ -66,14 +66,14 @@ function extractApiErrorDetail(details) {
 }
 
 function buildApiErrorMessage(payload) {
-  const baseMessage = payload?.message || "Khong the xu ly yeu cau.";
+  const baseMessage = payload?.message || "Không thể xử lý yêu cầu.";
   const detailMessage = extractApiErrorDetail(payload?.errorDetails || payload?.error);
 
   if (!detailMessage || detailMessage === baseMessage) {
     return baseMessage;
   }
 
-  if (baseMessage === "Du lieu tour khong hop le.") {
+  if (baseMessage === "Dữ liệu tour không hợp lệ.") {
     return detailMessage;
   }
 
@@ -147,7 +147,7 @@ async function refreshAccessToken() {
   const session = readStoredSession();
   if (!session.refreshToken || isTokenExpired(session.refreshToken)) {
     clearStoredSession();
-    throw new Error("Phien dang nhap da het han.");
+    throw new Error("Phiên đăng nhập đã hết hạn.");
   }
 
   if (!refreshPromise) {

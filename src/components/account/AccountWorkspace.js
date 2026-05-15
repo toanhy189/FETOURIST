@@ -123,7 +123,7 @@ export default function AccountWorkspace() {
         transactionCode: paymentDetail.transactions?.[0]?.transactionCode || "",
       });
     } catch (loadError) {
-      setError(loadError.message || "Khong tai duoc chi tiet booking.");
+      setError(loadError.message || "Không tải được chi tiết booking.");
     } finally {
       patchLoading("bookingDetail", false);
     }
@@ -180,10 +180,10 @@ export default function AccountWorkspace() {
 
     try {
       await removeFavorite(slug);
-      setMessage("Da bo tour khoi danh sach yeu thich.");
+      setMessage("Đã bỏ tour khỏi danh sách yêu thích.");
       await loadDashboard();
     } catch (actionError) {
-      setError(actionError.message || "Khong xoa duoc tour yeu thich.");
+      setError(actionError.message || "Không xóa được tour yêu thích.");
     } finally {
       patchLoading(`favorite-${slug}`, false);
     }
@@ -197,7 +197,7 @@ export default function AccountWorkspace() {
       await markNotificationAsRead(notificationId);
       await loadDashboard();
     } catch (actionError) {
-      setError(actionError.message || "Khong cap nhat duoc thong bao.");
+      setError(actionError.message || "Không cập nhật được thông báo.");
     } finally {
       patchLoading(`notification-${notificationId}`, false);
     }
@@ -209,10 +209,10 @@ export default function AccountWorkspace() {
 
     try {
       await markAllNotificationsAsRead();
-      setMessage("Da danh dau tat ca thong bao.");
+      setMessage("Đã đánh dấu tất cả thông báo.");
       await loadDashboard();
     } catch (actionError) {
-      setError(actionError.message || "Khong cap nhat duoc tat ca thong bao.");
+      setError(actionError.message || "Không cập nhật được tất cả thông báo.");
     } finally {
       patchLoading("notificationAll", false);
     }
@@ -243,16 +243,16 @@ export default function AccountWorkspace() {
   if (!isAuthenticated) {
     return (
       <section className="mx-auto max-w-3xl rounded-[2rem] border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <h1 className="font-display text-4xl text-slate-900">Dang nhap de mo dashboard</h1>
+        <h1 className="font-display text-4xl text-slate-900">Đăng nhập để mở dashboard</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
-          Sau khi dang nhap, ban co the xem booking, thanh toan, yeu thich va thong bao.
+          Sau khi đăng nhập, bạn có thể xem booking, thanh toán, yêu thích và thông báo.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link href="/dang-nhap" className="rounded-full bg-sky-700 px-5 py-3 text-sm font-semibold text-white">
-            Dang nhap
+            Đăng nhập
           </Link>
           <Link href="/dang-ky" className="rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700">
-            Tao tai khoan
+            Tạo tài khoản
           </Link>
         </div>
       </section>

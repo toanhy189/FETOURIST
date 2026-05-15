@@ -138,7 +138,7 @@ export default function FilterSidebar({ categories = [] }) {
           setDurationOptions(filterOptions.durationDays);
         }
       } catch (error) {
-        console.error("Khong the tai bo loc tour:", error);
+        console.error("Không thể tải bộ lọc tour:", error);
       }
     };
 

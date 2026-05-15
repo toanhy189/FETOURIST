@@ -105,7 +105,7 @@ function NotificationItem({
             disabled={loading}
             className="shrink-0 rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-sky-300 hover:text-sky-800 disabled:cursor-not-allowed disabled:bg-slate-100"
           >
-            {loading ? "Dang luu..." : "Da doc"}
+            {loading ? "Đang lưu..." : "Đã đọc"}
           </button>
         ) : null}
       </div>

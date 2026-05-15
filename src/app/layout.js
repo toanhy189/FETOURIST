@@ -3,8 +3,8 @@ import SiteShell from "@/components/SiteShell";
 import { AppProvider } from "@/components/providers/AppProvider";
 
 export const metadata = {
-  title: "TRAVELPTIT | Website Du Lich",
-  description: "Giao dien website du lich co ket noi du lieu that tu backend TRAVELPTIT.",
+  title: "TRAVELPTIT | Website Du Lịch",
+  description: "Giao diện website du lịch có kết nối dữ liệu thật từ backend TRAVELPTIT.",
 };
 
 export const viewport = {

@@ -49,7 +49,7 @@ async function parseRecentToursResponse(response) {
   const payload = await response.json().catch(() => null);
 
   if (!response.ok || !payload?.success) {
-    const error = new Error(payload?.message || "Khong the dong bo recent tours.");
+    const error = new Error(payload?.message || "Không thể đồng bộ recent tours.");
     error.status = response.status;
     error.payload = payload;
     throw error;

@@ -34,7 +34,7 @@ export default function SearchableSelect({
   options = [],
   placeholder = "",
   emptyLabel = "",
-  emptyMessage = "Khong co ket qua phu hop.",
+  emptyMessage = "Không có kết quả phù hợp.",
   leadingContent = null,
   containerClassName = "",
   inputClassName = "",
@@ -119,7 +119,7 @@ export default function SearchableSelect({
               inputRef.current?.focus();
             }}
             className="ml-2 shrink-0 text-slate-500 transition hover:text-slate-700"
-            aria-label="Mo danh sach lua chon"
+            aria-label="Mở danh sách lựa chọn"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

@@ -35,7 +35,7 @@ export default function CategoryTourResults({
   const canCollapse = tours.length > initialTours.length;
 
   async function handleLoadMore() {
-    // Load-more giu nguyen filter hien tai va loai tour trung id khi API tra overlap.
+    // Load-more giu nguyen filter hiện tại va loai tour trung id khi API tra overlap.
     if (!canLoadMore || isLoadingMore) {
       return;
     }

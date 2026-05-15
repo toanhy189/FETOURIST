@@ -8,12 +8,12 @@ import {
 import { getRedisClient } from "@/server/recentTours/redisRecentTours";
 
 const transportLabels = {
-  bus: "Xe du lich",
+  bus: "Xe du lịch",
   plane: "May bay",
   train: "Tau hoa",
   ship: "Tau thuyen",
-  car: "Xe rieng",
-  mixed: "Lich trinh linh hoat",
+  car: "Xe riêng",
+  mixed: "Lịch trình linh hoạt",
 };
 
 /**
@@ -80,7 +80,7 @@ function buildTourSummary(tour) {
     return tour.highlights.slice(0, 2).join(" - ");
   }
 
-  return `Khởi hành từ ${tour?.departureLocation || "đang cập nhật"} den ${tour?.destination || "đang cập nhật"}.`;
+  return `Khởi hành từ ${tour?.departureLocation || "đang cập nhật"} đến ${tour?.destination || "đang cập nhật"}.`;
 }
 
 /**
@@ -128,9 +128,9 @@ function mapRecentTourCard(tour) {
   return {
     id: tour._id || tour.id || tour.slug,
     slug: tour.slug,
-    title: tour.title || "Tour dang cap nhat",
-    destination: tour.destination || "Dang cap nhat",
-    departureLocation: tour.departureLocation || "Dang cap nhat",
+    title: tour.title || "Tour đang cập nhật",
+    destination: tour.destination || "Đang cập nhật",
+    departureLocation: tour.departureLocation || "Đang cập nhật",
     category: tour.category
       ? {
         name: tour.category.name || "",
@@ -140,7 +140,7 @@ function mapRecentTourCard(tour) {
     durationDays: toNumberOrNull(tour.durationDays),
     durationNights: toNumberOrNull(tour.durationNights) ?? 0,
     transportLabel:
-      transportLabels[tour.transport] || tour.transportLabel || "Lich trinh linh hoat",
+      transportLabels[tour.transport] || tour.transportLabel || "Lịch trình linh hoạt",
     availableSeats,
     price: toNumberOrNull(tour.price) ?? displayPrice,
     discountPrice: normalizedDiscountPrice,

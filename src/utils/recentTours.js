@@ -169,9 +169,9 @@ export function createRecentTourSnapshot(tour) {
   return {
     id: tour.id || tour.slug,
     slug: tour.slug,
-    title: tour.title || "Tour dang cap nhat",
-    destination: tour.destination || "Dang cap nhat",
-    departureLocation: tour.departureLocation || "Dang cap nhat",
+    title: tour.title || "Tour đang cập nhật",
+    destination: tour.destination || "Đang cập nhật",
+    departureLocation: tour.departureLocation || "Đang cập nhật",
     category: tour.category
       ? {
           name: tour.category.name || "",
@@ -180,7 +180,7 @@ export function createRecentTourSnapshot(tour) {
       : null,
     durationDays: toNumberOrNull(tour.durationDays),
     durationNights: toNumberOrNull(tour.durationNights) ?? 0,
-    transportLabel: tour.transportLabel || "Lich trinh linh hoat",
+    transportLabel: tour.transportLabel || "Lịch trình linh hoạt",
     availableSeats,
     price: regularPrice,
     discountPrice: toNumberOrNull(tour.discountPrice),
@@ -189,7 +189,7 @@ export function createRecentTourSnapshot(tour) {
     highlights: Array.isArray(tour.highlights) ? tour.highlights.filter(Boolean).slice(0, 3) : [],
     summary:
       tour.summary ||
-      `Khoi hanh tu ${tour.departureLocation || "dang cap nhat"} den ${tour.destination || "dang cap nhat"}.`,
+      `Khởi hành từ ${tour.departureLocation || "đang cập nhật"} đến ${tour.destination || "đang cập nhật"}.`,
     ratingAverage: toNumberOrNull(tour.ratingAverage) ?? 0,
     ratingCount: toNumberOrNull(tour.ratingCount) ?? 0,
     imageUrl: tour.imageUrl || null,

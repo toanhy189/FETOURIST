@@ -175,7 +175,7 @@ function Field({
   multiline = false,
   type = "text",
 }) {
-  // Field dung chung de form lien he giu cung layout icon, label va validate HTML.
+  // Field dùng chung de form liên hệ giu cung layout icon, label va validate HTML.
   const sharedClasses =
     "w-full rounded-xl border border-slate-200 bg-white/88 pl-[3.3rem] pr-4 text-[15px] text-slate-800 shadow-[0_12px_28px_-25px_rgba(15,23,42,0.5)] outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100";
 
@@ -221,7 +221,7 @@ function Field({
 }
 
 function GalleryImage({ item, priority = false }) {
-  // Anh ben phai chi la visual thay the, khong gan nghiep vu submit lien he.
+  // Anh ben phai chi la visual thay the, khong gan nghiep vu submit liên hệ.
   return (
     <div className={`relative min-w-0 overflow-hidden rounded-[1.35rem] border-[7px] border-white shadow-[0_22px_54px_-34px_rgba(15,23,42,0.85)] ${item.className}`}>
       <Image
@@ -246,7 +246,7 @@ export default function ContactPage() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    // User da dang nhap thi dien san thong tin lien he nhung van cho sua.
+    // User da đăng nhập thi dien san thông tin liên hệ nhung van cho sua.
     setFormData((currentState) => ({
       ...currentState,
       fullName: currentState.fullName || currentUser?.fullName || "",
@@ -264,7 +264,7 @@ export default function ContactPage() {
   }
 
   async function handleSubmit(event) {
-    // Submit tao contact message public; admin se tra loi bang man lien he trong dashboard.
+    // Submit tao contact message public; admin se trả lời bang man liên hệ trong dashboard.
     event.preventDefault();
     setIsSubmitting(true);
     setError("");
