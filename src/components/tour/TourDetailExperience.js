@@ -6,6 +6,7 @@ import { calculateBookingPreview, createBooking } from "@/apiService/bookings";
 import { addFavorite, getMyFavorites, removeFavorite } from "@/apiService/favorites";
 import { getTourDepartures } from "@/apiService/tours";
 import { useAppContext } from "@/components/providers/AppProvider";
+import StatusDialog from "@/components/StatusDialog";
 import { cn } from "@/utils/cn";
 import {
   formatDateRangeVi,
@@ -43,6 +44,17 @@ const initialGuests = {
   children: 0,
   infants: 0,
 };
+
+const IMAGE_FALLBACK_URL = "/images/bia1.jpg";
+
+function handleImageFallback(event) {
+  if (event.currentTarget.dataset.fallbackApplied) {
+    return;
+  }
+
+  event.currentTarget.dataset.fallbackApplied = "true";
+  event.currentTarget.src = IMAGE_FALLBACK_URL;
+}
 
 const CALENDAR_MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => ({
   value: index,
@@ -430,20 +442,20 @@ function SectionCard({ title, action, children, className = "" }) {
 
 function GuestCounter({ label, hint, value, onChange, min = 0, priceLabel = "" }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5">
+    <div className="grid grid-cols-[minmax(4.75rem,1fr)_minmax(11.5rem,auto)] items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5">
       <div className="min-w-0">
         <p className="text-[13px] font-semibold text-slate-900">{label}</p>
         <p className="text-xs text-slate-500">{hint}</p>
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+      <div className="grid grid-cols-[minmax(5.5rem,1fr)_auto] items-center justify-items-end gap-2">
         {priceLabel ? (
-          <span className="whitespace-nowrap text-[13px] font-medium text-amber-600">
+          <span className="whitespace-nowrap text-right text-[12px] font-semibold leading-none text-amber-600">
             {priceLabel}
           </span>
         ) : null}
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
             onClick={() => onChange(Math.max(min, value - 1))}
@@ -524,6 +536,7 @@ export default function TourDetailExperience({ tour }) {
   const [bookingPreview, setBookingPreview] = useState(null);
   const [previewError, setPreviewError] = useState("");
   const [latestBooking, setLatestBooking] = useState(null);
+  const [statusDialog, setStatusDialog] = useState(null);
   const [favoriteNotice, setFavoriteNotice] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -774,6 +787,11 @@ export default function TourDetailExperience({ tour }) {
 
       setLatestBooking(booking);
       setMessage(`Đã tạo booking ${booking.orderCode}. Bạn có thể theo dõi thêm trong trang tài khoản.`);
+      setStatusDialog({
+        title: "Gửi yêu cầu thành công",
+        message: "Mã đặt Tour của bạn là:",
+        highlight: booking.orderCode,
+      });
       setBookingPreview(null);
       await Promise.allSettled([loadDepartures(), refreshNotifications()]);
     } catch (actionError) {
@@ -937,7 +955,15 @@ export default function TourDetailExperience({ tour }) {
   }, [guests.adults, guests.children, guests.infants, isAuthenticated, selectedDepartureId]);
 
   return (
-    <div className="mx-auto max-w-[1100px] space-y-5 pt-4 md:pt-5">
+    <>
+      <StatusDialog
+        open={Boolean(statusDialog)}
+        title={statusDialog?.title}
+        message={statusDialog?.message}
+        highlight={statusDialog?.highlight}
+        onClose={() => setStatusDialog(null)}
+      />
+      <div className="mx-auto max-w-[1100px] space-y-5 pt-4 md:pt-5">
       <section className="px-1">
         <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
           <Link href="/" className="transition hover:text-sky-700">
@@ -1022,6 +1048,7 @@ export default function TourDetailExperience({ tour }) {
                     <img
                       src={galleryImages[activeImageIndex] || tour.imageUrl}
                       alt={tour.title}
+                      onError={handleImageFallback}
                       className="h-[190px] w-full object-cover sm:h-[220px] lg:h-[248px]"
                     />
                   </button>
@@ -1059,7 +1086,7 @@ export default function TourDetailExperience({ tour }) {
                       )}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imageUrl} alt={`${tour.title} ${realIndex + 1}`} className="h-[92px] w-full object-cover md:h-[104px] lg:h-[118px]" />
+                      <img src={imageUrl} alt={`${tour.title} ${realIndex + 1}`} onError={handleImageFallback} className="h-[92px] w-full object-cover md:h-[104px] lg:h-[118px]" />
                     </button>
                   );
                 })
@@ -1132,7 +1159,7 @@ export default function TourDetailExperience({ tour }) {
                               <div className="h-16 w-24 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                                 {imageUrl ? (
                                   // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={imageUrl} alt={stepTitle} className="h-full w-full object-cover" />
+                                  <img src={imageUrl} alt={stepTitle} onError={handleImageFallback} className="h-full w-full object-cover" />
                                 ) : null}
                               </div>
                               <div className="min-w-0 flex-1">
@@ -1151,7 +1178,7 @@ export default function TourDetailExperience({ tour }) {
                                     return (
                                       <div key={`${step.day}-image-${blockIndex}`} className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={block.url} alt={block.alt || stepTitle} className="max-h-[26rem] w-full object-cover" />
+                                        <img src={block.url} alt={block.alt || stepTitle} onError={handleImageFallback} className="max-h-[26rem] w-full object-cover" />
                                       </div>
                                     );
                                   }
@@ -1905,6 +1932,7 @@ export default function TourDetailExperience({ tour }) {
               <img
                 src={galleryImages[lightboxIndex]}
                 alt={`${tour.title} ${lightboxIndex + 1}`}
+                onError={handleImageFallback}
                 className="max-h-[72vh] w-auto max-w-full rounded-[24px] object-contain"
               />
 
@@ -1938,7 +1966,7 @@ export default function TourDetailExperience({ tour }) {
                     )}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imageUrl} alt={`${tour.title} thumbnail ${index + 1}`} className="h-full w-full object-cover" />
+                    <img src={imageUrl} alt={`${tour.title} thumbnail ${index + 1}`} onError={handleImageFallback} className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -1947,7 +1975,7 @@ export default function TourDetailExperience({ tour }) {
         </div>
       ) : null}
 
-
-    </div>
+      </div>
+    </>
   );
 }

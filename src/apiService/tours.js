@@ -101,6 +101,12 @@ function sumDeparturesRemainingSeats(departures) {
   );
 }
 
+function cleanSearchParams(searchParams = {}) {
+  return Object.fromEntries(
+    Object.entries(searchParams).filter(([, value]) => value !== undefined && value !== null && value !== "")
+  );
+}
+
 function mapDeparture(departure, fallbackGuestPrices = null) {
   // Gom lich khoi hanh ve shape chung de card/detail/booking dung cung gia.
   if (!departure) return null;
@@ -283,19 +289,8 @@ export function mapTour(tour) {
 }
 
 export async function getTours(searchParams = {}) {
-  const cleanParams = {};
-  Object.keys(searchParams).forEach((key) => {
-    if (
-      searchParams[key] !== undefined &&
-      searchParams[key] !== null &&
-      searchParams[key] !== ""
-    ) {
-      cleanParams[key] = searchParams[key];
-    }
-  });
-
   const response = await fetchApi("/api/tours/search", {
-    searchParams: cleanParams,
+    searchParams: cleanSearchParams(searchParams),
     next: { revalidate: 0 },
   });
 
@@ -447,20 +442,8 @@ export async function deleteTourDeparture(tourId, departureId) {
 }
 
 export async function getFeaturedTours(searchParams = {}) {
-  const cleanParams = {};
-
-  Object.keys(searchParams).forEach((key) => {
-    if (
-      searchParams[key] !== undefined &&
-      searchParams[key] !== null &&
-      searchParams[key] !== ""
-    ) {
-      cleanParams[key] = searchParams[key];
-    }
-  });
-
   const response = await fetchApi("/api/tours/featured", {
-    searchParams: cleanParams,
+    searchParams: cleanSearchParams(searchParams),
     next: { revalidate: 0 },
   });
 
