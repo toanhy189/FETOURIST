@@ -7,6 +7,7 @@ import {
   createTourDeparture,
   deleteTour,
   deleteTourDeparture,
+  deleteTourImage,
   getTourDeparturesForAdmin,
   getTourDetailForAdmin,
   getToursForAdmin,
@@ -319,6 +320,39 @@ function createPendingItineraryImageToken(file, index) {
   return `${PENDING_ITINERARY_IMAGE_PREFIX}${file.name}-${file.size}-${file.lastModified}-${index}`;
 }
 
+function buildImageMatchValues(value) {
+  const normalizedValue = String(value || "").trim().replace(/\\/g, "/");
+  const values = new Set();
+
+  if (!normalizedValue) {
+    return values;
+  }
+
+  values.add(normalizedValue);
+
+  if (normalizedValue.startsWith("public/")) {
+    values.add(`/${normalizedValue}`);
+  }
+
+  try {
+    const imageUrl = new URL(normalizedValue);
+    values.add(imageUrl.toString());
+    values.add(`${imageUrl.pathname}${imageUrl.search}${imageUrl.hash}`);
+    values.add(imageUrl.pathname);
+  } catch {
+    // Relative image paths are allowed for legacy uploads.
+  }
+
+  return values;
+}
+
+function isSameImageUrl(left, right) {
+  const leftValues = buildImageMatchValues(left);
+  const rightValues = buildImageMatchValues(right);
+
+  return [...leftValues].some((value) => rightValues.has(value));
+}
+
 function normalizeKeyword(value) {
   return String(value || "")
     .normalize("NFD")
@@ -476,6 +510,7 @@ export default function ToursPanel({ initialView = "form" }) {
   const [submittingTour, setSubmittingTour] = useState(false);
   const [submittingDeparture, setSubmittingDeparture] = useState(false);
   const [busyTourId, setBusyTourId] = useState("");
+  const [busyImageUrl, setBusyImageUrl] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [statusDialog, setStatusDialog] = useState(null);
@@ -718,6 +753,60 @@ export default function ToursPanel({ initialView = "form" }) {
     event.target.value = "";
   }
 
+  function handleRemoveSelectedFile(index) {
+    const removedFile = selectedFiles[index];
+
+    if (!removedFile) {
+      return;
+    }
+
+    const removedToken = createPendingItineraryImageToken(removedFile, index);
+    const tokenMap = new Map();
+    const nextFiles = selectedFiles.filter((_, fileIndex) => fileIndex !== index);
+
+    selectedFiles.forEach((file, fileIndex) => {
+      if (fileIndex === index) {
+        return;
+      }
+
+      const nextIndex = fileIndex > index ? fileIndex - 1 : fileIndex;
+      tokenMap.set(
+        createPendingItineraryImageToken(file, fileIndex),
+        createPendingItineraryImageToken(file, nextIndex)
+      );
+    });
+
+    const nextSteps = itinerarySteps.map((step) => ({
+      ...step,
+      blocks: step.blocks.map((block) => {
+        if (block.type !== ITINERARY_BLOCK_TYPES.image) {
+          return block;
+        }
+
+        if (block.url === removedToken) {
+          return {
+            ...block,
+            url: "",
+            alt: "",
+          };
+        }
+
+        if (tokenMap.has(block.url)) {
+          return {
+            ...block,
+            url: tokenMap.get(block.url),
+          };
+        }
+
+        return block;
+      }),
+    }));
+
+    setError("");
+    setSelectedFiles(nextFiles);
+    syncItinerary(nextSteps);
+  }
+
   function getItineraryImagePreviewUrl(url) {
     if (!isPendingItineraryImageUrl(url)) {
       return url;
@@ -860,7 +949,7 @@ export default function ToursPanel({ initialView = "form" }) {
       step.blocks.some((block) => block.type === ITINERARY_BLOCK_TYPES.image && isPendingItineraryImageUrl(block.url))
     );
 
-    if (hasPendingItineraryImages && pendingImageOptions.length === 0) {
+    if (hasPendingItineraryImages && selectedFiles.length === 0) {
       setSubmittingTour(false);
       setError("Co block anh dang dung anh tam. Vui long chon lai anh o buoc 2 hoac doi anh khac.");
       return;
@@ -871,9 +960,9 @@ export default function ToursPanel({ initialView = "form" }) {
       const allImages = Array.isArray(uploadResult?.images) ? uploadResult.images : [];
       const uploadedUrls = uploadedCount > 0 ? allImages.slice(-uploadedCount) : [];
 
-      return pendingImageOptions.reduce((result, item, index) => {
+      return selectedFiles.reduce((result, file, index) => {
         if (uploadedUrls[index]) {
-          result[item.token] = uploadedUrls[index];
+          result[createPendingItineraryImageToken(file, index)] = uploadedUrls[index];
         }
 
         return result;
@@ -990,6 +1079,57 @@ export default function ToursPanel({ initialView = "form" }) {
       setError(actionError.message || "Không xóa được tour.");
     } finally {
       setBusyTourId("");
+    }
+  }
+
+  async function handleDeleteExistingTourImage(imageUrl) {
+    if (!selectedTour?.id || !imageUrl) {
+      return;
+    }
+
+    const confirmed = window.confirm("Ban co chac muon xoa anh nay khoi tour?");
+
+    if (!confirmed) {
+      return;
+    }
+
+    setBusyImageUrl(imageUrl);
+    setError("");
+    setMessage("");
+
+    try {
+      const result = await deleteTourImage(selectedTour.id, imageUrl);
+      const nextImages = Array.isArray(result.images)
+        ? result.images
+        : selectedTour.images.filter((image) => !isSameImageUrl(image, imageUrl));
+
+      setSelectedTour((current) =>
+        current
+          ? {
+              ...current,
+              images: nextImages,
+              imageUrl: nextImages[0] || null,
+            }
+          : current
+      );
+      setTours((current) =>
+        current.map((tour) =>
+          tour.id === selectedTour.id
+            ? {
+                ...tour,
+                images: nextImages,
+                imageUrl: nextImages[0] || null,
+              }
+            : tour
+        )
+      );
+
+      await loadBootstrap();
+      showSuccessDialog("Xoa anh tour thanh cong", "Anh da duoc go khoi danh sach anh cua tour.");
+    } catch (actionError) {
+      setError(actionError.message || "Khong xoa duoc anh tour.");
+    } finally {
+      setBusyImageUrl("");
     }
   }
 
@@ -1501,8 +1641,17 @@ export default function ToursPanel({ initialView = "form" }) {
                           <p className="text-sm font-semibold text-slate-900">Ảnh hiện có</p>
                           <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                             {selectedTour.images.map((image, index) => (
-                              <div key={`${image}-${index}`} className="overflow-hidden rounded-2xl border border-slate-200">
+                              <div key={`${image}-${index}`} className="group relative overflow-hidden rounded-2xl border border-slate-200">
                                 <div className="h-28 bg-cover bg-center" style={{ backgroundImage: `url(${image})` }} />
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteExistingTourImage(image)}
+                                  disabled={busyImageUrl === image || submittingTour}
+                                  className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-rose-600 shadow-sm transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                  title="Xoa anh khoi tour"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </button>
                               </div>
                             ))}
                           </div>
@@ -1512,14 +1661,29 @@ export default function ToursPanel({ initialView = "form" }) {
                       {selectedFiles.length > 0 ? (
                         <div className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
                           <p className="text-sm font-semibold text-slate-900">Ảnh đã chọn ({selectedFiles.length})</p>
-                          <div className="mt-3 grid gap-3 md:grid-cols-2">
+                          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                             {selectedFiles.map((file, index) => (
                               <div
                                 key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
-                                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                                className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
                               >
-                                <p className="truncate text-sm font-medium text-slate-800">{file.name}</p>
-                                <p className="mt-1 text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                <div
+                                  className="h-28 bg-slate-100 bg-cover bg-center"
+                                  style={{ backgroundImage: `url(${pendingImageOptions[index]?.previewUrl || ""})` }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSelectedFile(index)}
+                                  disabled={submittingTour}
+                                  className="absolute right-2 top-2 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/70 bg-white/95 text-rose-600 shadow-sm transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                  title="Go anh da chon"
+                                >
+                                  <TrashIcon className="h-4 w-4" />
+                                </button>
+                                <div className="px-4 py-3">
+                                  <p className="truncate text-sm font-medium text-slate-800">{file.name}</p>
+                                  <p className="mt-1 text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                </div>
                               </div>
                             ))}
                           </div>

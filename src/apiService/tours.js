@@ -405,6 +405,20 @@ export async function uploadTourImages(tourId, files) {
   return response.data;
 }
 
+export async function deleteTourImage(tourId, imageUrl) {
+  const response = await privateRequest(`/api/tours/${tourId}/images`, {
+    method: "DELETE",
+    data: { imageUrl },
+  });
+  const data = response.data || {};
+
+  return {
+    ...data,
+    deletedImage: toAssetUrl(data.deletedImage),
+    images: Array.isArray(data.images) ? data.images.map(toAssetUrl).filter(Boolean) : [],
+  };
+}
+
 export async function getTourDeparturesForAdmin(tourId, searchParams = {}) {
   // Departure la lich khoi hanh that cua tour, tach rieng voi template tour.
   const response = await privateRequest(`/api/tours/${tourId}/departures/admin`, {
