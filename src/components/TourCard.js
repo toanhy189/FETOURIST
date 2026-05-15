@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { formatDateVi, formatVnd } from "@/utils/format";
 
@@ -50,15 +52,6 @@ function GroupIcon({ className = "h-4 w-4" }) {
   );
 }
 
-function getCoverStyle(imageUrl) {
-  if (!imageUrl) return { background: fallbackCover };
-  return {
-    backgroundImage: `linear-gradient(180deg, rgba(15, 23, 42, 0.02), rgba(15, 23, 42, 0.18)), url("${imageUrl}")`,
-    backgroundPosition: "center",
-    backgroundSize: "cover",
-  };
-}
-
 function getCardRemainingSeats(tour) {
   const totalRemainingSeats = Number(tour?.totalRemainingSeats);
   if (Number.isFinite(totalRemainingSeats)) {
@@ -83,7 +76,21 @@ export default function TourCard({ tour }) {
 
   return (
     <article className="group mx-auto flex h-full w-full max-w-[340px] flex-col overflow-hidden rounded-[1.05rem] border border-slate-200/90 bg-white shadow-[0_18px_42px_-30px_rgba(15,23,42,0.88)] transition-all hover:-translate-y-1 hover:shadow-[0_24px_54px_-32px_rgba(15,23,42,0.9)]">
-      <div className="relative h-[162px] w-full overflow-hidden" style={getCoverStyle(tour.imageUrl)}>
+      <div className="relative h-[162px] w-full overflow-hidden" style={{ background: fallbackCover }}>
+        {tour.imageUrl ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={tour.imageUrl}
+              alt={tour.title}
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-950/[0.02] to-slate-950/20" />
+          </>
+        ) : null}
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
           <span className="rounded-full bg-white/92 px-3 py-1 text-[10px] font-black uppercase text-slate-800 shadow-sm">
             {tour.destination || "Việt Nam"}

@@ -45,17 +45,6 @@ const initialGuests = {
   infants: 0,
 };
 
-const IMAGE_FALLBACK_URL = "/images/bia1.jpg";
-
-function handleImageFallback(event) {
-  if (event.currentTarget.dataset.fallbackApplied) {
-    return;
-  }
-
-  event.currentTarget.dataset.fallbackApplied = "true";
-  event.currentTarget.src = IMAGE_FALLBACK_URL;
-}
-
 const CALENDAR_MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => ({
   value: index,
   label: `Th${String(index + 1).padStart(2, "0")}`,
@@ -503,11 +492,11 @@ export default function TourDetailExperience({ tour }) {
     refreshNotifications,
     setChatPageContext,
   } = useAppContext();
-  const galleryImages = getGalleryImages(tour);
   const highlightList = buildHighlightList(tour);
   const ratingMeta = getRatingMeta(tour);
   const bookingSectionRef = useRef(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [brokenImageUrls, setBrokenImageUrls] = useState(() => new Set());
   const [departures, setDepartures] = useState(Array.isArray(tour.upcomingDepartures) ? tour.upcomingDepartures : []);
   const [selectedDepartureId, setSelectedDepartureId] = useState(tour.upcomingDepartures?.[0]?.id || "");
   const [guests, setGuests] = useState(initialGuests);
@@ -546,6 +535,7 @@ export default function TourDetailExperience({ tour }) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const selectedDeparture = departures.find((departure) => departure.id === selectedDepartureId) || null;
+  const galleryImages = getGalleryImages(tour).filter((imageUrl) => !brokenImageUrls.has(imageUrl));
   const visibleDepartures = showAllDepartures ? departures : departures.slice(0, 6);
   const currentGuestPrices = getGuestUnitPrices(selectedDeparture, tour);
   const previewUsesGuestPricing = hasPreviewGuestPricing(bookingPreview);
@@ -679,6 +669,22 @@ export default function TourDetailExperience({ tour }) {
     }
 
     setLightboxIndex(index);
+  }
+
+  function markImageAsBroken(imageUrl) {
+    if (!imageUrl) {
+      return;
+    }
+
+    setBrokenImageUrls((current) => {
+      if (current.has(imageUrl)) {
+        return current;
+      }
+
+      const next = new Set(current);
+      next.add(imageUrl);
+      return next;
+    });
   }
 
   const closeLightbox = useCallback(() => {
@@ -1042,13 +1048,13 @@ export default function TourDetailExperience({ tour }) {
                 <div className="absolute left-0 top-3 z-10 rounded-r-full bg-orange-500 px-4 py-1.5 text-sm font-bold text-white shadow-sm">
                   {tour.transportLabel}
                 </div>
-                {galleryImages[activeImageIndex] || tour.imageUrl ? (
+                {galleryImages[activeImageIndex] ? (
                   <button type="button" onClick={() => openLightbox(activeImageIndex)} className="block w-full">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={galleryImages[activeImageIndex] || tour.imageUrl}
+                      src={galleryImages[activeImageIndex]}
                       alt={tour.title}
-                      onError={handleImageFallback}
+                      onError={() => markImageAsBroken(galleryImages[activeImageIndex])}
                       className="h-[190px] w-full object-cover sm:h-[220px] lg:h-[248px]"
                     />
                   </button>
@@ -1086,7 +1092,7 @@ export default function TourDetailExperience({ tour }) {
                       )}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imageUrl} alt={`${tour.title} ${realIndex + 1}`} onError={handleImageFallback} className="h-[92px] w-full object-cover md:h-[104px] lg:h-[118px]" />
+                      <img src={imageUrl} alt={`${tour.title} ${realIndex + 1}`} onError={() => markImageAsBroken(imageUrl)} className="h-[92px] w-full object-cover md:h-[104px] lg:h-[118px]" />
                     </button>
                   );
                 })
@@ -1159,7 +1165,7 @@ export default function TourDetailExperience({ tour }) {
                               <div className="h-16 w-24 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                                 {imageUrl ? (
                                   // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={imageUrl} alt={stepTitle} onError={handleImageFallback} className="h-full w-full object-cover" />
+                                  <img src={imageUrl} alt={stepTitle} onError={() => markImageAsBroken(imageUrl)} className="h-full w-full object-cover" />
                                 ) : null}
                               </div>
                               <div className="min-w-0 flex-1">
@@ -1178,7 +1184,7 @@ export default function TourDetailExperience({ tour }) {
                                     return (
                                       <div key={`${step.day}-image-${blockIndex}`} className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={block.url} alt={block.alt || stepTitle} onError={handleImageFallback} className="max-h-[26rem] w-full object-cover" />
+                                        <img src={block.url} alt={block.alt || stepTitle} onError={(event) => { event.currentTarget.style.display = "none"; }} className="max-h-[26rem] w-full object-cover" />
                                       </div>
                                     );
                                   }
@@ -1932,7 +1938,7 @@ export default function TourDetailExperience({ tour }) {
               <img
                 src={galleryImages[lightboxIndex]}
                 alt={`${tour.title} ${lightboxIndex + 1}`}
-                onError={handleImageFallback}
+                onError={() => markImageAsBroken(galleryImages[lightboxIndex])}
                 className="max-h-[72vh] w-auto max-w-full rounded-[24px] object-contain"
               />
 
@@ -1966,7 +1972,7 @@ export default function TourDetailExperience({ tour }) {
                     )}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imageUrl} alt={`${tour.title} thumbnail ${index + 1}`} onError={handleImageFallback} className="h-full w-full object-cover" />
+                    <img src={imageUrl} alt={`${tour.title} thumbnail ${index + 1}`} onError={() => markImageAsBroken(imageUrl)} className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
