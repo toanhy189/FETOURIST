@@ -62,6 +62,7 @@ function resolveRecentToursRedisKey({ userId, anonymousId }) {
   return "";
 }
 
+
 /**
  * Tạo summary ngắn cho card recent tours khi dữ liệu tour chưa có summary sẵn.
  *
@@ -113,11 +114,11 @@ function mapRecentTourCard(tour) {
       : toNumberOrNull(tour.price);
   const departureRemainingSeats = Array.isArray(tour.upcomingDepartures)
     ? tour.upcomingDepartures.reduce((total, departure) => {
-        const remainingSeats = toNumberOrNull(departure?.remainingSeats);
-        return remainingSeats === null
-          ? total
-          : total + Math.max(remainingSeats, 0);
-      }, 0)
+      const remainingSeats = toNumberOrNull(departure?.remainingSeats);
+      return remainingSeats === null
+        ? total
+        : total + Math.max(remainingSeats, 0);
+    }, 0)
     : null;
   const availableSeats =
     toNumberOrNull(tour.totalRemainingSeats) ??
