@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  privateRequest,
   publicRequest,
   readStoredSession,
 } from "@/apiService/AxiosInstance/AxiosInstance";
@@ -38,6 +39,17 @@ export async function createChatConversation(payload, sessionId) {
 export async function getCustomerConversation(conversationId, sessionId, query = {}) {
   // Lấy lai lịch sử theo session hiện tại de guest khong doc được chat cua guest khac.
   const response = await publicRequest(`/api/chats/conversations/${conversationId}`, {
+    method: "GET",
+    searchParams: query,
+    headers: buildChatHeaders(sessionId),
+  });
+
+  return response.data;
+}
+
+export async function getLatestCustomerConversation(sessionId, query = {}) {
+  // User đã đăng nhập có thể đổi máy, nên FE hỏi BE để lấy hội thoại gần nhất đang lưu trong DB.
+  const response = await privateRequest("/api/chats/me/latest", {
     method: "GET",
     searchParams: query,
     headers: buildChatHeaders(sessionId),

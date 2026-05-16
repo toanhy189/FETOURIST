@@ -37,6 +37,22 @@ function getStatusMeta(status) {
   return STATUS_META[status] || STATUS_META.new;
 }
 
+function hasContactReplies(contact) {
+  return Array.isArray(contact?.replies) && contact.replies.length > 0;
+}
+
+function getContactStatusOptions(contact) {
+  const allowedStatuses = hasContactReplies(contact)
+    ? ["replied", "closed"]
+    : ["new", "in_progress"];
+
+  if (contact?.status && STATUS_META[contact.status] && !allowedStatuses.includes(contact.status)) {
+    return [contact.status, ...allowedStatuses];
+  }
+
+  return allowedStatuses;
+}
+
 function getInitials(fullName) {
   return String(fullName || "KH")
     .split(" ")
@@ -431,6 +447,7 @@ export default function AdminContactsPanel() {
   }
 
   const selectedStatusMeta = getStatusMeta(selectedContact?.status);
+  const selectedStatusOptions = getContactStatusOptions(selectedContact);
   const totalContacts = pagination?.totalItems ?? contacts.length;
   const showingFrom = contacts.length > 0 ? 1 : 0;
   const showingTo = contacts.length;
@@ -614,11 +631,14 @@ export default function AdminContactsPanel() {
                           disabled={isStatusUpdating}
                           className="bg-transparent text-center font-semibold outline-none"
                         >
-                          {Object.entries(STATUS_META).map(([value, meta]) => (
-                            <option key={value} value={value}>
-                              {meta.label}
-                            </option>
-                          ))}
+                          {selectedStatusOptions.map((value) => {
+                            const meta = getStatusMeta(value);
+                            return (
+                              <option key={value} value={value}>
+                                {meta.label}
+                              </option>
+                            );
+                          })}
                         </select>
                       </label>
                       <p className="text-sm text-slate-400">
