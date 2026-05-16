@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createChatConversation,
   getCustomerConversation,
+  getLatestCustomerConversation,
   sendCustomerChatMessage,
 } from "@/apiService/chat";
 import { useAppContext } from "@/components/providers/AppProvider";
@@ -183,6 +184,7 @@ export default function ChatWidget() {
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [infoMessage, setInfoMessage] = useState("");
+  const [shouldLookupLatestConversation, setShouldLookupLatestConversation] = useState(true);
   const endOfMessagesRef = useRef(null);
 
   const chatScopeKey = useMemo(() => {
@@ -243,6 +245,54 @@ export default function ChatWidget() {
     [resetConversationState]
   );
 
+  const loadLatestConversationForUser = useCallback(
+    async (activeSessionId, { scopeKey } = {}) => {
+      if (!currentUser?.id || !activeSessionId) {
+        return;
+      }
+
+      // Khi user đăng nhập trên máy mới, localStorage chưa có conversationId nên cần hỏi DB qua BE.
+      setShouldLookupLatestConversation(false);
+
+      try {
+        const result = await getLatestCustomerConversation(activeSessionId, {
+          limit: 50,
+        });
+
+        if (!result.conversation) {
+          setConversation(null);
+          setMessages([]);
+          setInfoMessage("");
+          setErrorMessage("");
+          return;
+        }
+
+        const latestConversationId = result.conversation.id || "";
+        setConversation(result.conversation);
+        setMessages(Array.isArray(result.messages) ? result.messages : []);
+        setConversationId(latestConversationId);
+        if (latestConversationId && scopeKey) {
+          persistConversationId(latestConversationId, scopeKey);
+        }
+        if (result.customerSessionId) {
+          setSessionId(result.customerSessionId);
+        }
+        setInfoMessage(
+          result.conversation?.aiState?.requiresHumanSupport
+            ? result.conversation.aiState.humanSupportReason ||
+                "Thông tin hiện tại cần được xác minh thêm bởi bộ phận hỗ trợ."
+            : ""
+        );
+        setErrorMessage("");
+      } catch (error) {
+        setErrorMessage(
+          error.message || "Không tải được hội thoại gần nhất của tài khoản."
+        );
+      }
+    },
+    [currentUser?.id]
+  );
+
   useEffect(() => {
     if (isBootstrapping) {
       return;
@@ -260,6 +310,7 @@ export default function ChatWidget() {
     const nextConversationId = getStoredConversationId(chatScopeKey);
 
     resetConversationState();
+    setShouldLookupLatestConversation(true);
     setSessionId(nextSessionId);
     setConversationId(nextConversationId);
   }, [chatScopeKey, isAdminUser, isBootstrapping, resetConversationState]);
@@ -280,6 +331,36 @@ export default function ChatWidget() {
       scopeKey: chatScopeKey,
     });
   }, [chatScopeKey, conversationId, isAdminUser, isBootstrapping, isOpen, isSending, loadConversation, sessionId]);
+
+  useEffect(() => {
+    if (
+      isBootstrapping ||
+      !isOpen ||
+      conversationId ||
+      !sessionId ||
+      isAdminUser ||
+      isSending ||
+      !currentUser?.id ||
+      !shouldLookupLatestConversation
+    ) {
+      return;
+    }
+
+    void loadLatestConversationForUser(sessionId, {
+      scopeKey: chatScopeKey,
+    });
+  }, [
+    chatScopeKey,
+    conversationId,
+    currentUser?.id,
+    isAdminUser,
+    isBootstrapping,
+    isOpen,
+    isSending,
+    loadLatestConversationForUser,
+    sessionId,
+    shouldLookupLatestConversation,
+  ]);
 
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({
@@ -331,6 +412,7 @@ export default function ChatWidget() {
 
         setConversationId(activeConversationId);
         setConversation(created.conversation || null);
+        setShouldLookupLatestConversation(false);
         persistConversationId(activeConversationId, chatScopeKey);
       }
 
@@ -387,6 +469,15 @@ export default function ChatWidget() {
     sessionId,
   ]);
 
+  const handleStartNewConversation = useCallback(() => {
+    // Người dùng chủ động bắt đầu mới thì không tự kéo lại hội thoại cũ từ DB trong lần mở hiện tại.
+    persistConversationId("", chatScopeKey);
+    setConversationId("");
+    setShouldLookupLatestConversation(false);
+    resetConversationState();
+    setIsOpen(true);
+  }, [chatScopeKey, resetConversationState]);
+
   if (isAdminUser) {
     return null;
   }
@@ -406,14 +497,27 @@ export default function ChatWidget() {
                 </h2>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
-                aria-label="Đóng chat widget"
-              >
-                <CloseIcon />
-              </button>
+              <div className="flex shrink-0 items-center gap-2">
+                {conversationId || messages.length ? (
+                  <button
+                    type="button"
+                    onClick={handleStartNewConversation}
+                    className="rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
+                    aria-label="Bắt đầu cuộc trò chuyện mới"
+                  >
+                    Mới
+                  </button>
+                ) : null}
+
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+                  aria-label="Đóng chat widget"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
