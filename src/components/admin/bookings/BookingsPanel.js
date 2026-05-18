@@ -17,6 +17,7 @@ import BookingListCard from "./BookingListCard";
 import CreateBookingModal from "./CreateBookingModal";
 import UpdateBookingModal from "./UpdateBookingModal";
 import BookingDetailModal from "./BookingDetailModal";
+import StatusDialog from "@/components/StatusDialog";
 
 function SearchIcon() {
   return (
@@ -66,6 +67,7 @@ export default function BookingsPanel() {
   const [keyword, setKeyword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [statusDialog, setStatusDialog] = useState(null);
   const [loadingBootstrap, setLoadingBootstrap] = useState(true);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -78,6 +80,16 @@ export default function BookingsPanel() {
   const clearFeedback = () => {
     setMessage("");
     setError("");
+    setStatusDialog(null);
+  };
+
+  const showStatusDialog = ({ title, message: dialogMessage, highlight, tone = "success" }) => {
+    setStatusDialog({
+      title,
+      message: dialogMessage,
+      highlight,
+      tone,
+    });
   };
 
   const loadBootstrap = useCallback(async () => {
@@ -171,7 +183,7 @@ export default function BookingsPanel() {
     clearFeedback();
 
     try {
-      await createBookingForAdmin({
+      const createdBooking = await createBookingForAdmin({
         userId: form.userId,
         tourId: form.tourId,
         departureId: form.departureId,
@@ -190,10 +202,22 @@ export default function BookingsPanel() {
       });
 
       setMessage("Đã tạo booking thành công.");
+      showStatusDialog({
+        title: "Tạo booking thành công",
+        message: "Mã booking:",
+        highlight: createdBooking?.orderCode,
+        tone: "success",
+      });
       await loadBootstrap();
       setIsCreateOpen(false);
     } catch (actionError) {
-      setError(actionError.message || "Không tạo được booking.");
+      const nextError = actionError.message || "Không tạo được booking.";
+      setError(nextError);
+      showStatusDialog({
+        title: "Không tạo được booking",
+        message: nextError,
+        tone: "error",
+      });
       throw actionError;
     }
   }
@@ -221,7 +245,13 @@ export default function BookingsPanel() {
       setMessage("Đã cập nhật booking.");
       await Promise.all([loadBootstrap(), loadBookingDetail(orderCode)]);
     } catch (actionError) {
-      setError(actionError.message || "Không cập nhật được booking.");
+      const nextError = actionError.message || "Không cập nhật được booking.";
+      setError(nextError);
+      showStatusDialog({
+        title: "Không lưu được booking",
+        message: nextError,
+        tone: "error",
+      });
       throw actionError;
     }
   }
@@ -232,9 +262,21 @@ export default function BookingsPanel() {
     try {
       await updateBookingStatusForAdmin(orderCode, payload);
       setMessage("Đã cập nhật trạng thái booking.");
+      showStatusDialog({
+        title: "Lưu cập nhật thành công",
+        message: "Booking đã được cập nhật.",
+        highlight: orderCode,
+        tone: "success",
+      });
       await Promise.all([loadBootstrap(), loadBookingDetail(orderCode)]);
     } catch (actionError) {
-      setError(actionError.message || "Không cập nhật được trạng thái booking.");
+      const nextError = actionError.message || "Không cập nhật được trạng thái booking.";
+      setError(nextError);
+      showStatusDialog({
+        title: "Không lưu được booking",
+        message: nextError,
+        tone: "error",
+      });
       throw actionError;
     }
   }
@@ -399,6 +441,15 @@ export default function BookingsPanel() {
         open={isDetailOpen}
         booking={loadingDetail ? null : selectedBooking}
         onClose={() => setIsDetailOpen(false)}
+      />
+
+      <StatusDialog
+        open={Boolean(statusDialog)}
+        title={statusDialog?.title}
+        message={statusDialog?.message}
+        highlight={statusDialog?.highlight}
+        tone={statusDialog?.tone}
+        onClose={() => setStatusDialog(null)}
       />
     </section>
   );

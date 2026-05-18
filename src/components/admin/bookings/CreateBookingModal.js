@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import BookingModal from "./BookingModal";
 import {
   BOOKING_STATUSES,
@@ -49,29 +49,6 @@ function FormSelect(props) {
   );
 }
 
-function FeedbackBox({ type, message }) {
-  if (!message) return null;
-
-  const isError = type === "error";
-
-  return (
-    <div
-      className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-medium ${
-        isError
-          ? "border-rose-200 bg-rose-50 text-rose-700"
-          : "border-emerald-200 bg-emerald-50 text-emerald-700"
-      }`}
-    >
-      <span
-        className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${
-          isError ? "bg-rose-500" : "bg-emerald-500"
-        }`}
-      />
-      <span>{message}</span>
-    </div>
-  );
-}
-
 export default function CreateBookingModal({
   open,
   onClose,
@@ -83,30 +60,17 @@ export default function CreateBookingModal({
 }) {
   const [form, setForm] = useState(initialCreateForm);
   const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState({ type: "", message: "" });
-
-  useEffect(() => {
-    if (open) {
-      setFeedback({ type: "", message: "" });
-    }
-  }, [open]);
 
   async function handleSubmit(event) {
     event.preventDefault();
     setSubmitting(true);
-    setFeedback({ type: "", message: "" });
 
     try {
       await onSubmit(form);
       setForm(initialCreateForm);
       onClose();
-    } catch (error) {
-      setFeedback({
-        type: "error",
-        message:
-          error.message ||
-          "Không tạo được booking. Vui lòng kiểm tra lại thông tin đã nhập.",
-      });
+    } catch {
+      // Parent shows the centered status dialog with the backend error message.
     } finally {
       setSubmitting(false);
     }
@@ -115,8 +79,6 @@ export default function CreateBookingModal({
   return (
     <BookingModal open={open} onClose={onClose} title="Tạo booking" size="lg">
       <form onSubmit={handleSubmit} className="space-y-5">
-        <FeedbackBox type={feedback.type} message={feedback.message} />
-
         <div>
           <InputLabel label="Người dùng" required />
           <FormSelect
