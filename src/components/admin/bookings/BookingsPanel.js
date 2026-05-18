@@ -287,12 +287,24 @@ export default function BookingsPanel() {
     try {
       await deleteBookingForAdmin(orderCode);
       setMessage("Đã xóa booking.");
+      showStatusDialog({
+        title: "Xóa booking thành công",
+        message: "Booking đã được xóa.",
+        highlight: orderCode,
+        tone: "success",
+      });
       setSelectedBooking(null);
       setIsUpdateOpen(false);
       setIsDetailOpen(false);
       await loadBootstrap();
     } catch (actionError) {
-      setError(actionError.message || "Không xóa được booking.");
+      const nextError = actionError.message || "Không xóa được booking.";
+      setError(nextError);
+      showStatusDialog({
+        title: "Không xóa được booking",
+        message: nextError,
+        tone: "error",
+      });
     }
   }
 
