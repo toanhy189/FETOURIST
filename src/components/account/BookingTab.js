@@ -303,7 +303,9 @@ function BookingDetailPanel({
   const isFullyPaid =
     selectedBooking?.paymentStatus === "paid" || Number(remainingAmount) <= 0;
   const isCancelled = selectedBooking?.bookingStatus === "cancelled";
-  const canCreatePayment = !isFullyPaid && !isCancelled;
+  const isConfirmed = selectedBooking?.bookingStatus === "confirmed";
+  const isWaitingForConfirmation = !isFullyPaid && !isCancelled && !isConfirmed;
+  const canCreatePayment = !isFullyPaid && !isCancelled && isConfirmed;
   const paymentButtonLabel =
     paymentForm.method === "vnpay" ? "Thanh toán qua VNPay" : "Gửi yêu cầu thanh toán";
 
@@ -423,6 +425,14 @@ function BookingDetailPanel({
           <div className="mt-4 rounded-2xl bg-rose-50 px-4 py-4">
             <p className="text-sm font-medium text-rose-700">
               Booking đã hủy nên không thể tạo thanh toán.
+            </p>
+          </div>
+        ) : null}
+
+        {isWaitingForConfirmation ? (
+          <div className="mt-4 rounded-2xl bg-amber-50 px-4 py-4">
+            <p className="text-sm font-medium text-amber-700">
+              Booking cần được admin xác nhận trước khi thanh toán.
             </p>
           </div>
         ) : null}
