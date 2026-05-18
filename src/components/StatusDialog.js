@@ -11,6 +11,16 @@ function CheckIcon({ className = "h-12 w-12" }) {
   );
 }
 
+function ErrorIcon({ className = "h-12 w-12" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7.2v5.6" />
+      <path d="M12 16.8h.01" />
+    </svg>
+  );
+}
+
 export default function StatusDialog({
   open,
   title,
@@ -35,17 +45,24 @@ export default function StatusDialog({
       button: "bg-sky-600 text-white hover:bg-sky-500",
       highlight: "text-sky-600",
     },
+    error: {
+      icon: "border-rose-100 bg-rose-50 text-rose-500",
+      button: "bg-rose-600 text-white hover:bg-rose-500",
+      highlight: "text-rose-600",
+    },
   }[tone] || {};
 
+  const Icon = tone === "error" ? ErrorIcon : CheckIcon;
+
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/45 px-4 py-6">
+    <div className="fixed inset-0 z-[140] flex items-center justify-center bg-slate-950/45 px-4 py-6">
       <div
         role="dialog"
         aria-modal="true"
         className="w-full max-w-sm rounded-none bg-white px-6 py-7 text-center shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
       >
         <div className={cn("mx-auto flex h-20 w-20 items-center justify-center rounded-full border", toneClassName.icon)}>
-          <CheckIcon />
+          <Icon />
         </div>
         <h2 className="mt-5 text-2xl font-bold text-slate-700">{title}</h2>
         <p className="mx-auto mt-4 max-w-[280px] text-sm leading-6 text-slate-500">

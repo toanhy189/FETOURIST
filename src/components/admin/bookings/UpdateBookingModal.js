@@ -104,29 +104,6 @@ function FormTextarea({ className = "", ...props }) {
   );
 }
 
-function FeedbackBox({ type, message }) {
-  if (!message) return null;
-
-  const isError = type === "error";
-
-  return (
-    <div
-      className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-medium ${
-        isError
-          ? "border-rose-200 bg-rose-50 text-rose-700"
-          : "border-emerald-200 bg-emerald-50 text-emerald-700"
-      }`}
-    >
-      <span
-        className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${
-          isError ? "bg-rose-500" : "bg-emerald-500"
-        }`}
-      />
-      <span>{message}</span>
-    </div>
-  );
-}
-
 function SectionCard({ title, children, className = "" }) {
   return (
     <section className={cn("rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm", className)}>
@@ -170,7 +147,6 @@ export default function UpdateBookingModal({
   onUpdateTransaction,
 }) {
   const [form, setForm] = useState(initialForm);
-  const [feedback, setFeedback] = useState({ type: "", message: "" });
 
   useEffect(() => {
     if (!open || !booking) return;
@@ -201,12 +177,6 @@ export default function UpdateBookingModal({
     }
   }, [open, booking, onLoadDepartures]);
 
-  useEffect(() => {
-    if (open) {
-      setFeedback({ type: "", message: "" });
-    }
-  }, [open, booking?.orderCode]);
-
   const availableStatuses = useMemo(() => {
     if (!booking?.bookingStatus) return [];
     return Array.from(
@@ -234,7 +204,6 @@ export default function UpdateBookingModal({
 
   async function handleSaveAll() {
     setSavingAll(true);
-    setFeedback({ type: "", message: "" });
 
     try {
       const infoPayload = {
@@ -267,18 +236,8 @@ export default function UpdateBookingModal({
             ? form.cancellationReason
             : undefined,
       });
-
-      setFeedback({
-        type: "success",
-        message: "Đã lưu cập nhật booking thành công.",
-      });
-    } catch (error) {
-      setFeedback({
-        type: "error",
-        message:
-          error.message ||
-          "Không lưu được booking. Vui lòng kiểm tra lại thông tin đã nhập.",
-      });
+    } catch {
+      // Parent shows the centered status dialog with the backend error message.
     } finally {
       setSavingAll(false);
     }
@@ -341,8 +300,6 @@ export default function UpdateBookingModal({
             </div>
           </div>
         </div>
-
-        <FeedbackBox type={feedback.type} message={feedback.message} />
 
         <div className="grid gap-4 xl:grid-cols-2">
           <SectionCard title="Lịch khởi hành">
